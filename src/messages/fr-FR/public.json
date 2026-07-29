@@ -105,14 +105,15 @@
       "freinee": "Remorque freinée",
       "equipements": "Équipements",
       "compatibleVehicule": "Compatible avec mon véhicule",
-      "reservationInstantanee": "Réservation instantanée"
+      "reservationInstantanee": "Réservation instantanée",
+      "tout": "Tout"
     },
     "tri": {
-      "label": "Trier par",
+      "label": "Trier",
       "pertinence": "Pertinence",
       "distance": "Distance",
-      "prixCroissant": "Prix croissant",
-      "mieuxNotes": "Mieux notés"
+      "prix": "Prix",
+      "note": "Note"
     }
   },
   "commentCaMarche": {
@@ -548,5 +549,58 @@
     "permisInsuffisant": "Permis insuffisant pour ce matériel",
     "vehiculeInsuffisant": "Votre véhicule ne peut pas tracter ce matériel",
     "renseignerVehicule": "Renseignez votre véhicule pour le savoir"
+  },
+  "annonce": {
+    "metaTitre": "{titre} à louer à {ville}",
+    "metaDescription": "{titre} disponible à la location à {ville}. {kg} kg de charge utile, assurance comprise, caution non débitée.",
+    "instantanee": "Réservation instantanée",
+    "parJour": "/ jour",
+    "distance": "{km, number} km",
+    "kg": "{kg, number} kg",
+    "cm": "{cm} cm",
+    "ptac": "PTAC",
+    "ptacValeur": "PTAC {kg, number} kg",
+    "chargeUtile": "Charge utile",
+    "poidsVide": "Poids à vide",
+    "dimensions": "Dimensions utiles",
+    "freinage": "Freinage",
+    "freinee": "Freinée",
+    "nonFreinee": "Non freinée",
+    "attelage": "Attelage",
+    "faisceau": "Faisceau",
+    "broches": "{nombre} broches",
+    "noteSur": "Note de {note, number} sur 5, {avis, number} avis",
+    "caracteristiques": "Caractéristiques",
+    "verifierPermis": "Vérifier si mon permis suffit",
+    "equipements": "Équipements fournis",
+    "proprietaire": "Propriétaire",
+    "professionnel": "Professionnel",
+    "depuis": "Sur la plateforme depuis {annee}",
+    "tauxReponse": "{taux} % de réponses",
+    "retrait": "Retrait",
+    "adresseMasquee": "Quartier : {quartier}. L'adresse exacte est communiquée après confirmation de la réservation.",
+    "filAriane": "Fil d'Ariane",
+    "filArianeRacine": "Annonces",
+    "reservation": {
+      "parJour": "/ jour",
+      "du": "Du",
+      "au": "Au",
+      "choisirDates": "Choisissez vos dates pour voir le total.",
+      "loyer": "{prix} × {jours, plural, one {# jour} other {# jours}}",
+      "fraisService": "Frais de service",
+      "assurance": "Assurance",
+      "assuranceComprise": "Comprise",
+      "total": "Total",
+      "reserver": "Réserver",
+      "demander": "Envoyer une demande",
+      "bientot": "Réservation bientôt disponible",
+      "caution": "Caution de {montant}, non débitée",
+      "annulation": {
+        "souple": "Annulation gratuite jusqu'à 24 h avant le retrait",
+        "moderee": "Annulation gratuite jusqu'à 3 jours avant le retrait",
+        "stricte": "Annulation non remboursable à moins de 7 jours"
+      }
+    },
+    "chargeUtileValeur": "{kg, number} kg utiles"
   }
 }
