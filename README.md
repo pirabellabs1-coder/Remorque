@@ -11,21 +11,43 @@ et technique — v1.0 »* (Pirabel Labs, juillet 2026) : 4 espaces applicatifs,
 
 ## Démarrage
 
+La base est hébergée sur **Supabase**, l'application est déployée sur
+**Vercel**. Aucune installation locale n'est nécessaire.
+
+1. Créer un projet Supabase en **région européenne** — `eu-central-1`
+   (Francfort) ou `eu-west-3` (Paris). C'est une exigence de la section 11 du
+   cadrage, pas une préférence.
+2. Dans le tableau de bord, bouton **Connect**, relever les deux chaînes de
+   connexion : celle du gestionnaire de connexions (port 6543) et la connexion
+   directe (port 5432).
+3. Puis :
+
 ```bash
-cp .env.example .env.local     # puis renseigner les valeurs
-docker compose up -d           # PostgreSQL + PostGIS et Redis
+cp .env.example .env.local     # y coller les deux chaînes de connexion
 npm install
-npm run db:migrate
-npm run db:seed                # pays de lancement + catalogue des catégories
+npm run db:setup               # extensions, migrations, amorçage
 npm run dev
 ```
 
 Le site est servi sur <http://localhost:3000>.
 
-> **Sans Docker** : n'importe quelle base PostgreSQL 16+ avec les extensions
-> `postgis` et `pgcrypto` convient, à condition qu'elle soit **hébergée dans
-> l'Union européenne** (section 11 du cadrage — protection des données).
-> Exécuter alors `scripts/init-db.sql` avant la première migration.
+### Pourquoi deux chaînes de connexion
+
+| Variable | Port | Usage |
+| --- | --- | --- |
+| `DATABASE_URL` | 6543 | L'application. Passe par le gestionnaire de connexions — indispensable sur Vercel, où chaque requête peut ouvrir la sienne. |
+| `DATABASE_URL_DIRECT` | 5432 | Migrations et scripts d'administration. Le gestionnaire travaille en mode transaction et ne sait pas exécuter d'instruction de définition de schéma. |
+
+Les confondre est le piège classique : l'application épuise ses connexions, ou
+les migrations échouent sans message clair.
+
+### Alternative locale
+
+Un `docker-compose.yml` fournit PostgreSQL + PostGIS et Redis pour travailler
+hors ligne : `docker compose up -d`, puis `npm run db:setup` avec
+`DATABASE_URL=postgresql://remorque:remorque@localhost:5432/remorque`.
+N'importe quelle base PostgreSQL 16+ avec les extensions `postgis` et
+`pgcrypto` convient également.
 
 ## Commandes
 
@@ -36,6 +58,8 @@ Le site est servi sur <http://localhost:3000>.
 | `npm run typecheck` | TypeScript, sans émission |
 | `npm run lint` | ESLint |
 | `npm test` | Tests unitaires (Vitest) |
+| `npm run db:setup` | Extensions, migrations et amorçage en une commande |
+| `npm run db:prepare` | Installe les extensions PostgreSQL requises |
 | `npm run db:generate` | Génère une migration à partir du schéma |
 | `npm run db:migrate` | Applique les migrations |
 | `npm run db:studio` | Explorateur de base |
@@ -50,7 +74,8 @@ doit pouvoir être repris par une autre équipe.
 | --- | --- |
 | Interface et rendu serveur | Next.js 16 (App Router), TypeScript |
 | Style | Tailwind CSS 4, jetons de design |
-| Base de données | PostgreSQL + PostGIS |
+| Base de données | PostgreSQL + PostGIS (Supabase, région européenne) |
+| Hébergement | Vercel |
 | Accès aux données | Drizzle ORM, migrations versionnées |
 | Internationalisation | next-intl, rendu serveur |
 | Paiement | Stripe Connect |

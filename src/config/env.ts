@@ -10,7 +10,20 @@ const serverSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
 
+  /**
+   * Connexion applicative. Sur Supabase, c'est l'adresse du gestionnaire de
+   * connexions (Supavisor, port 6543) : indispensable dès qu'on déploie sur
+   * une plateforme sans serveur, où chaque requête peut ouvrir sa propre
+   * connexion.
+   */
   DATABASE_URL: z.string().url(),
+  /**
+   * Connexion directe (port 5432), réservée aux migrations et aux scripts
+   * d'administration. Le gestionnaire de connexions travaille en mode
+   * transaction et ne sait pas exécuter les instructions de définition de
+   * schéma ni les instructions préparées dont a besoin drizzle-kit.
+   */
+  DATABASE_URL_DIRECT: z.string().url().optional(),
   REDIS_URL: z.string().url().optional(),
 
   BETTER_AUTH_SECRET: z.string().min(32),

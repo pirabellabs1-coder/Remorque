@@ -12,9 +12,11 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/server/db/seed.ts",
+    "db:seed": "tsx --env-file-if-exists=.env.local src/server/db/seed.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:prepare": "tsx --env-file-if-exists=.env.local scripts/preparer-base.ts",
+    "db:setup": "npm run db:prepare && npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
     "better-auth": "^1.6.25",
