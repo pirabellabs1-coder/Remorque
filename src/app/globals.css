@@ -56,11 +56,25 @@
 /* Rôles sémantiques — clair et sombre. Les composants ne référencent que ces
    variables, jamais une teinte de la palette directement. */
 :root {
-  --fond: #ffffff;
+  /*
+   * Le fond de page n'est pas blanc pur : sans cet écart, les cartes — qui sont
+   * blanches — n'existent que par leur filet d'un pixel et la moitié de la page
+   * devient un plan unique, sans relief.
+   */
+  --fond: var(--color-ardoise-50);
   /* Fond des sections alternées : un bleu très pâle plutôt qu'un gris, pour
      rythmer la page sans introduire de seconde couleur. */
   --fond-doux: var(--color-marque-50);
+  /* Aplat de marque : socles décalés sous les photos, filets, trames. */
+  --fond-marque: var(--color-marque-100);
   --fond-eleve: #ffffff;
+
+  /* Ombres portées, teintées de bleu plutôt que de noir. */
+  --ombre-carte: 0 1px 2px rgb(13 27 69 / 0.05),
+    0 10px 22px -12px rgb(13 27 69 / 0.1);
+  --ombre-carte-active: 0 2px 4px rgb(13 27 69 / 0.07),
+    0 24px 44px -20px rgb(13 27 69 / 0.2);
+  --ombre-flottante: 0 24px 60px -24px rgb(13 27 69 / 0.45);
   --texte: var(--color-ardoise-900);
   --texte-attenue: var(--color-ardoise-600);
   --bordure: var(--color-ardoise-200);
@@ -100,6 +114,7 @@
 @theme inline {
   --color-fond: var(--fond);
   --color-fond-doux: var(--fond-doux);
+  --color-fond-marque: var(--fond-marque);
   --color-fond-eleve: var(--fond-eleve);
   --color-texte: var(--texte);
   --color-texte-attenue: var(--texte-attenue);

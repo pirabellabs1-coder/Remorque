@@ -77,7 +77,9 @@ export default async function PageRecherche({ params, searchParams }: Props) {
       {/* Barre de recherche persistante : on affine sans revenir en arrière. */}
       <div className="sticky top-16 z-30 border-b border-bordure bg-fond-eleve/95 backdrop-blur">
         <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6">
-          <FormulaireRecherche variante="nu" />
+          {/* Le champ rappelle la recherche en cours : le visiteur affine, il
+              ne repart pas de zéro. */}
+          <FormulaireRecherche variante="nu" valeurInitiale={ville ?? ""} />
         </div>
       </div>
 

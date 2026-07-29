@@ -383,16 +383,56 @@ export type ResultatRecherche = {
   total: number;
 };
 
+/**
+ * Normalise un nom de ville pour la comparaison : sans accent, sans casse,
+ * tirets à la place des espaces. « Saint-Étienne » et « saint etienne »
+ * doivent désigner la même ville.
+ */
+function normaliserVille(valeur: string): string {
+  return valeur
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+/**
+ * Garde-fou : le jeu de démonstration porte des notes et des nombres d'avis
+ * qui n'existent pas. Les exposer en production serait une allégation
+ * trompeuse (section 11). Tant que la base n'est pas branchée, la production
+ * ne renvoie donc rien — et l'écran vide, qui est de toute façon l'état réel
+ * des premiers jours, prend le relais.
+ */
+const DEMONSTRATION_AUTORISEE = process.env.NODE_ENV !== "production";
+
 export async function rechercherAnnonces(
   criteres: CriteresRecherche,
 ): Promise<ResultatRecherche> {
-  const { categorie, tri = "pertinence" } = criteres;
+  if (!DEMONSTRATION_AUTORISEE) return { annonces: [], total: 0 };
 
-  const annonces = JEU_DE_DEMONSTRATION.filter(
-    (annonce) => !categorie || annonce.categorie === categorie,
-  ).sort(comparateurs[tri]);
+  const { ville, categorie, tri = "pertinence" } = criteres;
+  const villeRecherchee = ville ? normaliserVille(ville) : undefined;
+
+  const annonces = JEU_DE_DEMONSTRATION.filter((annonce) => {
+    if (categorie && annonce.categorie !== categorie) return false;
+    // Sans ce filtre, une recherche « Bordeaux » renvoyait les annonces de
+    // Lyon sous le titre « Remorques à louer à Bordeaux ».
+    if (villeRecherchee && annonce.villeSlug !== villeRecherchee) return false;
+    return true;
+  }).sort(comparateurs[tri]);
 
   return { annonces, total: annonces.length };
+}
+
+/** Quelques annonces pour la page d'accueil, les plus proches d'abord. */
+export async function annoncesEnVitrine(
+  nombre: number,
+): Promise<AnnonceResume[]> {
+  if (!DEMONSTRATION_AUTORISEE) return [];
+  return [...JEU_DE_DEMONSTRATION]
+    .sort(comparateurs.pertinence)
+    .slice(0, nombre);
 }
 
 export async function trouverAnnonce(

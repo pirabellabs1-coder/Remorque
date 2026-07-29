@@ -5,14 +5,20 @@ import { cn } from "@/lib/cn";
 export function Carte({
   children,
   className,
+  survol = false,
 }: {
   children: ReactNode;
   className?: string;
+  /** Réservé aux cartes cliquables : une carte inerte ne doit pas réagir. */
+  survol?: boolean;
 }) {
   return (
     <div
       className={cn(
         "rounded-carte border border-bordure bg-fond-eleve p-6",
+        "shadow-(--ombre-carte)",
+        survol &&
+          "transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-(--ombre-carte-active)",
         className,
       )}
     >

@@ -22,7 +22,7 @@ export function CarteAnnonce({ annonce }: { annonce: AnnonceResume }) {
   });
 
   return (
-    <article className="group relative overflow-hidden rounded-carte border border-bordure bg-fond-eleve transition-shadow hover:shadow-lg">
+    <article className="group relative h-full overflow-hidden rounded-carte border border-bordure bg-fond-eleve shadow-(--ombre-carte) transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-(--ombre-carte-active)">
       <Illustration
         src={annonce.photo}
         alt={annonce.photoAlt}
@@ -94,7 +94,8 @@ export function CarteAnnonce({ annonce }: { annonce: AnnonceResume }) {
           ) : null}
         </dl>
 
-        <p className="mt-3 font-semibold">
+        {/* Le prix est l'information qui décide : elle porte l'accent. */}
+        <p className="mt-3 text-[1.0625rem] font-bold tabular-nums text-accent">
           {prix}
           <span className="font-normal text-texte-attenue"> {t("parJour")}</span>
         </p>

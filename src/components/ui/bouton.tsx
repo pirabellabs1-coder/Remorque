@@ -2,12 +2,20 @@ import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
 
-type Variante = "principal" | "secondaire" | "discret" | "danger";
+type Variante =
+  | "principal"
+  | "secondaire"
+  | "fantome"
+  | "discret"
+  | "danger";
 type Taille = "petit" | "moyen" | "grand";
 
 const VARIANTES: Record<Variante, string> = {
   principal: "bg-accent text-accent-contraste hover:opacity-90",
   secondaire: "border border-bordure bg-fond-eleve hover:bg-fond",
+  /** Posé sur une photographie ou un bandeau profond. */
+  fantome:
+    "border border-encre-bordure bg-white/10 text-encre-texte backdrop-blur-sm hover:bg-white/20",
   discret: "text-texte-attenue hover:text-texte",
   danger: "bg-danger text-white hover:opacity-90",
 };

@@ -2,82 +2,79 @@
   "accueil": {
     "nomSite": "Remorque",
     "metaTitre": "Location de remorques entre particuliers et professionnels",
-    "metaDescription": "Louez une remorque près de chez vous : benne, plateau, porte-voiture, bagagère. Assurance comprise, paiement sécurisé, caution non débitée.",
-    "titre": "La remorque qu'il vous faut, près de chez vous",
-    "sousTitre": "Déménagement, chantier, jardinage, loisirs : réservez le matériel d'un particulier ou d'un professionnel de votre ville. L'assurance est comprise, le paiement est sécurisé et la caution n'est pas prélevée.",
+    "metaDescription": "Louez une remorque près de chez vous : benne, plateau, porte-voiture, bagagère. Assurance comprise, paiement sécurisé, caution non prélevée.",
+    "titre": "Louez une remorque près de vous",
+    "sousTitre": "Réservez le matériel d’un particulier ou d’un professionnel de votre ville, assurance comprise.",
     "hero": {
-      "surtitre": "Location entre particuliers et professionnels",
+      "surtitre": "Particuliers et professionnels",
       "illustration": "Véhicule tractant une remorque plateau sur une route de campagne au coucher du soleil",
       "titreRecherche": "Trouvez une remorque disponible",
       "actionLocataire": "Chercher une remorque",
       "actionProprietaire": "Mettre la mienne en location"
     },
     "reassurance": {
-      "assurance": "Assurance comprise dans chaque location",
-      "paiement": "Paiement sécurisé, caution non débitée",
+      "assurance": "Assurance comprise à chaque location",
+      "paiement": "Paiement en ligne sécurisé",
       "proximite": "Retrait près de chez vous"
     },
     "categories": {
       "titre": "Quel matériel cherchez-vous ?",
-      "chapo": "Dix catégories, du simple porte-bagages à la nacelle de chantier. Chacune indique les caractéristiques qui comptent : poids autorisé, dimensions utiles, équipements fournis.",
       "action": "Voir toutes les annonces"
     },
     "parcours": {
       "surtitre": "Le parcours",
       "titre": "Comment ça marche",
-      "chapo": "Quatre étapes, de la recherche à la restitution. Tout se passe sur la plateforme : vous ne réglez jamais de main à main et vous gardez une trace de chaque étape.",
-      "action": "Voir le parcours en détail"
+      "action": "Voir le parcours"
     },
     "confiance": {
       "surtitre": "Vos garanties",
       "illustration": "Deux personnes réalisant l'état des lieux d'une remorque, l'une la photographiant avec son téléphone",
       "titre": "Ce qui sécurise votre location",
-      "chapo": "Louer du matériel à un inconnu suppose des garanties. Voici précisément celles que la plateforme apporte.",
       "action": "Tout savoir sur l'assurance",
       "assurance": {
         "titre": "Une assurance à chaque location",
-        "texte": "Toute réservation confirmée déclenche une couverture du matériel pour la durée de la location. L'attestation est téléchargeable avant le départ, par le locataire comme par le propriétaire."
+        "texte": "Chaque réservation confirmée couvre le matériel pendant toute la location."
       },
       "caution": {
-        "titre": "Une caution qui reste sur votre compte",
-        "texte": "La caution est une empreinte bancaire : l'argent n'est pas prélevé. Un débit ne peut avoir lieu qu'après un dommage constaté, justifié par les photos d'état des lieux, et il reste contestable."
+        "titre": "Caution non prélevée",
+        "texte": "La caution est une simple empreinte bancaire : l’argent reste sur votre compte."
       },
       "etatDesLieux": {
-        "titre": "Des états des lieux qui font foi",
-        "texte": "Départ et retour sont photographiés sous des angles imposés, horodatés et signés par les deux parties. En cas de désaccord, les photos sont comparées côte à côte."
+        "titre": "États des lieux photographiés",
+        "texte": "Départ et retour sont photographiés, horodatés et signés par les deux parties."
       }
     },
     "outils": {
       "titre": "Vérifiez avant de réserver",
-      "chapo": "Deux outils gratuits, sans compte, pour éviter la mauvaise surprise le jour du retrait.",
+      "chapo": "Deux outils gratuits, sans compte.",
       "action": "Ouvrir l'outil",
       "permis": {
         "titre": "Quel permis pour quelle remorque ?",
-        "texte": "La règle dépend de l'ensemble véhicule + remorque, pas de la remorque seule. Vérifiez en dix secondes si votre permis B suffit."
+        "texte": "Vérifiez en dix secondes si votre permis B suffit."
       },
       "charge": {
         "titre": "Calculateur de charge",
-        "texte": "La charge utile inscrite sur une remorque n'est pas toujours celle que votre véhicule peut tirer. Calculez ce que vous pouvez réellement transporter."
+        "texte": "Calculez ce que votre véhicule peut réellement transporter."
       }
     },
     "proprietaires": {
       "surtitre": "Propriétaires",
       "illustration": "Remorque benne galvanisée stationnée dans une allée privée devant un garage",
-      "titre": "Votre remorque dort onze mois par an. Rentabilisez-la.",
-      "chapo": "Publier une annonce est gratuit et prend moins de dix minutes. Vous fixez vos tarifs, vos disponibilités et vos règles ; vous acceptez ou refusez chaque demande.",
-      "action": "Mettre mon matériel en location",
+      "titre": "Rentabilisez votre remorque",
+      "chapo": "Publication gratuite : vous fixez vos tarifs, vos dates et acceptez chaque demande.",
+      "action": "Publier une annonce",
       "actionPro": "Je suis loueur professionnel",
       "actionSecondaire": "Comprendre le fonctionnement"
+    },
+    "vitrine": {
+      "titre": "Annonces près de vous",
+      "action": "Voir toutes les annonces"
     }
   },
   "recherche": {
     "formulaire": {
       "ou": "Où ?",
       "ouPlaceholder": "Ville ou code postal",
-      "du": "Du",
-      "au": "Au",
-      "quoi": "Quel matériel ?",
-      "toutesCategories": "Toutes les catégories",
       "rechercher": "Rechercher"
     },
     "metaTitre": "Rechercher une remorque à louer",

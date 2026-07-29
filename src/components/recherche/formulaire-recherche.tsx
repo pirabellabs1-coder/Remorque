@@ -3,162 +3,89 @@
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
-import { CATEGORIES } from "@/config/categories";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-
-/** Date du jour au format attendu par un champ `date`, sans dépendance. */
-function aujourdhui(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 /**
  * Formulaire de recherche principal.
  *
- * Rendu dans un vrai `<form>` : la recherche reste possible sans JavaScript,
- * la touche Entrée fonctionne, et les navigateurs proposent leur
- * autocomplétion. Les critères passent par l'adresse — une recherche doit
- * pouvoir être partagée, mise en favori et indexée (M03, M15).
+ * Un seul champ, volontairement.
+ *
+ * Les deux sélecteurs de dates et la liste de catégories ont été retirés : sur
+ * mobile, chaque champ de date ouvre un calendrier plein écran pour un critère
+ * que le visiteur ne connaît souvent pas encore, et une liste de dix catégories
+ * en amont de tout résultat est un filtre déguisé en critère d'entrée. Les deux
+ * se règlent bien mieux sur l'écran de résultats, où l'on voit ce que l'on
+ * filtre. C'est aussi ce que font les places de marché de référence : « où ? »,
+ * puis rien.
+ *
+ * Rendu dans un vrai `<form>` : la touche Entrée fonctionne, la recherche reste
+ * possible sans JavaScript, et les critères passent par l'adresse — une
+ * recherche doit pouvoir être partagée, mise en favori et indexée (M03, M15).
  */
 export function FormulaireRecherche({
   variante = "carte",
+  valeurInitiale = "",
 }: {
   /**
    * `carte` : le formulaire porte son propre cadre — barre de rappel en tête
    * des résultats. `nu` : le cadre est fourni par le conteneur, cas de la
-   * carte de recherche flottante de la page d'accueil.
+   * carte de recherche de la première vue.
    */
   variante?: "carte" | "nu";
+  valeurInitiale?: string;
 }) {
   const t = useTranslations("recherche.formulaire");
   const router = useRouter();
   const identifiant = useId();
 
-  const [ville, setVille] = useState("");
-  const [debut, setDebut] = useState("");
-  const [fin, setFin] = useState("");
-  const [categorie, setCategorie] = useState("");
+  const [ville, setVille] = useState(valeurInitiale);
 
   function soumettre(evenement: React.FormEvent<HTMLFormElement>) {
     evenement.preventDefault();
 
-    const parametres = new URLSearchParams();
-    if (ville.trim()) parametres.set("ville", ville.trim());
-    if (debut) parametres.set("debut", debut);
-    if (fin) parametres.set("fin", fin);
-    if (categorie) parametres.set("categorie", categorie);
-
+    const saisie = ville.trim();
     router.push({
       pathname: "/recherche",
-      query: Object.fromEntries(parametres),
+      query: saisie ? { ville: saisie } : {},
     });
   }
-
-  const classeChamp =
-    "h-12 w-full rounded-champ border border-bordure bg-fond-eleve px-3 text-[0.9375rem]";
 
   return (
     <form
       onSubmit={soumettre}
+      role="search"
       className={cn(
+        "flex flex-col gap-3 sm:flex-row",
         variante === "carte" &&
-          "rounded-carte border border-bordure bg-fond-eleve p-3 shadow-sm",
+          "rounded-carte border border-bordure bg-fond-eleve p-3 shadow-(--ombre-carte)",
       )}
     >
-      <div className="grid gap-3 md:grid-cols-[1.4fr_1fr_1fr_1.2fr_auto]">
-        <div>
-          <label
-            htmlFor={`${identifiant}-ville`}
-            className="block px-1 pb-1 text-xs font-medium text-texte-attenue"
-          >
-            {t("ou")}
-          </label>
-          <input
-            id={`${identifiant}-ville`}
-            name="ville"
-            type="text"
-            autoComplete="postal-code"
-            enterKeyHint="search"
-            placeholder={t("ouPlaceholder")}
-            value={ville}
-            onChange={(evenement) => setVille(evenement.target.value)}
-            className={classeChamp}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor={`${identifiant}-debut`}
-            className="block px-1 pb-1 text-xs font-medium text-texte-attenue"
-          >
-            {t("du")}
-          </label>
-          <input
-            id={`${identifiant}-debut`}
-            name="debut"
-            type="date"
-            min={aujourdhui()}
-            value={debut}
-            onChange={(evenement) => {
-              setDebut(evenement.target.value);
-              // Une date de fin antérieure au nouveau début n'a pas de sens :
-              // on la corrige plutôt que d'afficher une erreur.
-              if (fin && evenement.target.value > fin) setFin("");
-            }}
-            className={classeChamp}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor={`${identifiant}-fin`}
-            className="block px-1 pb-1 text-xs font-medium text-texte-attenue"
-          >
-            {t("au")}
-          </label>
-          <input
-            id={`${identifiant}-fin`}
-            name="fin"
-            type="date"
-            min={debut || aujourdhui()}
-            value={fin}
-            onChange={(evenement) => setFin(evenement.target.value)}
-            className={classeChamp}
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor={`${identifiant}-categorie`}
-            className="block px-1 pb-1 text-xs font-medium text-texte-attenue"
-          >
-            {t("quoi")}
-          </label>
-          <select
-            id={`${identifiant}-categorie`}
-            name="categorie"
-            value={categorie}
-            onChange={(evenement) => setCategorie(evenement.target.value)}
-            className={classeChamp}
-          >
-            <option value="">{t("toutesCategories")}</option>
-            {CATEGORIES.map((entree) => (
-              <option key={entree.slug} value={entree.slug}>
-                {entree.nom}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-end">
-          <button
-            type="submit"
-            className="h-12 w-full rounded-champ bg-accent px-6 font-medium text-accent-contraste transition-opacity hover:opacity-90 md:w-auto"
-          >
-            {t("rechercher")}
-          </button>
-        </div>
+      <div className="flex-1">
+        <label htmlFor={`${identifiant}-ville`} className="sr-only">
+          {t("ou")}
+        </label>
+        <input
+          id={`${identifiant}-ville`}
+          name="ville"
+          type="search"
+          // `address-level2` correspond à la ville ; `postal-code` proposerait
+          // un code postal seul, que le champ n'attend pas en premier.
+          autoComplete="address-level2"
+          enterKeyHint="search"
+          placeholder={t("ouPlaceholder")}
+          value={ville}
+          onChange={(evenement) => setVille(evenement.target.value)}
+          className="h-14 w-full rounded-champ border border-bordure bg-fond-eleve px-4 text-base"
+        />
       </div>
+
+      <button
+        type="submit"
+        className="h-14 shrink-0 rounded-champ bg-accent px-8 font-medium text-accent-contraste transition-opacity hover:opacity-90"
+      >
+        {t("rechercher")}
+      </button>
     </form>
   );
 }

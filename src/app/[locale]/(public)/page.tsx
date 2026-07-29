@@ -1,14 +1,24 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
 import { DonneesStructurees } from "@/components/ui/carte";
 import { Illustration } from "@/components/ui/illustration";
+import {
+  Chapo,
+  ESPACEMENT,
+  Surtitre,
+  TITRE,
+  TitreSection,
+} from "@/components/ui/typographie";
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
 import type { Market } from "@/config/markets";
 import { Link } from "@/i18n/navigation";
+import { cn } from "@/lib/cn";
 import { metadonneesPage } from "@/lib/metadonnees";
+import { annoncesEnVitrine } from "@/server/annonces/catalogue";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -32,6 +42,8 @@ export default async function PageAccueil({ params }: Props) {
   const tParcours = await getTranslations("parcoursLocataire");
   const base = clientEnv.NEXT_PUBLIC_SITE_URL;
 
+  const vitrine = await annoncesEnVitrine(4);
+
   const etapes = [1, 2, 3, 4].map((numero) => ({
     titre: tParcours(`etapes.e${numero}.titre`),
     texte: tParcours(`etapes.e${numero}.texte`),
@@ -41,8 +53,10 @@ export default async function PageAccueil({ params }: Props) {
 
   return (
     <main>
-      {/* ================= Première vue ================= */}
-      <section className="relative bg-encre text-encre-texte">
+      {/* ================= Première vue =================
+          `-mt-16` remonte la section sous l'en-tête, qui est transparent sur
+          l'accueil : la photographie occupe alors tout le cadre. */}
+      <section className="relative -mt-16 bg-encre text-encre-texte">
         <div className="absolute inset-0">
           <Illustration
             src="/images/hero.webp"
@@ -53,201 +67,180 @@ export default async function PageAccueil({ params }: Props) {
           />
         </div>
         {/*
-          Voile de lisibilité, en deux couches.
-          Un simple dégradé horizontal ne suffit pas : sur un écran étroit,
-          seule son extrémité opaque reste visible et la photographie
-          disparaît entièrement. On superpose donc un voile uniforme, qui
-          garantit le contraste du texte partout, et un dégradé latéral qui
-          renforce le seul côté portant le titre (M21 — contrastes).
+          Voile en deux couches. Un simple dégradé horizontal ne convient pas :
+          sur écran étroit, seule son extrémité opaque reste visible et la
+          photographie disparaît entièrement (M21 — contrastes).
         */}
         <div aria-hidden className="absolute inset-0 bg-marque-950/55" />
         <div
           aria-hidden
-          className="absolute inset-0 bg-linear-to-r from-marque-950/80 via-marque-950/40 to-transparent"
+          className="absolute inset-0 bg-linear-to-r from-marque-950/85 via-marque-950/40 to-transparent"
         />
 
-        <div className="relative mx-auto w-full max-w-6xl px-4 pt-20 pb-40 sm:px-6 sm:pt-28 sm:pb-48">
-          <p className="text-sm font-medium tracking-[0.2em] text-encre-texte-attenue uppercase">
-            {t("hero.surtitre")}
-          </p>
-          <h1 className="mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
+        <div className="relative mx-auto w-full max-w-6xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 sm:pb-24">
+          <Surtitre clair>{t("hero.surtitre")}</Surtitre>
+          <h1 className={cn(TITRE.page, "mt-5 max-w-3xl text-balance")}>
             {t("titre")}
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-pretty text-encre-texte-attenue">
+          <p className="mt-5 max-w-lg text-[1.0625rem] leading-[1.6] text-pretty text-encre-texte-attenue sm:text-[1.1875rem]">
             {t("sousTitre")}
           </p>
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Bouton as={Link} href="/recherche" taille="grand">
-              {t("hero.actionLocataire")}
-            </Bouton>
-            <Bouton
-              as={Link}
+          {/* Le formulaire est dans la première vue, pas en carte flottante
+              en dessous : sur mobile, c'est le seul élément transactionnel de
+              la page et il doit rester au-dessus de la ligne de flottaison. */}
+          <div className="mt-10 max-w-2xl">
+            <FormulaireRecherche />
+          </div>
+
+          {/* Un seul appel à l'action mis en avant. Deux boutons de poids égal
+              divisent l'attention du public transactionnel, seul à convertir
+              dans la session ; le chemin propriétaire reste présent en lien. */}
+          <p className="mt-6">
+            <Link
               href="/mettre-en-location"
-              taille="grand"
-              className="border border-encre-bordure bg-white/10 text-encre-texte hover:bg-white/20"
+              className="text-sm font-medium text-encre-texte underline decoration-encre-texte/40 underline-offset-4 hover:decoration-encre-texte"
             >
               {t("hero.actionProprietaire")}
-            </Bouton>
-          </div>
+            </Link>
+          </p>
         </div>
       </section>
 
-      {/* Carte de recherche, à cheval sur la limite des deux sections. */}
-      <div className="relative z-10 mx-auto -mt-28 w-full max-w-6xl px-4 sm:px-6">
-        <div className="rounded-carte border border-bordure bg-fond-eleve p-4 shadow-[0_24px_60px_-24px_rgb(13_27_69/0.45)] sm:p-6">
-          <h2 className="px-1 pb-3 text-sm font-semibold">
-            {t("hero.titreRecherche")}
-          </h2>
-          <FormulaireRecherche variante="nu" />
-        </div>
-
-        <ul className="mt-6 grid gap-x-8 gap-y-3 text-sm text-texte-attenue sm:grid-cols-3">
-          <li className="flex gap-2">
-            <span aria-hidden className="text-accent">
-              ●
-            </span>
-            {t("reassurance.assurance")}
-          </li>
-          <li className="flex gap-2">
-            <span aria-hidden className="text-accent">
-              ●
-            </span>
-            {t("reassurance.paiement")}
-          </li>
-          <li className="flex gap-2">
-            <span aria-hidden className="text-accent">
-              ●
-            </span>
-            {t("reassurance.proximite")}
-          </li>
-        </ul>
-      </div>
-
-      {/* ================= Catalogue ================= */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              {t("categories.titre")}
-            </h2>
-            <p className="mt-4 text-texte-attenue">{t("categories.chapo")}</p>
-          </div>
-          <Link
-            href="/recherche"
-            className="text-sm font-medium text-accent underline-offset-4 hover:underline"
-          >
-            {t("categories.action")}
-          </Link>
-        </div>
-
-        {/* Dix catégories : deux colonnes sur mobile, cinq sur grand écran —
-            deux rangées pleines dans les deux cas, jamais de ligne orpheline. */}
-        <ul className="mt-10 grid grid-cols-2 gap-4 lg:grid-cols-5">
-          {CATEGORIES.map((entree) => (
-            <li key={entree.slug}>
-              <Link
-                href={{
-                  pathname: "/recherche",
-                  query: { categorie: entree.slug },
-                }}
-                className="group block overflow-hidden rounded-carte border border-bordure bg-fond-eleve transition-shadow hover:shadow-lg"
-              >
-                <Illustration
-                  src={entree.photo}
-                  alt={entree.alt}
-                  className="aspect-3/2 w-full"
-                  tailles="(min-width: 1024px) 20vw, 50vw"
-                />
-                <div className="p-4">
-                  <p className="font-medium group-hover:text-accent">
-                    {entree.nom}
-                  </p>
-                  <p className="mt-1 text-sm text-texte-attenue">
-                    {entree.usages}
-                  </p>
-                </div>
-              </Link>
+      {/* ================= Réassurance ================= */}
+      <section className={cn("border-b border-bordure bg-fond-eleve", ESPACEMENT.serree)}>
+        <ul className="mx-auto grid w-full max-w-6xl gap-6 px-4 sm:grid-cols-3 sm:px-6">
+          {(["assurance", "paiement", "proximite"] as const).map((cle) => (
+            <li key={cle} className="flex items-start gap-3">
+              <span
+                aria-hidden
+                className="mt-1.5 size-2 shrink-0 rounded-full bg-accent"
+              />
+              <span className="text-[0.9375rem]">{t(`reassurance.${cle}`)}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      {/* ================= Parcours ================= */}
-      <section className="bg-fond-doux">
-        <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium tracking-[0.2em] text-accent uppercase">
-              {t("parcours.surtitre")}
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {t("parcours.titre")}
-            </h2>
-            <p className="mt-4 text-texte-attenue">{t("parcours.chapo")}</p>
+      {/* ================= Annonces ================= */}
+      {vitrine.length > 0 ? (
+        <section className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <TitreSection>{t("vitrine.titre")}</TitreSection>
+            <Link
+              href="/recherche"
+              className="pb-5 text-sm font-medium text-accent underline-offset-4 hover:underline"
+            >
+              {t("vitrine.action")}
+            </Link>
           </div>
 
-          <ol className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {etapes.map((etape, index) => (
-              <li key={etape.titre} className="relative">
-                <div className="flex items-center gap-4">
-                  <span
-                    aria-hidden
-                    className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-semibold text-accent-contraste"
-                  >
-                    {index + 1}
-                  </span>
-                  {/* Trait de liaison, masqué sur la dernière étape et sur les
-                      petits écrans où les étapes s'empilent. */}
-                  {index < etapes.length - 1 ? (
-                    <span
-                      aria-hidden
-                      className="hidden h-px flex-1 bg-marque-200 lg:block"
-                    />
-                  ) : null}
-                </div>
-                <h3 className="mt-5 font-semibold">{etape.titre}</h3>
-                <p className="mt-2 text-sm text-texte-attenue">{etape.texte}</p>
+          {/* Défilement horizontal sur mobile plutôt qu'une colonne de quatre
+              cartes hautes : on montre qu'il y a une suite. */}
+          <ul className="-mx-4 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
+            {vitrine.map((annonce) => (
+              <li
+                key={annonce.id}
+                className="w-[17rem] shrink-0 snap-start sm:w-auto"
+              >
+                <CarteAnnonce annonce={annonce} />
               </li>
             ))}
-          </ol>
+          </ul>
+        </section>
+      ) : null}
 
-          <Bouton
-            as={Link}
-            href="/comment-ca-marche/louer"
-            variante="secondaire"
-            className="mt-12"
-          >
-            {t("parcours.action")}
-          </Bouton>
+      {/* ================= Catalogue ================= */}
+      <section className="bg-fond-doux">
+        <div className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <TitreSection>{t("categories.titre")}</TitreSection>
+            <Link
+              href="/recherche"
+              className="pb-5 text-sm font-medium text-accent underline-offset-4 hover:underline"
+            >
+              {t("categories.action")}
+            </Link>
+          </div>
+
+          {/* Deux tuiles larges puis huit standard : dix tuiles de poids
+              identique produisent une tapisserie, pas une hiérarchie. */}
+          <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {CATEGORIES.map((entree, index) => {
+              const large = index < 2;
+              return (
+                <li
+                  key={entree.slug}
+                  className={large ? "col-span-2" : undefined}
+                >
+                  <Link
+                    href={{
+                      pathname: "/recherche",
+                      query: { categorie: entree.slug },
+                    }}
+                    className="group relative block overflow-hidden rounded-carte shadow-(--ombre-carte) transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-(--ombre-carte-active)"
+                  >
+                    <Illustration
+                      src={entree.photo}
+                      alt={entree.alt}
+                      className={cn(
+                        "w-full",
+                        large ? "aspect-3/2 lg:aspect-2/1" : "aspect-3/2",
+                      )}
+                      tailles={
+                        large
+                          ? "(min-width: 1024px) 50vw, 100vw"
+                          : "(min-width: 1024px) 25vw, 50vw"
+                      }
+                    />
+                    {/* Libellé posé sur la photo : la légende sous l'image
+                        doublait la hauteur de chaque tuile pour trois mots. */}
+                    <div
+                      aria-hidden
+                      className="absolute inset-x-0 bottom-0 bg-linear-to-t from-marque-950/85 to-transparent p-4 pt-10"
+                    >
+                      <p
+                        className={cn(
+                          "font-semibold text-white",
+                          large ? "text-lg" : "text-[0.9375rem]",
+                        )}
+                      >
+                        {entree.nom}
+                      </p>
+                    </div>
+                    <span className="sr-only">{entree.nom}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </section>
 
-      {/* ================= Confiance ================= */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
+      {/* ================= Confiance =================
+          Placée avant le parcours : la question « et si ça casse ? » précède
+          « comment ça marche ? ». */}
+      <section className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
-          <Illustration
-            src="/images/etat-des-lieux.webp"
-            alt={t("confiance.illustration")}
-            className="aspect-4/3 w-full rounded-carte"
-            tailles="(min-width: 1024px) 50vw, 100vw"
-          />
+          {/* Socle décalé : donne une assise à la photographie sans cadre. */}
+          <div className="relative before:absolute before:-inset-3 before:-z-10 before:rounded-[1.5rem] before:bg-fond-marque">
+            <Illustration
+              src="/images/etat-des-lieux.webp"
+              alt={t("confiance.illustration")}
+              className="aspect-4/3 w-full rounded-carte"
+              tailles="(min-width: 1024px) 50vw, 100vw"
+            />
+          </div>
 
           <div>
-            <p className="text-sm font-medium tracking-[0.2em] text-accent uppercase">
-              {t("confiance.surtitre")}
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {t("confiance.titre")}
-            </h2>
-            <p className="mt-4 text-texte-attenue">{t("confiance.chapo")}</p>
+            <Surtitre>{t("confiance.surtitre")}</Surtitre>
+            <TitreSection className="mt-3">{t("confiance.titre")}</TitreSection>
 
-            <dl className="mt-10 space-y-8">
+            <dl className="mt-8 space-y-7">
               {garanties.map((cle) => (
-                <div key={cle} className="border-t border-bordure pt-6">
-                  <dt className="font-semibold">
-                    {t(`confiance.${cle}.titre`)}
-                  </dt>
-                  <dd className="mt-2 text-sm text-texte-attenue">
+                <div key={cle} className="border-t border-bordure pt-5">
+                  <dt className={TITRE.carte}>{t(`confiance.${cle}.titre`)}</dt>
+                  <dd className="mt-2 text-[0.9375rem] leading-[1.6] text-texte-attenue">
                     {t(`confiance.${cle}.texte`)}
                   </dd>
                 </div>
@@ -264,88 +257,118 @@ export default async function PageAccueil({ params }: Props) {
         </div>
       </section>
 
-      {/* ================= Outils ================= */}
+      {/* ================= Parcours ================= */}
       <section className="bg-fond-doux">
-        <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              {t("outils.titre")}
-            </h2>
-            <p className="mt-4 text-texte-attenue">{t("outils.chapo")}</p>
-          </div>
+        <div className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
+          <Surtitre>{t("parcours.surtitre")}</Surtitre>
+          <TitreSection className="mt-3">{t("parcours.titre")}</TitreSection>
 
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
-            <Link
-              href="/quel-permis-pour-quelle-remorque"
-              className="group rounded-carte border border-bordure bg-fond-eleve p-6 transition-colors hover:border-accent sm:p-8"
-            >
-              <h3 className="text-lg font-semibold group-hover:text-accent">
-                {t("outils.permis.titre")}
-              </h3>
-              <p className="mt-3 text-sm text-texte-attenue">
-                {t("outils.permis.texte")}
-              </p>
-              <span className="mt-6 inline-block text-sm font-medium text-accent">
-                {t("outils.action")}
-              </span>
-            </Link>
-            <Link
-              href="/calculateur-de-charge"
-              className="group rounded-carte border border-bordure bg-fond-eleve p-6 transition-colors hover:border-accent sm:p-8"
-            >
-              <h3 className="text-lg font-semibold group-hover:text-accent">
-                {t("outils.charge.titre")}
-              </h3>
-              <p className="mt-3 text-sm text-texte-attenue">
-                {t("outils.charge.texte")}
-              </p>
-              <span className="mt-6 inline-block text-sm font-medium text-accent">
-                {t("outils.action")}
-              </span>
-            </Link>
-          </div>
+          <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {etapes.map((etape, index) => (
+              <li key={etape.titre}>
+                <div className="flex items-center gap-4">
+                  <span
+                    aria-hidden
+                    className="inline-flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-accent bg-fond-eleve text-[1.0625rem] font-bold tabular-nums text-accent"
+                  >
+                    {index + 1}
+                  </span>
+                  {index < etapes.length - 1 ? (
+                    <span
+                      aria-hidden
+                      className="hidden h-px flex-1 bg-marque-200 lg:block"
+                    />
+                  ) : null}
+                </div>
+                <h3 className={cn(TITRE.carte, "mt-5")}>{etape.titre}</h3>
+                <p className="mt-2 text-[0.9375rem] leading-[1.6] text-texte-attenue">
+                  {etape.texte}
+                </p>
+              </li>
+            ))}
+          </ol>
+
+          <Bouton
+            as={Link}
+            href="/comment-ca-marche/louer"
+            variante="secondaire"
+            className="mt-10"
+          >
+            {t("parcours.action")}
+          </Bouton>
         </div>
       </section>
 
-      {/* ================= Propriétaires ================= */}
-      <section className="relative overflow-hidden bg-encre text-encre-texte">
-        <div className="absolute inset-0">
-          <Illustration
-            src="/images/proprietaires.webp"
-            alt={t("proprietaires.illustration")}
-            className="h-full w-full"
-            tailles="100vw"
-          />
+      {/* ================= Outils ================= */}
+      <section className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
+        <TitreSection>{t("outils.titre")}</TitreSection>
+        <Chapo>{t("outils.chapo")}</Chapo>
+
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
+          {(
+            [
+              { cle: "permis", href: "/quel-permis-pour-quelle-remorque" },
+              { cle: "charge", href: "/calculateur-de-charge" },
+            ] as const
+          ).map((outil) => (
+            <Link
+              key={outil.cle}
+              href={outil.href}
+              className="group rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte) transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-(--ombre-carte-active) sm:p-8"
+            >
+              <h3 className={cn(TITRE.carte, "group-hover:text-accent")}>
+                {t(`outils.${outil.cle}.titre`)}
+              </h3>
+              <p className="mt-3 text-[0.9375rem] leading-[1.6] text-texte-attenue">
+                {t(`outils.${outil.cle}.texte`)}
+              </p>
+              <span className="mt-6 inline-block text-sm font-medium text-accent">
+                {t("outils.action")}
+              </span>
+            </Link>
+          ))}
         </div>
-        <div aria-hidden className="absolute inset-0 bg-marque-950/60" />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-linear-to-r from-marque-950/85 via-marque-950/45 to-transparent"
-        />
+      </section>
 
-        <div className="relative mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium tracking-[0.2em] text-encre-texte-attenue uppercase">
-              {t("proprietaires.surtitre")}
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-              {t("proprietaires.titre")}
-            </h2>
-            <p className="mt-5 text-encre-texte-attenue">
-              {t("proprietaires.chapo")}
-            </p>
+      {/* ================= Propriétaires =================
+          Dalle encartée plutôt que bandeau à bords vifs : le bloc se détache
+          du flux au lieu de le trancher. */}
+      <section className="pb-16 sm:pb-24">
+        <div className="relative mx-4 overflow-hidden rounded-[1.75rem] bg-encre text-encre-texte sm:mx-6">
+          <div className="absolute inset-0">
+            <Illustration
+              src="/images/proprietaires.webp"
+              alt={t("proprietaires.illustration")}
+              className="h-full w-full"
+              tailles="100vw"
+            />
+          </div>
+          <div aria-hidden className="absolute inset-0 bg-marque-950/60" />
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-linear-to-r from-marque-950/85 via-marque-950/45 to-transparent"
+          />
 
-            <div className="mt-10 flex flex-wrap gap-3">
-              <Bouton as={Link} href="/mettre-en-location" taille="grand">
-                {t("proprietaires.action")}
-              </Bouton>
+          <div
+            className={cn(
+              "relative mx-auto w-full max-w-6xl px-6 sm:px-10",
+              ESPACEMENT.majeure,
+            )}
+          >
+            <div className="max-w-xl">
+              <Surtitre clair>{t("proprietaires.surtitre")}</Surtitre>
+              <TitreSection clair className="mt-3">
+                {t("proprietaires.titre")}
+              </TitreSection>
+              <Chapo clair>{t("proprietaires.chapo")}</Chapo>
+
               <Bouton
                 as={Link}
-                href="/pro"
+                href="/mettre-en-location"
                 taille="grand"
-                className="border border-encre-bordure bg-white/10 text-encre-texte hover:bg-white/20"
+                className="mt-8"
               >
-                {t("proprietaires.actionPro")}
+                {t("proprietaires.action")}
               </Bouton>
             </div>
           </div>
