@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/**
+ * Jetons de design — version provisoire.
+ *
+ * La charte graphique est un livrable de la phase 0 (cadrage et conception).
+ * Ces valeurs permettent de construire le système de composants dès la phase 1
+ * et seront remplacées à l'issue de l'atelier de cadrage sans toucher au code
+ * des composants : aucune couleur ne doit être écrite en dur ailleurs qu'ici.
+ */
+
+@theme {
+  /* Marque — vert profond : confiance, assurance, service sérieux. */
+  --color-marque-50: #eefaf6;
+  --color-marque-100: #d3f2e7;
+  --color-marque-200: #a9e4d1;
+  --color-marque-300: #74cfb5;
+  --color-marque-400: #43b396;
+  --color-marque-500: #23967c;
+  --color-marque-600: #157864;
+  --color-marque-700: #126052;
+  --color-marque-800: #124c43;
+  --color-marque-900: #113f38;
+  --color-marque-950: #062421;
+
+  /* Neutres. */
+  --color-ardoise-50: #f8fafa;
+  --color-ardoise-100: #f1f4f4;
+  --color-ardoise-200: #e3e8e8;
+  --color-ardoise-300: #cbd3d4;
+  --color-ardoise-400: #9aa5a7;
+  --color-ardoise-500: #6f7c7e;
+  --color-ardoise-600: #566264;
+  --color-ardoise-700: #454f51;
+  --color-ardoise-800: #333b3d;
+  --color-ardoise-900: #21282a;
+  --color-ardoise-950: #12181a;
+
+  /* États — repris par les pastilles de statut d'une réservation. */
+  --color-succes: #15803d;
+  --color-attention: #b45309;
+  --color-danger: #b91c1c;
+  --color-info: #1d4ed8;
+
+  --radius-champ: 0.625rem;
+  --radius-carte: 1rem;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Rôles sémantiques — clair et sombre. Les composants ne référencent que ces
+   variables, jamais une teinte de la palette directement. */
+:root {
+  --fond: var(--color-ardoise-50);
+  --fond-eleve: #ffffff;
+  --texte: var(--color-ardoise-900);
+  --texte-attenue: var(--color-ardoise-600);
+  --bordure: var(--color-ardoise-200);
+  --accent: var(--color-marque-600);
+  --accent-contraste: #ffffff;
+  --anneau-focus: var(--color-marque-500);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: var(--color-ardoise-950);
+    --fond-eleve: var(--color-ardoise-900);
+    --texte: var(--color-ardoise-100);
+    --texte-attenue: var(--color-ardoise-400);
+    --bordure: var(--color-ardoise-800);
+    --accent: var(--color-marque-400);
+    --accent-contraste: var(--color-ardoise-950);
+    --anneau-focus: var(--color-marque-400);
+  }
+}
+
+@theme inline {
+  --color-fond: var(--fond);
+  --color-fond-eleve: var(--fond-eleve);
+  --color-texte: var(--texte);
+  --color-texte-attenue: var(--texte-attenue);
+  --color-bordure: var(--bordure);
+  --color-accent: var(--accent);
+  --color-accent-contraste: var(--accent-contraste);
+}
+
+@layer base {
+  body {
+    background-color: var(--fond);
+    color: var(--texte);
+    font-family: var(--font-sans);
+  }
+
+  /* Accessibilité (M21) : la navigation au clavier doit rester visible
+     partout, y compris sur les éléments personnalisés. */
+  :focus-visible {
+    outline: 2px solid var(--anneau-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
