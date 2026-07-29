@@ -63,7 +63,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     <main>
       <div className="border-b border-bordure bg-fond-eleve">
         <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
-          <FormulaireRecherche compact />
+          <FormulaireRecherche />
         </div>
       </div>
 

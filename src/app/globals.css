@@ -10,31 +10,35 @@
  */
 
 @theme {
-  /* Marque — vert profond : confiance, assurance, service sérieux. */
-  --color-marque-50: #eefaf6;
-  --color-marque-100: #d3f2e7;
-  --color-marque-200: #a9e4d1;
-  --color-marque-300: #74cfb5;
-  --color-marque-400: #43b396;
-  --color-marque-500: #23967c;
-  --color-marque-600: #157864;
-  --color-marque-700: #126052;
-  --color-marque-800: #124c43;
-  --color-marque-900: #113f38;
-  --color-marque-950: #062421;
+  /*
+   * Marque — bleu. Le bleu est la couleur attendue sur un service qui manipule
+   * de l'argent et de l'assurance ; le blanc porte la lisibilité. La teinte 600
+   * est celle des actions, la 950 celle des bandeaux profonds.
+   */
+  --color-marque-50: #eff5ff;
+  --color-marque-100: #dce8fe;
+  --color-marque-200: #c0d6fd;
+  --color-marque-300: #94bafc;
+  --color-marque-400: #6195f9;
+  --color-marque-500: #3c6ff5;
+  --color-marque-600: #2050e6;
+  --color-marque-700: #1a3fd0;
+  --color-marque-800: #1c36a8;
+  --color-marque-900: #1c3285;
+  --color-marque-950: #0d1b45;
 
-  /* Neutres. */
-  --color-ardoise-50: #f8fafa;
-  --color-ardoise-100: #f1f4f4;
-  --color-ardoise-200: #e3e8e8;
-  --color-ardoise-300: #cbd3d4;
-  --color-ardoise-400: #9aa5a7;
-  --color-ardoise-500: #6f7c7e;
-  --color-ardoise-600: #566264;
-  --color-ardoise-700: #454f51;
-  --color-ardoise-800: #333b3d;
-  --color-ardoise-900: #21282a;
-  --color-ardoise-950: #12181a;
+  /* Neutres, très légèrement bleutés pour s'accorder à la marque. */
+  --color-ardoise-50: #f8fafc;
+  --color-ardoise-100: #f1f4f9;
+  --color-ardoise-200: #e4e8f0;
+  --color-ardoise-300: #cbd2df;
+  --color-ardoise-400: #98a3b8;
+  --color-ardoise-500: #6d7994;
+  --color-ardoise-600: #556076;
+  --color-ardoise-700: #434c5e;
+  --color-ardoise-800: #313846;
+  --color-ardoise-900: #1f2531;
+  --color-ardoise-950: #11151d;
 
   /* États — repris par les pastilles de statut d'une réservation. */
   --color-succes: #15803d;
@@ -52,7 +56,10 @@
 /* Rôles sémantiques — clair et sombre. Les composants ne référencent que ces
    variables, jamais une teinte de la palette directement. */
 :root {
-  --fond: var(--color-ardoise-50);
+  --fond: #ffffff;
+  /* Fond des sections alternées : un bleu très pâle plutôt qu'un gris, pour
+     rythmer la page sans introduire de seconde couleur. */
+  --fond-doux: var(--color-marque-50);
   --fond-eleve: #ffffff;
   --texte: var(--color-ardoise-900);
   --texte-attenue: var(--color-ardoise-600);
@@ -60,29 +67,49 @@
   --accent: var(--color-marque-600);
   --accent-contraste: #ffffff;
   --anneau-focus: var(--color-marque-500);
+
+  /* Bandeaux profonds — ils restent sombres dans les deux thèmes : ce sont des
+     respirations visuelles, pas des surfaces de lecture longue. */
+  --encre: var(--color-marque-950);
+  --encre-texte: #ffffff;
+  --encre-texte-attenue: var(--color-marque-200);
+  --encre-bordure: color-mix(in oklab, #ffffff 16%, transparent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fond: var(--color-ardoise-950);
-    --fond-eleve: var(--color-ardoise-900);
-    --texte: var(--color-ardoise-100);
-    --texte-attenue: var(--color-ardoise-400);
-    --bordure: var(--color-ardoise-800);
-    --accent: var(--color-marque-400);
-    --accent-contraste: var(--color-ardoise-950);
-    --anneau-focus: var(--color-marque-400);
-  }
+/*
+ * L'espace public est volontairement en thème clair uniquement.
+ *
+ * L'identité repose sur le contraste entre le blanc des surfaces de lecture et
+ * les bandeaux bleu profond. Un thème sombre écrase précisément ce contraste :
+ * la première vue et les bandeaux ne se distinguent plus du fond de page, et
+ * les photographies de matériel perdent leur cadre. C'est aussi la convention
+ * des places de marché, où la confiance passe par la lisibilité.
+ *
+ * `color-scheme: light` est indispensable : sans lui, les champs de date et
+ * les listes déroulantes natives resteraient sombres sur un système réglé en
+ * mode sombre, au milieu d'une carte blanche.
+ *
+ * Un thème sombre pourra être introduit plus tard sur les espaces authentifiés,
+ * où l'usage est long et répété — il n'aura alors qu'à surcharger les rôles
+ * sémantiques ci-dessus.
+ */
+:root {
+  color-scheme: light;
 }
 
 @theme inline {
   --color-fond: var(--fond);
+  --color-fond-doux: var(--fond-doux);
   --color-fond-eleve: var(--fond-eleve);
   --color-texte: var(--texte);
   --color-texte-attenue: var(--texte-attenue);
   --color-bordure: var(--bordure);
   --color-accent: var(--accent);
   --color-accent-contraste: var(--accent-contraste);
+  --color-encre: var(--encre);
+  --color-encre-texte: var(--encre-texte);
+  --color-encre-texte-attenue: var(--encre-texte-attenue);
+  --color-encre-bordure: var(--encre-bordure);
 }
 
 @layer base {

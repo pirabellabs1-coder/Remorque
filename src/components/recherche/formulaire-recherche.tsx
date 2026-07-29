@@ -21,9 +21,14 @@ function aujourdhui(): string {
  * pouvoir être partagée, mise en favori et indexée (M03, M15).
  */
 export function FormulaireRecherche({
-  compact = false,
+  variante = "carte",
 }: {
-  compact?: boolean;
+  /**
+   * `carte` : le formulaire porte son propre cadre — barre de rappel en tête
+   * des résultats. `nu` : le cadre est fourni par le conteneur, cas de la
+   * carte de recherche flottante de la page d'accueil.
+   */
+  variante?: "carte" | "nu";
 }) {
   const t = useTranslations("recherche.formulaire");
   const router = useRouter();
@@ -56,8 +61,8 @@ export function FormulaireRecherche({
     <form
       onSubmit={soumettre}
       className={cn(
-        "rounded-carte border border-bordure bg-fond-eleve p-3 shadow-sm",
-        compact ? "" : "sm:p-4",
+        variante === "carte" &&
+          "rounded-carte border border-bordure bg-fond-eleve p-3 shadow-sm",
       )}
     >
       <div className="grid gap-3 md:grid-cols-[1.4fr_1fr_1fr_1.2fr_auto]">
