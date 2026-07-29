@@ -17,6 +17,7 @@ import {
   id,
   montant,
   pointGeographique,
+  positionGeographique,
   reference,
   timestamps,
 } from "./_helpers";
@@ -149,9 +150,14 @@ export const annonce = pgTable(
     index("annonce_proprietaire_idx").on(table.proprietaireId),
     index("annonce_statut_idx").on(table.statut),
     index("annonce_ville_idx").on(table.villeSlug),
-    // Index géographique : conditionne la performance de la recherche par
-    // rayon, qui est la requête la plus fréquente du site public (M03).
-    index("annonce_position_idx").using("gist", table.position),
+    // Index géographique posé sur la projection `::geography`, celle-là même
+    // qu'emploie ST_DWithin : un index sur la colonne `geometry` brute ne
+    // serait pas utilisé. Il conditionne la performance de la recherche par
+    // rayon, requête la plus fréquente du site public (M03).
+    index("annonce_position_idx").using(
+      "gist",
+      positionGeographique("position"),
+    ),
   ],
 );
 
