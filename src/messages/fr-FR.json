@@ -79,6 +79,192 @@
     "vehiculeInsuffisant": "Votre véhicule ne peut pas tracter ce matériel",
     "renseignerVehicule": "Renseignez votre véhicule pour le savoir"
   },
+  "outilPermis": {
+    "metaTitre": "Quel permis pour quelle remorque ? Calculateur B, B96 et BE",
+    "metaDescription": "Entrez le poids de votre véhicule et de la remorque : découvrez immédiatement si votre permis B suffit, s'il vous faut le B96 ou le BE.",
+    "surtitre": "Outil gratuit",
+    "titre": "Quel permis pour quelle remorque ?",
+    "chapo": "La règle ne dépend pas de la remorque seule, mais de l'ensemble : le poids de votre véhicule s'ajoute à celui de la remorque. Renseignez les deux, l'outil vous dit ce qu'il vous faut.",
+    "votreVehicule": "Votre véhicule",
+    "ptacVehicule": "Poids total autorisé en charge (kg)",
+    "ptacVehiculeAide": "Champ F.2 de votre carte grise.",
+    "tractableFreine": "Masse tractable freinée (kg)",
+    "tractableFreineAide": "Champ O.1 de votre carte grise.",
+    "laRemorque": "La remorque",
+    "ptacRemorque": "Poids total autorisé en charge (kg)",
+    "ptacRemorqueAide": "Indiqué sur l'annonce et sur la plaque de la remorque.",
+    "remorqueFreinee": "La remorque est freinée",
+    "resultat": "Votre résultat",
+    "saisieIncomplete": "Renseignez les trois poids pour obtenir une réponse.",
+    "ensemble": "Ensemble : {kg, number} kg",
+    "permisRequis": "Permis {permis} requis",
+    "horsPerimetre": "Au-delà d'un permis de tourisme",
+    "autorise": "Vous pouvez tracter cet ensemble.",
+    "nonAutorise": "Insuffisant pour cet ensemble.",
+    "avertissement": "Cet outil donne une indication fondée sur la réglementation française. Seuls votre carte grise et votre permis font foi.",
+    "lesRegles": "Les trois seuils à retenir",
+    "regleB": "Somme des poids jusqu'à {plafond, number} kg. Une remorque de moins de 750 kg reste toujours accessible au permis B.",
+    "regleB96": "Somme des poids entre {plancher, number} et {plafond, number} kg. Formation de sept heures, sans examen.",
+    "regleBE": "Somme des poids jusqu'à {plafond, number} kg, remorque limitée à {remorque, number} kg. Examen requis.",
+    "faq": {
+      "titre": "Questions fréquentes",
+      "q1": "Puis-je tracter une remorque de 750 kg avec un simple permis B ?",
+      "r1": "Oui. Une remorque dont le poids total autorisé en charge ne dépasse pas 750 kg reste accessible au permis B, quel que soit le poids du véhicule tracteur, dès lors que celui-ci ne dépasse pas 3 500 kg.",
+      "q2": "Quelle différence entre le B96 et le BE ?",
+      "r2": "Le B96 s'obtient par une formation de sept heures sans examen et couvre les ensembles jusqu'à 4 250 kg. Le BE demande un examen et couvre les ensembles jusqu'à 7 000 kg, avec une remorque pouvant atteindre 3 500 kg.",
+      "q3": "Une remorque doit-elle être freinée ?",
+      "r3": "Au-delà de 750 kg de poids total autorisé en charge, la remorque doit disposer d'un système de freinage. En deçà, ce n'est pas obligatoire, mais votre véhicule reste limité par sa masse tractable non freinée, généralement 750 kg."
+    }
+  },
+  "outilCharge": {
+    "metaTitre": "Calculateur de charge : combien puis-je vraiment charger ?",
+    "metaDescription": "La charge utile inscrite sur la remorque n'est pas toujours celle que vous pouvez transporter. Calculez la charge réellement autorisée avec votre véhicule.",
+    "surtitre": "Outil gratuit",
+    "titre": "Calculateur de charge",
+    "chapo": "La charge utile affichée sur une remorque suppose un véhicule capable de la tirer. Si le vôtre ne l'est pas, c'est lui qui fixe la limite — et l'écart se compte souvent en centaines de kilos.",
+    "saisie": "Vos données",
+    "ptacRemorque": "Poids total autorisé de la remorque (kg)",
+    "ptacRemorqueAide": "Indiqué sur l'annonce et sur la plaque du constructeur.",
+    "poidsVide": "Poids de la remorque à vide (kg)",
+    "poidsVideAide": "Également indiqué sur l'annonce.",
+    "masseTractable": "Masse tractable de votre véhicule (kg)",
+    "masseTractableAide": "Champ O.1 de votre carte grise pour une remorque freinée, O.2 sinon.",
+    "resultat": "Ce que vous pouvez charger",
+    "saisieIncomplete": "Renseignez les trois poids pour obtenir une réponse.",
+    "chargeReelle": "Charge réellement transportable",
+    "chargeUtile": "Charge utile de la remorque",
+    "masseAutorisee": "Masse totale autorisée pour l'ensemble",
+    "limiteVehicule": "C'est votre véhicule qui limite : vous perdez {kg, number} kg de charge utile par rapport à ce que la remorque pourrait accepter.",
+    "limiteRemorque": "Votre véhicule permet d'exploiter toute la charge utile de la remorque.",
+    "comprendre": {
+      "titre": "Pourquoi cet écart",
+      "texte": "Votre véhicule ne tire pas « le chargement » mais l'ensemble : la remorque vide consomme déjà une partie de la masse tractable. Une remorque de 300 kg à vide tirée par un véhicule limité à 900 kg ne laisse que 600 kg de chargement, même si sa plaque annonce une tonne de charge utile.",
+      "lien": "Vérifiez aussi que votre permis autorise l'ensemble : <permis>quel permis pour quelle remorque</permis>."
+    }
+  },
+  "commentCaMarche": {
+    "metaTitre": "Comment ça marche",
+    "metaDescription": "Louer une remorque ou mettre la vôtre en location : les deux parcours, étape par étape, sans mauvaise surprise.",
+    "titre": "Comment ça marche",
+    "chapo": "Deux parcours, quatre étapes chacun. Choisissez le vôtre.",
+    "locataire": {
+      "titre": "Je veux louer une remorque",
+      "texte": "Trouvez le matériel adapté près de chez vous, réservez en ligne, récupérez-le et rendez-le. L'assurance est comprise, la caution n'est pas débitée.",
+      "action": "Voir le parcours locataire"
+    },
+    "proprietaire": {
+      "titre": "Je veux mettre ma remorque en location",
+      "texte": "Publiez votre matériel en moins de dix minutes, choisissez vos disponibilités et vos tarifs, encaissez automatiquement après chaque location.",
+      "action": "Voir le parcours propriétaire"
+    }
+  },
+  "parcoursLocataire": {
+    "metaTitre": "Louer une remorque en 4 étapes",
+    "metaDescription": "Recherche, réservation, retrait, restitution : le parcours complet d'une location de remorque, avec l'assurance comprise et la caution non débitée.",
+    "surtitre": "Parcours locataire",
+    "titre": "Louer une remorque en quatre étapes",
+    "chapo": "De la recherche à la restitution, tout se passe sur la plateforme. Vous savez à l'avance ce que vous payez, ce que vous signez et ce qui se passe en cas de problème.",
+    "etapes": {
+      "e1": {
+        "titre": "Trouvez le bon matériel",
+        "texte": "Recherchez par ville et par dates. Le filtre « compatible avec mon véhicule » n'affiche que ce que vous pouvez légalement et physiquement tracter."
+      },
+      "e2": {
+        "titre": "Réservez et payez",
+        "texte": "Le prix s'affiche ligne par ligne avant tout paiement. Le propriétaire a vingt-quatre heures pour accepter, sauf réservation instantanée."
+      },
+      "e3": {
+        "titre": "Récupérez le matériel",
+        "texte": "Vous recevez l'adresse exacte et un code de retrait à quatre chiffres. L'état des lieux de départ se fait ensemble, photos à l'appui."
+      },
+      "e4": {
+        "titre": "Rendez et notez",
+        "texte": "État des lieux de retour, caution libérée sous soixante-douze heures s'il n'y a pas d'incident, puis chacun dépose son avis."
+      }
+    },
+    "protection": {
+      "titre": "Ce qui vous protège",
+      "assurance": "Une assurance couvre le matériel pendant toute la durée de la location. L'attestation est téléchargeable avant le départ.",
+      "caution": "La caution est une empreinte bancaire : l'argent n'est pas prélevé, il reste sur votre compte. Un débit n'a lieu qu'en cas de dommage constaté et justifié.",
+      "etatDesLieux": "Les états des lieux de départ et de retour sont horodatés, photographiés et signés par les deux parties. Ils font foi.",
+      "litige": "En cas de désaccord, vous pouvez ouvrir un litige dans les quarante-huit heures suivant la restitution. Le transfert des fonds est alors gelé jusqu'à la décision."
+    },
+    "action": "Chercher une remorque"
+  },
+  "parcoursProprietaire": {
+    "metaTitre": "Mettre sa remorque en location en 4 étapes",
+    "metaDescription": "Publiez votre remorque en moins de dix minutes, fixez vos tarifs et vos disponibilités, encaissez automatiquement après chaque location.",
+    "surtitre": "Parcours propriétaire",
+    "titre": "Mettre votre matériel en location",
+    "chapo": "Une remorque coûte cher, sert quelques jours par an et dort le reste du temps. La mettre en location la rend rentable sans vous demander de temps.",
+    "etapes": {
+      "e1": {
+        "titre": "Publiez votre annonce",
+        "texte": "Six étapes, sauvegarde automatique, reprise possible à tout moment. Comptez moins de dix minutes."
+      },
+      "e2": {
+        "titre": "Fixez vos règles",
+        "texte": "Tarifs à la journée, au week-end ou à la semaine, calendrier de disponibilité, montant de la caution, conditions d'utilisation."
+      },
+      "e3": {
+        "titre": "Acceptez les demandes",
+        "texte": "Vous gardez la main : vous acceptez ou refusez chaque demande. La réservation instantanée reste optionnelle, annonce par annonce."
+      },
+      "e4": {
+        "titre": "Encaissez",
+        "texte": "Le virement part automatiquement après la restitution, commission déduite. Vous recevez chaque facture et un récapitulatif fiscal annuel."
+      }
+    },
+    "garanties": {
+      "titre": "Ce qui vous protège",
+      "assurance": "Chaque location confirmée déclenche une couverture d'assurance sur votre matériel.",
+      "paiement": "Le locataire paie avant le retrait. Vous n'avez jamais à réclamer un règlement.",
+      "selection": "Identité et permis de chaque locataire sont vérifiés avant qu'il puisse réserver.",
+      "calendrier": "Vous bloquez vos dates quand vous voulez, et un délai de préparation s'intercale automatiquement entre deux locations."
+    },
+    "action": "Publier une annonce"
+  },
+  "tarifs": {
+    "metaTitre": "Tarifs et frais de service",
+    "metaDescription": "Le détail de ce que paie le locataire et de ce que touche le propriétaire, ligne par ligne, sans frais caché.",
+    "surtitre": "Transparence",
+    "titre": "Nos tarifs, ligne par ligne",
+    "chapo": "Vous voyez le détail complet avant de payer, et le propriétaire sait exactement ce qu'il touchera. Aucun frais n'apparaît en cours de réservation.",
+    "exemple": {
+      "titre": "Exemple d'une location",
+      "contexte": "Remorque benne, {jours} jours à {prix} par jour.",
+      "caution": "Une caution de {montant} est enregistrée sous forme d'empreinte bancaire : elle n'est pas débitée et se libère automatiquement {heures} heures après la restitution s'il n'y a pas d'incident."
+    },
+    "colonne": {
+      "ligne": "Ligne",
+      "montant": "Montant",
+      "destinataire": "Destinataire"
+    },
+    "ligne": {
+      "loyer": "Loyer — {jours} jours à {prix}",
+      "fraisService": "Frais de service ({taux})",
+      "assurance": "Protection et assurance",
+      "total": "Total payé par le locataire"
+    },
+    "destinataire": {
+      "base": "Base de calcul",
+      "plateforme": "Plateforme",
+      "assureur": "Assureur"
+    },
+    "proprietaire": {
+      "titre": "Côté propriétaire",
+      "texte": "Une commission de {taux} est retenue sur le loyer au moment du virement. Les frais de service payés par le locataire et la prime d'assurance ne vous sont jamais facturés.",
+      "commission": "Commission propriétaire",
+      "reverse": "Versé sur votre compte bancaire"
+    },
+    "engagements": {
+      "titre": "Nos engagements",
+      "sansFraisCaches": "Le prix total est affiché avant toute saisie de moyen de paiement. Aucun frais n'apparaît plus tard dans le tunnel.",
+      "publication": "Publier une annonce est gratuit. Vous ne payez que lorsque vous encaissez.",
+      "annulation": "La politique d'annulation est choisie par le propriétaire parmi trois niveaux, et affichée sur chaque annonce avant réservation."
+    },
+    "mentionBareme": "Barème applicable en France. Les taux peuvent différer selon le pays et la catégorie de matériel ; le détail exact est toujours affiché sur le récapitulatif de votre réservation."
+  },
   "piedPage": {
     "louer": "Louer",
     "proprietaires": "Propriétaires",

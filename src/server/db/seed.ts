@@ -4,6 +4,8 @@
  * Idempotent — le script peut être relancé sans dupliquer les données.
  * Exécution : `npm run db:seed`.
  */
+import { BAREME_PAR_DEFAUT } from "@/config/baremes";
+
 import { db, sql } from "./index";
 import { categorie, pays } from "./schema";
 
@@ -14,14 +16,7 @@ const PAYS_DE_LANCEMENT = {
   langue: "fr",
   devise: "EUR",
   actif: true,
-  // Barèmes indicatifs de la section 02, à arbitrer lors de l'atelier de
-  // cadrage (décision n° 03) et modifiables ensuite depuis l'administration.
-  commissionLocataireBp: 1200,
-  commissionProprietaireBp: 800,
-  tvaCommissionBp: 2000,
-  cautionMinimum: 20_000,
-  cautionMaximum: 150_000,
-  cautionLiberationHeures: 72,
+  ...BAREME_PAR_DEFAUT,
 } as const;
 
 /** Section 4.1 — une page par catégorie, optimisée pour la recherche. */

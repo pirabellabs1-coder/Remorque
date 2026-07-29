@@ -1,11 +1,17 @@
+import "server-only";
+
 import { z } from "zod";
 
+import { analyser } from "./env-commun";
+
 /**
- * Validation des variables d'environnement.
- * Toute variable manquante fait échouer le démarrage plutôt que de produire
- * une erreur silencieuse en production.
+ * Variables serveur.
+ *
+ * `server-only` garantit qu'une importation depuis un composant client échoue
+ * à la compilation plutôt que de laisser fuir un secret dans le paquet envoyé
+ * au navigateur.
  */
-const serverSchema = z.object({
+const schemaServeur = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
@@ -38,34 +44,18 @@ const serverSchema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
 });
 
-const clientSchema = z.object({
-  NEXT_PUBLIC_SITE_URL: z.string().url(),
-  NEXT_PUBLIC_MAP_STYLE_URL: z.string().url().optional(),
-});
+type EnvServeur = z.infer<typeof schemaServeur>;
 
-function parse<T extends z.ZodType>(schema: T, source: unknown, scope: string) {
-  const result = schema.safeParse(source);
-  if (!result.success) {
-    const details = result.error.issues
-      .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
-      .join("\n");
-    throw new Error(
-      `Variables d'environnement ${scope} invalides :\n${details}\n` +
-        "Voir .env.example pour la liste attendue.",
-    );
-  }
-  return result.data as z.infer<T>;
-}
+let cache: EnvServeur | undefined;
 
-/** Variables serveur — ne jamais importer depuis un composant client. */
-export const serverEnv = parse(serverSchema, process.env, "serveur");
-
-/** Variables exposées au navigateur. */
-export const clientEnv = parse(
-  clientSchema,
-  {
-    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
-    NEXT_PUBLIC_MAP_STYLE_URL: process.env.NEXT_PUBLIC_MAP_STYLE_URL,
+/**
+ * Validation différée : elle n'a lieu qu'au premier accès réel, c'est-à-dire à
+ * la première requête qui touche la base ou le paiement. Une page publique
+ * purement éditoriale se construit donc sans exiger de secrets.
+ */
+export const serverEnv = new Proxy({} as EnvServeur, {
+  get(_cible, propriete: string) {
+    cache ??= analyser(schemaServeur, process.env, "serveur");
+    return cache[propriete as keyof EnvServeur];
   },
-  "client",
-);
+});
