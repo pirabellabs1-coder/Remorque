@@ -5,6 +5,7 @@
  * Exécution : `npm run db:seed`.
  */
 import { BAREME_PAR_DEFAUT } from "@/config/baremes";
+import { CATEGORIES } from "@/config/categories";
 
 import { db, sql } from "./index";
 import { categorie, pays } from "./schema";
@@ -19,28 +20,6 @@ const PAYS_DE_LANCEMENT = {
   ...BAREME_PAR_DEFAUT,
 } as const;
 
-/** Section 4.1 — une page par catégorie, optimisée pour la recherche. */
-const CATEGORIES = [
-  { slug: "remorque-benne", nom: "Remorque benne", releveKilometrique: false },
-  { slug: "remorque-plateau", nom: "Remorque plateau", releveKilometrique: false },
-  { slug: "porte-voiture", nom: "Porte-voiture", releveKilometrique: false },
-  { slug: "remorque-bagagere", nom: "Remorque bagagère", releveKilometrique: false },
-  { slug: "van-a-chevaux", nom: "Van à chevaux", releveKilometrique: false },
-  { slug: "porte-bateau", nom: "Porte-bateau", releveKilometrique: false },
-  { slug: "porte-moto", nom: "Porte-moto", releveKilometrique: false },
-  {
-    slug: "remorque-frigorifique",
-    nom: "Remorque frigorifique",
-    releveKilometrique: false,
-  },
-  {
-    slug: "nacelle-et-materiel-chantier",
-    nom: "Nacelle et matériel de chantier",
-    releveKilometrique: true,
-  },
-  { slug: "utilitaire", nom: "Utilitaire", releveKilometrique: true },
-] as const;
-
 async function seed() {
   await db
     .insert(pays)
@@ -50,7 +29,14 @@ async function seed() {
   await db
     .insert(categorie)
     .values(
-      CATEGORIES.map((entree, index) => ({ ...entree, ordre: index })),
+      // `usages` est un texte éditorial destiné aux pages publiques : il n'a
+      // pas sa place dans la table du catalogue.
+      CATEGORIES.map(({ slug, nom, releveKilometrique }, index) => ({
+        slug,
+        nom,
+        releveKilometrique,
+        ordre: index,
+      })),
     )
     .onConflictDoNothing({ target: categorie.slug });
 
