@@ -58,6 +58,34 @@
       "mieuxNotes": "Mieux notés"
     }
   },
+  "reservation": {
+    "statut": {
+      "demandee": "Demande envoyée",
+      "acceptee": "Acceptée",
+      "payee": "Payée",
+      "confirmee": "Confirmée",
+      "en_cours": "En cours",
+      "restituee": "Restituée",
+      "cloturee": "Clôturée",
+      "refusee": "Refusée",
+      "expiree": "Expirée",
+      "annulee": "Annulée"
+    }
+  },
+  "compatibilite": {
+    "titre": "Compatible avec mon véhicule",
+    "compatible": "Vous pouvez tracter ce matériel",
+    "permisInsuffisant": "Permis insuffisant pour ce matériel",
+    "vehiculeInsuffisant": "Votre véhicule ne peut pas tracter ce matériel",
+    "renseignerVehicule": "Renseignez votre véhicule pour le savoir"
+  },
+  "piedPage": {
+    "louer": "Louer",
+    "proprietaires": "Propriétaires",
+    "entreprise": "Entreprise",
+    "legal": "Informations légales",
+    "droits": "© {annee} Remorque. Tous droits réservés."
+  },
   "erreurs": {
     "titre": "Une erreur est survenue",
     "introuvable": "Page introuvable",
