@@ -1,0 +1,16 @@
+{
+  "reservation": {
+    "statut": {
+      "demandee": "Demande envoyée",
+      "acceptee": "Acceptée",
+      "payee": "Payée",
+      "confirmee": "Confirmée",
+      "en_cours": "En cours",
+      "restituee": "Restituée",
+      "cloturee": "Clôturée",
+      "refusee": "Refusée",
+      "expiree": "Expirée",
+      "annulee": "Annulée"
+    }
+  }
+}

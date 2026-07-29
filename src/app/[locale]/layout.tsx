@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { MARKETS, type Market } from "@/config/markets";
+import { chargerTraductionsClient } from "@/i18n/messages";
 import { routing } from "@/i18n/routing";
 
 import "../globals.css";
@@ -57,7 +58,17 @@ export default async function MarketLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        {/*
+          Seules les traductions communes descendent jusqu'ici : en-tête, pied
+          de page et messages d'erreur. Chaque espace applicatif ajoute les
+          siennes dans sa propre coquille, afin qu'un visiteur ne télécharge
+          jamais les libellés d'un espace où il n'ira pas.
+        */}
+        <NextIntlClientProvider
+          messages={await chargerTraductionsClient(locale as Market)}
+        >
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

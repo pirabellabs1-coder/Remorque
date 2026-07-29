@@ -1,27 +1,4 @@
 {
-  "commun": {
-    "nomPlateforme": "Remorque",
-    "chargement": "Chargement…",
-    "rechercher": "Rechercher",
-    "continuer": "Continuer",
-    "annuler": "Annuler",
-    "retour": "Retour",
-    "enregistrer": "Enregistrer",
-    "parJour": "{montant} / jour",
-    "distance": "à {km} km",
-    "aPartirDe": "à partir de {montant}"
-  },
-  "navigation": {
-    "louer": "Louer une remorque",
-    "mettreEnLocation": "Mettre en location",
-    "commentCaMarche": "Comment ça marche",
-    "assurance": "Assurance",
-    "aide": "Aide",
-    "connexion": "Connexion",
-    "inscription": "Créer un compte",
-    "monCompte": "Mon compte",
-    "espaceProprietaire": "Espace propriétaire"
-  },
   "accueil": {
     "nomSite": "Remorque",
     "metaTitre": "Location de remorques entre particuliers et professionnels",
@@ -77,68 +54,6 @@
       "actionSecondaire": "Comprendre le fonctionnement"
     }
   },
-  "mettreEnLocation": {
-    "metaTitre": "Mettre sa remorque en location et générer des revenus",
-    "metaDescription": "Publiez votre remorque gratuitement, fixez vos tarifs et vos disponibilités. Assurance comprise, paiement garanti avant le retrait, commission prélevée seulement sur les locations réalisées.",
-    "surtitre": "Espace propriétaire",
-    "titre": "Votre matériel peut vous rapporter",
-    "chapo": "Une remorque coûte cher, sert quelques jours par an et dort le reste du temps. La mettre en location la rend rentable sans vous demander de disponibilité : vous gardez la main sur vos dates, vos tarifs et vos locataires.",
-    "arguments": {
-      "gratuit": "Publier une annonce est gratuit. Vous ne payez une commission que sur les locations réellement encaissées.",
-      "assurance": "Chaque location confirmée déclenche une couverture d'assurance sur votre matériel.",
-      "controle": "Vous acceptez ou refusez chaque demande. La réservation instantanée reste optionnelle, annonce par annonce.",
-      "paiement": "Le locataire paie avant le retrait. Le virement part automatiquement après la restitution."
-    },
-    "action": "Créer mon annonce",
-    "simulateur": {
-      "titre": "Estimez vos revenus",
-      "chapo": "Renseignez le tarif que vous comptez pratiquer et le nombre de jours que vous pensez louer chaque mois.",
-      "prixJour": "Votre tarif par jour",
-      "joursParMois": "Jours loués par mois",
-      "jours": "{nombre, plural, =0 {aucun jour} one {# jour} other {# jours}}",
-      "netAnnuel": "Revenu net estimé sur un an",
-      "loyerMensuel": "Loyer encaissé par mois",
-      "commission": "Commission plateforme",
-      "netMensuel": "Net perçu par mois",
-      "mention": "Projection calculée à partir de vos hypothèses, commission déduite. Elle ne constitue ni une estimation du marché local, ni un engagement de la plateforme. Les revenus tirés de la location sont imposables et vous recevrez un récapitulatif annuel."
-    },
-    "publication": {
-      "titre": "Publier prend moins de dix minutes",
-      "chapo": "Un assistant en six étapes, avec sauvegarde automatique : vous pouvez vous interrompre et reprendre plus tard sans rien perdre."
-    },
-    "couverture": {
-      "titre": "Ce que la plateforme prend en charge",
-      "chapo": "La location entre particuliers pose trois questions concrètes. Voici comment chacune est traitée.",
-      "sinistre": {
-        "titre": "Si le matériel est endommagé",
-        "texte": "L'état des lieux de retour est comparé à celui du départ. Vous déclarez le sinistre depuis votre espace ; le dossier complet est transmis au partenaire assureur et vous suivez son avancement."
-      },
-      "impaye": {
-        "titre": "Si le locataire ne paie pas",
-        "texte": "Le cas ne se présente pas : la réservation n'est confirmée qu'une fois le paiement encaissé par la plateforme. Vous n'avez jamais à réclamer un règlement."
-      },
-      "litige": {
-        "titre": "En cas de désaccord",
-        "texte": "Une résolution amiable est proposée d'abord. À défaut, la plateforme arbitre au vu des preuves déposées par les deux parties, et les fonds restent gelés jusqu'à la décision."
-      }
-    },
-    "pro": {
-      "titre": "Vous êtes loueur professionnel ?",
-      "chapo": "Gestion de flotte, agences multiples, comptes collaborateurs, facturation avec TVA et synchronisation de calendriers : l'offre professionnelle répond à des besoins différents de ceux d'un particulier.",
-      "action": "Découvrir l'offre professionnelle"
-    },
-    "faq": {
-      "titre": "Questions fréquentes",
-      "q1": "Combien la plateforme prélève-t-elle ?",
-      "r1": "Une commission est retenue sur le loyer au moment du virement, et des frais de service sont facturés au locataire. Le détail complet, chiffres à l'appui, figure sur la page des tarifs. Publier une annonce reste gratuit.",
-      "q2": "Qui est responsable si ma remorque est abîmée ?",
-      "r2": "Le matériel est couvert par l'assurance de la plateforme pendant la location. La caution enregistrée auprès du locataire peut être débitée en complément, sur justification des photos d'état des lieux et après examen par la plateforme.",
-      "q3": "Puis-je refuser une demande de réservation ?",
-      "r3": "Oui, sans avoir à vous justifier, dans les vingt-quatre heures suivant la demande. Vous pouvez aussi bloquer vos dates à l'avance et définir un délai de préparation entre deux locations.",
-      "q4": "Dois-je déclarer ces revenus ?",
-      "r4": "Oui. Les revenus tirés de la location sont imposables. La plateforme collecte votre identification fiscale à l'inscription, vous remet un récapitulatif annuel et déclare vos revenus à l'administration, conformément à ses obligations européennes."
-    }
-  },
   "recherche": {
     "formulaire": {
       "ou": "Où ?",
@@ -184,26 +99,128 @@
       "mieuxNotes": "Mieux notés"
     }
   },
-  "reservation": {
-    "statut": {
-      "demandee": "Demande envoyée",
-      "acceptee": "Acceptée",
-      "payee": "Payée",
-      "confirmee": "Confirmée",
-      "en_cours": "En cours",
-      "restituee": "Restituée",
-      "cloturee": "Clôturée",
-      "refusee": "Refusée",
-      "expiree": "Expirée",
-      "annulee": "Annulée"
+  "commentCaMarche": {
+    "metaTitre": "Comment ça marche",
+    "metaDescription": "Louer une remorque ou mettre la vôtre en location : les deux parcours, étape par étape, sans mauvaise surprise.",
+    "titre": "Comment ça marche",
+    "chapo": "Deux parcours, quatre étapes chacun. Choisissez le vôtre.",
+    "locataire": {
+      "titre": "Je veux louer une remorque",
+      "texte": "Trouvez le matériel adapté près de chez vous, réservez en ligne, récupérez-le et rendez-le. L'assurance est comprise, la caution n'est pas débitée.",
+      "action": "Voir le parcours locataire"
+    },
+    "proprietaire": {
+      "titre": "Je veux mettre ma remorque en location",
+      "texte": "Publiez votre matériel en moins de dix minutes, choisissez vos disponibilités et vos tarifs, encaissez automatiquement après chaque location.",
+      "action": "Voir le parcours propriétaire"
     }
   },
-  "compatibilite": {
-    "titre": "Compatible avec mon véhicule",
-    "compatible": "Vous pouvez tracter ce matériel",
-    "permisInsuffisant": "Permis insuffisant pour ce matériel",
-    "vehiculeInsuffisant": "Votre véhicule ne peut pas tracter ce matériel",
-    "renseignerVehicule": "Renseignez votre véhicule pour le savoir"
+  "parcoursLocataire": {
+    "metaTitre": "Louer une remorque en 4 étapes",
+    "metaDescription": "Recherche, réservation, retrait, restitution : le parcours complet d'une location de remorque, avec l'assurance comprise et la caution non débitée.",
+    "surtitre": "Parcours locataire",
+    "titre": "Louer une remorque en quatre étapes",
+    "chapo": "De la recherche à la restitution, tout se passe sur la plateforme. Vous savez à l'avance ce que vous payez, ce que vous signez et ce qui se passe en cas de problème.",
+    "etapes": {
+      "e1": {
+        "titre": "Trouvez le bon matériel",
+        "texte": "Recherchez par ville et par dates. Le filtre « compatible avec mon véhicule » n'affiche que ce que vous pouvez légalement et physiquement tracter."
+      },
+      "e2": {
+        "titre": "Réservez et payez",
+        "texte": "Le prix s'affiche ligne par ligne avant tout paiement. Le propriétaire a vingt-quatre heures pour accepter, sauf réservation instantanée."
+      },
+      "e3": {
+        "titre": "Récupérez le matériel",
+        "texte": "Vous recevez l'adresse exacte et un code de retrait à quatre chiffres. L'état des lieux de départ se fait ensemble, photos à l'appui."
+      },
+      "e4": {
+        "titre": "Rendez et notez",
+        "texte": "État des lieux de retour, caution libérée sous soixante-douze heures s'il n'y a pas d'incident, puis chacun dépose son avis."
+      }
+    },
+    "protection": {
+      "titre": "Ce qui vous protège",
+      "assurance": "Une assurance couvre le matériel pendant toute la durée de la location. L'attestation est téléchargeable avant le départ.",
+      "caution": "La caution est une empreinte bancaire : l'argent n'est pas prélevé, il reste sur votre compte. Un débit n'a lieu qu'en cas de dommage constaté et justifié.",
+      "etatDesLieux": "Les états des lieux de départ et de retour sont horodatés, photographiés et signés par les deux parties. Ils font foi.",
+      "litige": "En cas de désaccord, vous pouvez ouvrir un litige dans les quarante-huit heures suivant la restitution. Le transfert des fonds est alors gelé jusqu'à la décision."
+    },
+    "action": "Chercher une remorque"
+  },
+  "parcoursProprietaire": {
+    "metaTitre": "Mettre sa remorque en location en 4 étapes",
+    "metaDescription": "Publiez votre remorque en moins de dix minutes, fixez vos tarifs et vos disponibilités, encaissez automatiquement après chaque location.",
+    "surtitre": "Parcours propriétaire",
+    "titre": "Mettre votre matériel en location",
+    "chapo": "Une remorque coûte cher, sert quelques jours par an et dort le reste du temps. La mettre en location la rend rentable sans vous demander de temps.",
+    "etapes": {
+      "e1": {
+        "titre": "Publiez votre annonce",
+        "texte": "Six étapes, sauvegarde automatique, reprise possible à tout moment. Comptez moins de dix minutes."
+      },
+      "e2": {
+        "titre": "Fixez vos règles",
+        "texte": "Tarifs à la journée, au week-end ou à la semaine, calendrier de disponibilité, montant de la caution, conditions d'utilisation."
+      },
+      "e3": {
+        "titre": "Acceptez les demandes",
+        "texte": "Vous gardez la main : vous acceptez ou refusez chaque demande. La réservation instantanée reste optionnelle, annonce par annonce."
+      },
+      "e4": {
+        "titre": "Encaissez",
+        "texte": "Le virement part automatiquement après la restitution, commission déduite. Vous recevez chaque facture et un récapitulatif fiscal annuel."
+      }
+    },
+    "garanties": {
+      "titre": "Ce qui vous protège",
+      "assurance": "Chaque location confirmée déclenche une couverture d'assurance sur votre matériel.",
+      "paiement": "Le locataire paie avant le retrait. Vous n'avez jamais à réclamer un règlement.",
+      "selection": "Identité et permis de chaque locataire sont vérifiés avant qu'il puisse réserver.",
+      "calendrier": "Vous bloquez vos dates quand vous voulez, et un délai de préparation s'intercale automatiquement entre deux locations."
+    },
+    "action": "Publier une annonce"
+  },
+  "tarifs": {
+    "metaTitre": "Tarifs et frais de service",
+    "metaDescription": "Le détail de ce que paie le locataire et de ce que touche le propriétaire, ligne par ligne, sans frais caché.",
+    "surtitre": "Transparence",
+    "titre": "Nos tarifs, ligne par ligne",
+    "chapo": "Vous voyez le détail complet avant de payer, et le propriétaire sait exactement ce qu'il touchera. Aucun frais n'apparaît en cours de réservation.",
+    "exemple": {
+      "titre": "Exemple d'une location",
+      "contexte": "Remorque benne, {jours} jours à {prix} par jour.",
+      "caution": "Une caution de {montant} est enregistrée sous forme d'empreinte bancaire : elle n'est pas débitée et se libère automatiquement {heures} heures après la restitution s'il n'y a pas d'incident."
+    },
+    "colonne": {
+      "ligne": "Ligne",
+      "montant": "Montant",
+      "destinataire": "Destinataire"
+    },
+    "ligne": {
+      "loyer": "Loyer — {jours} jours à {prix}",
+      "fraisService": "Frais de service ({taux})",
+      "assurance": "Protection et assurance",
+      "total": "Total payé par le locataire"
+    },
+    "destinataire": {
+      "base": "Base de calcul",
+      "plateforme": "Plateforme",
+      "assureur": "Assureur"
+    },
+    "proprietaire": {
+      "titre": "Côté propriétaire",
+      "texte": "Une commission de {taux} est retenue sur le loyer au moment du virement. Les frais de service payés par le locataire et la prime d'assurance ne vous sont jamais facturés.",
+      "commission": "Commission propriétaire",
+      "reverse": "Versé sur votre compte bancaire"
+    },
+    "engagements": {
+      "titre": "Nos engagements",
+      "sansFraisCaches": "Le prix total est affiché avant toute saisie de moyen de paiement. Aucun frais n'apparaît plus tard dans le tunnel.",
+      "publication": "Publier une annonce est gratuit. Vous ne payez que lorsque vous encaissez.",
+      "annulation": "La politique d'annulation est choisie par le propriétaire parmi trois niveaux, et affichée sur chaque annonce avant réservation."
+    },
+    "mentionBareme": "Barème applicable en France. Les taux peuvent différer selon le pays et la catégorie de matériel ; le détail exact est toujours affiché sur le récapitulatif de votre réservation."
   },
   "assurance": {
     "metaTitre": "L'assurance de votre location",
@@ -447,140 +464,73 @@
       "lien": "Vérifiez aussi que votre permis autorise l'ensemble : <permis>quel permis pour quelle remorque</permis>."
     }
   },
-  "commentCaMarche": {
-    "metaTitre": "Comment ça marche",
-    "metaDescription": "Louer une remorque ou mettre la vôtre en location : les deux parcours, étape par étape, sans mauvaise surprise.",
-    "titre": "Comment ça marche",
-    "chapo": "Deux parcours, quatre étapes chacun. Choisissez le vôtre.",
-    "locataire": {
-      "titre": "Je veux louer une remorque",
-      "texte": "Trouvez le matériel adapté près de chez vous, réservez en ligne, récupérez-le et rendez-le. L'assurance est comprise, la caution n'est pas débitée.",
-      "action": "Voir le parcours locataire"
+  "mettreEnLocation": {
+    "metaTitre": "Mettre sa remorque en location et générer des revenus",
+    "metaDescription": "Publiez votre remorque gratuitement, fixez vos tarifs et vos disponibilités. Assurance comprise, paiement garanti avant le retrait, commission prélevée seulement sur les locations réalisées.",
+    "surtitre": "Espace propriétaire",
+    "titre": "Votre matériel peut vous rapporter",
+    "chapo": "Une remorque coûte cher, sert quelques jours par an et dort le reste du temps. La mettre en location la rend rentable sans vous demander de disponibilité : vous gardez la main sur vos dates, vos tarifs et vos locataires.",
+    "arguments": {
+      "gratuit": "Publier une annonce est gratuit. Vous ne payez une commission que sur les locations réellement encaissées.",
+      "assurance": "Chaque location confirmée déclenche une couverture d'assurance sur votre matériel.",
+      "controle": "Vous acceptez ou refusez chaque demande. La réservation instantanée reste optionnelle, annonce par annonce.",
+      "paiement": "Le locataire paie avant le retrait. Le virement part automatiquement après la restitution."
     },
-    "proprietaire": {
-      "titre": "Je veux mettre ma remorque en location",
-      "texte": "Publiez votre matériel en moins de dix minutes, choisissez vos disponibilités et vos tarifs, encaissez automatiquement après chaque location.",
-      "action": "Voir le parcours propriétaire"
+    "action": "Créer mon annonce",
+    "simulateur": {
+      "titre": "Estimez vos revenus",
+      "chapo": "Renseignez le tarif que vous comptez pratiquer et le nombre de jours que vous pensez louer chaque mois.",
+      "prixJour": "Votre tarif par jour",
+      "joursParMois": "Jours loués par mois",
+      "jours": "{nombre, plural, =0 {aucun jour} one {# jour} other {# jours}}",
+      "netAnnuel": "Revenu net estimé sur un an",
+      "loyerMensuel": "Loyer encaissé par mois",
+      "commission": "Commission plateforme",
+      "netMensuel": "Net perçu par mois",
+      "mention": "Projection calculée à partir de vos hypothèses, commission déduite. Elle ne constitue ni une estimation du marché local, ni un engagement de la plateforme. Les revenus tirés de la location sont imposables et vous recevrez un récapitulatif annuel."
+    },
+    "publication": {
+      "titre": "Publier prend moins de dix minutes",
+      "chapo": "Un assistant en six étapes, avec sauvegarde automatique : vous pouvez vous interrompre et reprendre plus tard sans rien perdre."
+    },
+    "couverture": {
+      "titre": "Ce que la plateforme prend en charge",
+      "chapo": "La location entre particuliers pose trois questions concrètes. Voici comment chacune est traitée.",
+      "sinistre": {
+        "titre": "Si le matériel est endommagé",
+        "texte": "L'état des lieux de retour est comparé à celui du départ. Vous déclarez le sinistre depuis votre espace ; le dossier complet est transmis au partenaire assureur et vous suivez son avancement."
+      },
+      "impaye": {
+        "titre": "Si le locataire ne paie pas",
+        "texte": "Le cas ne se présente pas : la réservation n'est confirmée qu'une fois le paiement encaissé par la plateforme. Vous n'avez jamais à réclamer un règlement."
+      },
+      "litige": {
+        "titre": "En cas de désaccord",
+        "texte": "Une résolution amiable est proposée d'abord. À défaut, la plateforme arbitre au vu des preuves déposées par les deux parties, et les fonds restent gelés jusqu'à la décision."
+      }
+    },
+    "pro": {
+      "titre": "Vous êtes loueur professionnel ?",
+      "chapo": "Gestion de flotte, agences multiples, comptes collaborateurs, facturation avec TVA et synchronisation de calendriers : l'offre professionnelle répond à des besoins différents de ceux d'un particulier.",
+      "action": "Découvrir l'offre professionnelle"
+    },
+    "faq": {
+      "titre": "Questions fréquentes",
+      "q1": "Combien la plateforme prélève-t-elle ?",
+      "r1": "Une commission est retenue sur le loyer au moment du virement, et des frais de service sont facturés au locataire. Le détail complet, chiffres à l'appui, figure sur la page des tarifs. Publier une annonce reste gratuit.",
+      "q2": "Qui est responsable si ma remorque est abîmée ?",
+      "r2": "Le matériel est couvert par l'assurance de la plateforme pendant la location. La caution enregistrée auprès du locataire peut être débitée en complément, sur justification des photos d'état des lieux et après examen par la plateforme.",
+      "q3": "Puis-je refuser une demande de réservation ?",
+      "r3": "Oui, sans avoir à vous justifier, dans les vingt-quatre heures suivant la demande. Vous pouvez aussi bloquer vos dates à l'avance et définir un délai de préparation entre deux locations.",
+      "q4": "Dois-je déclarer ces revenus ?",
+      "r4": "Oui. Les revenus tirés de la location sont imposables. La plateforme collecte votre identification fiscale à l'inscription, vous remet un récapitulatif annuel et déclare vos revenus à l'administration, conformément à ses obligations européennes."
     }
   },
-  "parcoursLocataire": {
-    "metaTitre": "Louer une remorque en 4 étapes",
-    "metaDescription": "Recherche, réservation, retrait, restitution : le parcours complet d'une location de remorque, avec l'assurance comprise et la caution non débitée.",
-    "surtitre": "Parcours locataire",
-    "titre": "Louer une remorque en quatre étapes",
-    "chapo": "De la recherche à la restitution, tout se passe sur la plateforme. Vous savez à l'avance ce que vous payez, ce que vous signez et ce qui se passe en cas de problème.",
-    "etapes": {
-      "e1": {
-        "titre": "Trouvez le bon matériel",
-        "texte": "Recherchez par ville et par dates. Le filtre « compatible avec mon véhicule » n'affiche que ce que vous pouvez légalement et physiquement tracter."
-      },
-      "e2": {
-        "titre": "Réservez et payez",
-        "texte": "Le prix s'affiche ligne par ligne avant tout paiement. Le propriétaire a vingt-quatre heures pour accepter, sauf réservation instantanée."
-      },
-      "e3": {
-        "titre": "Récupérez le matériel",
-        "texte": "Vous recevez l'adresse exacte et un code de retrait à quatre chiffres. L'état des lieux de départ se fait ensemble, photos à l'appui."
-      },
-      "e4": {
-        "titre": "Rendez et notez",
-        "texte": "État des lieux de retour, caution libérée sous soixante-douze heures s'il n'y a pas d'incident, puis chacun dépose son avis."
-      }
-    },
-    "protection": {
-      "titre": "Ce qui vous protège",
-      "assurance": "Une assurance couvre le matériel pendant toute la durée de la location. L'attestation est téléchargeable avant le départ.",
-      "caution": "La caution est une empreinte bancaire : l'argent n'est pas prélevé, il reste sur votre compte. Un débit n'a lieu qu'en cas de dommage constaté et justifié.",
-      "etatDesLieux": "Les états des lieux de départ et de retour sont horodatés, photographiés et signés par les deux parties. Ils font foi.",
-      "litige": "En cas de désaccord, vous pouvez ouvrir un litige dans les quarante-huit heures suivant la restitution. Le transfert des fonds est alors gelé jusqu'à la décision."
-    },
-    "action": "Chercher une remorque"
-  },
-  "parcoursProprietaire": {
-    "metaTitre": "Mettre sa remorque en location en 4 étapes",
-    "metaDescription": "Publiez votre remorque en moins de dix minutes, fixez vos tarifs et vos disponibilités, encaissez automatiquement après chaque location.",
-    "surtitre": "Parcours propriétaire",
-    "titre": "Mettre votre matériel en location",
-    "chapo": "Une remorque coûte cher, sert quelques jours par an et dort le reste du temps. La mettre en location la rend rentable sans vous demander de temps.",
-    "etapes": {
-      "e1": {
-        "titre": "Publiez votre annonce",
-        "texte": "Six étapes, sauvegarde automatique, reprise possible à tout moment. Comptez moins de dix minutes."
-      },
-      "e2": {
-        "titre": "Fixez vos règles",
-        "texte": "Tarifs à la journée, au week-end ou à la semaine, calendrier de disponibilité, montant de la caution, conditions d'utilisation."
-      },
-      "e3": {
-        "titre": "Acceptez les demandes",
-        "texte": "Vous gardez la main : vous acceptez ou refusez chaque demande. La réservation instantanée reste optionnelle, annonce par annonce."
-      },
-      "e4": {
-        "titre": "Encaissez",
-        "texte": "Le virement part automatiquement après la restitution, commission déduite. Vous recevez chaque facture et un récapitulatif fiscal annuel."
-      }
-    },
-    "garanties": {
-      "titre": "Ce qui vous protège",
-      "assurance": "Chaque location confirmée déclenche une couverture d'assurance sur votre matériel.",
-      "paiement": "Le locataire paie avant le retrait. Vous n'avez jamais à réclamer un règlement.",
-      "selection": "Identité et permis de chaque locataire sont vérifiés avant qu'il puisse réserver.",
-      "calendrier": "Vous bloquez vos dates quand vous voulez, et un délai de préparation s'intercale automatiquement entre deux locations."
-    },
-    "action": "Publier une annonce"
-  },
-  "tarifs": {
-    "metaTitre": "Tarifs et frais de service",
-    "metaDescription": "Le détail de ce que paie le locataire et de ce que touche le propriétaire, ligne par ligne, sans frais caché.",
-    "surtitre": "Transparence",
-    "titre": "Nos tarifs, ligne par ligne",
-    "chapo": "Vous voyez le détail complet avant de payer, et le propriétaire sait exactement ce qu'il touchera. Aucun frais n'apparaît en cours de réservation.",
-    "exemple": {
-      "titre": "Exemple d'une location",
-      "contexte": "Remorque benne, {jours} jours à {prix} par jour.",
-      "caution": "Une caution de {montant} est enregistrée sous forme d'empreinte bancaire : elle n'est pas débitée et se libère automatiquement {heures} heures après la restitution s'il n'y a pas d'incident."
-    },
-    "colonne": {
-      "ligne": "Ligne",
-      "montant": "Montant",
-      "destinataire": "Destinataire"
-    },
-    "ligne": {
-      "loyer": "Loyer — {jours} jours à {prix}",
-      "fraisService": "Frais de service ({taux})",
-      "assurance": "Protection et assurance",
-      "total": "Total payé par le locataire"
-    },
-    "destinataire": {
-      "base": "Base de calcul",
-      "plateforme": "Plateforme",
-      "assureur": "Assureur"
-    },
-    "proprietaire": {
-      "titre": "Côté propriétaire",
-      "texte": "Une commission de {taux} est retenue sur le loyer au moment du virement. Les frais de service payés par le locataire et la prime d'assurance ne vous sont jamais facturés.",
-      "commission": "Commission propriétaire",
-      "reverse": "Versé sur votre compte bancaire"
-    },
-    "engagements": {
-      "titre": "Nos engagements",
-      "sansFraisCaches": "Le prix total est affiché avant toute saisie de moyen de paiement. Aucun frais n'apparaît plus tard dans le tunnel.",
-      "publication": "Publier une annonce est gratuit. Vous ne payez que lorsque vous encaissez.",
-      "annulation": "La politique d'annulation est choisie par le propriétaire parmi trois niveaux, et affichée sur chaque annonce avant réservation."
-    },
-    "mentionBareme": "Barème applicable en France. Les taux peuvent différer selon le pays et la catégorie de matériel ; le détail exact est toujours affiché sur le récapitulatif de votre réservation."
-  },
-  "piedPage": {
-    "louer": "Louer",
-    "proprietaires": "Propriétaires",
-    "entreprise": "Entreprise",
-    "legal": "Informations légales",
-    "droits": "© {annee} Remorque. Tous droits réservés."
-  },
-  "erreurs": {
-    "titre": "Une erreur est survenue",
-    "introuvable": "Page introuvable",
-    "introuvableTexte": "Cette page n'existe pas ou n'est plus disponible.",
-    "retourAccueil": "Retour à l'accueil"
+  "compatibilite": {
+    "titre": "Compatible avec mon véhicule",
+    "compatible": "Vous pouvez tracter ce matériel",
+    "permisInsuffisant": "Permis insuffisant pour ce matériel",
+    "vehiculeInsuffisant": "Votre véhicule ne peut pas tracter ce matériel",
+    "renseignerVehicule": "Renseignez votre véhicule pour le savoir"
   }
 }

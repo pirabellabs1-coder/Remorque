@@ -1,0 +1,38 @@
+{
+  "commun": {
+    "nomPlateforme": "Remorque",
+    "chargement": "Chargement…",
+    "rechercher": "Rechercher",
+    "continuer": "Continuer",
+    "annuler": "Annuler",
+    "retour": "Retour",
+    "enregistrer": "Enregistrer",
+    "parJour": "{montant} / jour",
+    "distance": "à {km} km",
+    "aPartirDe": "à partir de {montant}"
+  },
+  "navigation": {
+    "louer": "Louer une remorque",
+    "mettreEnLocation": "Mettre en location",
+    "commentCaMarche": "Comment ça marche",
+    "assurance": "Assurance",
+    "aide": "Aide",
+    "connexion": "Connexion",
+    "inscription": "Créer un compte",
+    "monCompte": "Mon compte",
+    "espaceProprietaire": "Espace propriétaire"
+  },
+  "piedPage": {
+    "louer": "Louer",
+    "proprietaires": "Propriétaires",
+    "entreprise": "Entreprise",
+    "legal": "Informations légales",
+    "droits": "© {annee} Remorque. Tous droits réservés."
+  },
+  "erreurs": {
+    "titre": "Une erreur est survenue",
+    "introuvable": "Page introuvable",
+    "introuvableTexte": "Cette page n'existe pas ou n'est plus disponible.",
+    "retourAccueil": "Retour à l'accueil"
+  }
+}

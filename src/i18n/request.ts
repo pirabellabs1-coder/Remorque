@@ -3,6 +3,7 @@ import { hasLocale } from "next-intl";
 
 import { MARKETS, type Market } from "@/config/markets";
 
+import { chargerToutesLesTraductions } from "./messages";
 import { routing } from "./routing";
 
 export default getRequestConfig(async ({ requestLocale }) => {
@@ -15,7 +16,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
-    messages: (await import(`../messages/${locale}.json`)).default,
+    // Le rendu serveur dispose de l'ensemble des traductions ; la restriction
+    // ne porte que sur ce qui est transmis au navigateur (voir `messages.ts`).
+    messages: await chargerToutesLesTraductions(locale),
     // Formats locaux (section M20) : dates, heures, séparateurs, unités.
     // Aucune conversion implicite de devise : chaque montant porte la sienne.
     timeZone: "Europe/Paris",
