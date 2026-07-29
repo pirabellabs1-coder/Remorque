@@ -205,6 +205,185 @@
     "vehiculeInsuffisant": "Votre véhicule ne peut pas tracter ce matériel",
     "renseignerVehicule": "Renseignez votre véhicule pour le savoir"
   },
+  "assurance": {
+    "metaTitre": "L'assurance de votre location",
+    "metaDescription": "Comment le matériel est couvert pendant la location, ce que change la caution, et comment déclarer un sinistre étape par étape.",
+    "surtitre": "Protection",
+    "titre": "Chaque location est assurée",
+    "chapo": "Louer du matériel à un inconnu suppose de savoir précisément qui répond en cas de dommage, et selon quelle procédure. Voici le dispositif, sans zone d'ombre.",
+    "mecanisme": {
+      "titre": "Comment la couverture s'applique",
+      "declenchement": {
+        "titre": "Elle démarre à la confirmation",
+        "texte": "Il n'y a rien à souscrire séparément : toute réservation confirmée déclenche la couverture du matériel pour la durée convenue. Le coût est intégré au récapitulatif affiché avant paiement."
+      },
+      "attestation": {
+        "titre": "Une attestation avant le départ",
+        "texte": "Le locataire comme le propriétaire téléchargent l'attestation depuis leur espace, avant le retrait. Elle mentionne le matériel, les dates et les garanties applicables."
+      },
+      "periode": {
+        "titre": "Elle s'arrête à la restitution",
+        "texte": "La couverture court de l'état des lieux de départ à celui de retour. En cas de prolongation acceptée sur la plateforme, elle est étendue automatiquement — un retard non déclaré ne l'est pas."
+      }
+    },
+    "garanties": {
+      "titre": "Garanties, plafonds et franchise",
+      "partenaire": "Contrat souscrit auprès de {partenaire}.",
+      "plafond": "Plafond d'indemnisation par sinistre",
+      "franchise": "Franchise standard",
+      "ouTrouver": "Les garanties applicables, leur plafond et le montant de la franchise sont indiqués sur chaque annonce avant la réservation, repris dans le récapitulatif de paiement, et détaillés dans l'attestation remise avant le départ. Ils peuvent varier selon la catégorie de matériel et le pays de la location."
+    },
+    "caution": {
+      "titre": "Caution et assurance ne sont pas la même chose",
+      "chapo": "C'est la confusion la plus fréquente, et elle inquiète inutilement les locataires. Les deux dispositifs se complètent mais ne jouent pas au même moment.",
+      "empreinte": "La caution est une empreinte bancaire : votre moyen de paiement est enregistré, mais aucun montant n'est prélevé. L'argent reste disponible sur votre compte pendant toute la location.",
+      "difference": "L'assurance couvre le matériel. La caution garantit ce qui reste à votre charge — franchise, dommage exclu de la couverture, accessoire manquant, restitution en retard ou non nettoyée.",
+      "liberation": "Sans incident, la caution est libérée automatiquement peu après la restitution. Le délai exact est indiqué sur la réservation et suit la configuration du pays.",
+      "contestation": "Un débit ne peut jamais être décidé par le propriétaire seul. Il est instruit par la plateforme, doit être justifié par les photos d'état des lieux, vous est notifié avec son motif, et reste contestable."
+    },
+    "sinistre": {
+      "titre": "Déclarer un sinistre",
+      "chapo": "La procédure est la même pour le locataire et pour le propriétaire, et tout se fait depuis votre espace. Plus la déclaration est rapide, plus le dossier est solide.",
+      "etapes": {
+        "e1": {
+          "titre": "Signalez sans attendre",
+          "texte": "Depuis la réservation concernée, ouvrez une déclaration. Un délai maximal s'applique après la restitution : il est rappelé sur l'écran de déclaration."
+        },
+        "e2": {
+          "titre": "Constituez le dossier",
+          "texte": "Photos du dommage, description des circonstances, constat s'il y a eu un tiers, devis de réparation si vous en avez déjà un."
+        },
+        "e3": {
+          "titre": "Transmission au partenaire",
+          "texte": "La plateforme joint automatiquement le contrat de location, les deux états des lieux et l'attestation, puis transmet le dossier complet."
+        },
+        "e4": {
+          "titre": "Suivi jusqu'à la décision",
+          "texte": "Vous suivez l'avancement depuis votre espace. Tant que le dossier est ouvert, le transfert des fonds au propriétaire reste gelé."
+        }
+      }
+    },
+    "preuve": {
+      "titre": "Pourquoi les états des lieux comptent autant",
+      "chapo": "Un dossier d'assurance se gagne ou se perd sur la preuve. C'est la raison pour laquelle la plateforme impose des photos sous des angles précis, horodatées et signées par les deux parties, au départ comme au retour.",
+      "consequence": "Prenez ces quelques minutes au sérieux : un état des lieux de départ bâclé rend un dommage impossible à imputer, et c'est alors le propriétaire qui en supporte le coût. À l'inverse, un état des lieux complet protège le locataire contre une réclamation infondée."
+    },
+    "faq": {
+      "titre": "Questions fréquentes",
+      "q1": "Dois-je prévenir mon assureur automobile ?",
+      "r1": "Vérifiez votre contrat : la responsabilité civile du véhicule tracteur s'étend généralement à la remorque attelée, mais les conditions varient d'un assureur à l'autre, notamment au-delà d'un certain poids. La couverture de la plateforme porte sur le matériel loué, pas sur votre véhicule.",
+      "q2": "Que se passe-t-il si je rends la remorque en retard ?",
+      "r2": "Prolongez depuis votre espace avant l'échéance : la couverture est alors étendue et le propriétaire est prévenu. Un retard non déclaré sort du cadre convenu, peut entraîner une pénalité et fragilise votre position en cas de sinistre.",
+      "q3": "Et si le dommage est causé par un tiers ?",
+      "r3": "Établissez un constat sur place, comme pour un accident de la route, et joignez-le à votre déclaration. C'est la pièce qui permet d'engager le recours contre le responsable.",
+      "q4": "Qui paie la franchise ?",
+      "r4": "Elle reste à la charge du locataire et peut être prélevée sur la caution, sur justification. Une option de réduction de franchise sera proposée à la réservation dans une version ultérieure de la plateforme."
+    },
+    "action": "Chercher une remorque",
+    "actionAide": "Contacter l'assistance"
+  },
+  "pro": {
+    "metaTitre": "Offre loueurs professionnels",
+    "metaDescription": "Un canal de réservation supplémentaire pour les loueurs de matériel : visibilité locale, paiement garanti avant le retrait, contrat et états des lieux automatisés.",
+    "surtitre": "Loueurs professionnels",
+    "titre": "Un canal de réservation de plus, sans charge de gestion",
+    "chapo": "Vous louez déjà du matériel. La plateforme vous apporte une demande locale que vous ne captez pas aujourd'hui, avec le paiement encaissé avant le retrait et les documents de location produits automatiquement.",
+    "action": "Parler à un interlocuteur",
+    "actionSecondaire": "Voir le fonctionnement général",
+    "pourquoi": {
+      "titre": "Ce que ça change pour vous",
+      "creneaux": {
+        "titre": "Remplir les creux",
+        "texte": "Le matériel immobilisé entre deux chantiers ou hors saison représente un coût fixe. Les demandes des particuliers se concentrent souvent sur les week-ends, là où votre activité professionnelle ralentit."
+      },
+      "acquisition": {
+        "titre": "Une acquisition que vous ne financez pas",
+        "texte": "Le référencement local, les pages de ville et le trafic naturel sont portés par la plateforme. Vous ne payez qu'à la location réalisée, jamais au clic ni à l'affichage."
+      },
+      "risque": {
+        "titre": "Moins de risque qu'en direct",
+        "texte": "Identité et permis du locataire sont vérifiés, le paiement est encaissé avant le retrait, une caution est enregistrée, et le matériel est couvert pendant la location."
+      }
+    },
+    "disponible": {
+      "titre": "Disponible dès le lancement",
+      "chapo": "Le socle nécessaire pour encaisser une réservation et sécuriser une location.",
+      "visibilite": {
+        "titre": "Visibilité locale",
+        "texte": "Vos annonces apparaissent dans la recherche par ville, par dates et par catégorie."
+      },
+      "paiement": {
+        "titre": "Paiement avant retrait",
+        "texte": "Le locataire règle sur la plateforme. Le virement vous parvient après la restitution, commission déduite."
+      },
+      "assurance": {
+        "titre": "Couverture du matériel",
+        "texte": "Chaque location confirmée déclenche une assurance sur le matériel loué."
+      },
+      "contrat": {
+        "titre": "Contrat et états des lieux",
+        "texte": "Contrat de location généré en PDF, états des lieux photographiés et signés par les deux parties."
+      },
+      "calendrier": {
+        "titre": "Calendrier et délai de préparation",
+        "texte": "Blocage de vos dates et temps tampon automatique entre deux locations d'un même matériel."
+      },
+      "annuaire": {
+        "titre": "Profil public",
+        "texte": "Une page présentant votre société, vos matériels et les avis reçus."
+      }
+    },
+    "preparation": {
+      "titre": "En préparation",
+      "etiquette": "Après le lancement",
+      "chapo": "Ces fonctionnalités sont prévues et conçues, mais ne seront pas livrées à l'ouverture du service. Nous préférons l'annoncer plutôt que de les laisser croire disponibles.",
+      "flotte": {
+        "titre": "Vue flotte",
+        "texte": "Planning global du parc, taux d'utilisation par matériel, alertes."
+      },
+      "agences": {
+        "titre": "Multi-agences",
+        "texte": "Plusieurs points de retrait rattachés à une même société."
+      },
+      "equipe": {
+        "titre": "Comptes collaborateurs",
+        "texte": "Plusieurs utilisateurs sur un même compte, avec des rôles distincts."
+      },
+      "facturation": {
+        "titre": "Facturation professionnelle",
+        "texte": "Facture avec TVA, mentions légales et numérotation continue."
+      },
+      "ical": {
+        "titre": "Synchronisation de calendriers",
+        "texte": "Import et export iCal vers votre logiciel de gestion existant."
+      },
+      "abonnement": {
+        "titre": "Formule mensuelle",
+        "texte": "Commission réduite, visibilité accrue et outils avancés."
+      },
+      "api": {
+        "titre": "Interface de programmation",
+        "texte": "Import du parc en masse et synchronisation avec un logiciel métier."
+      }
+    },
+    "lancement": {
+      "titre": "Partenaires de lancement",
+      "chapo": "Le service ouvre ville par ville, et les premiers loueurs professionnels d'une zone comptent davantage que tous les suivants : ce sont eux qui rendent la recherche utile aux locataires, et donc la zone viable.",
+      "accompagnement": "Un interlocuteur dédié pour la mise en ligne de votre parc et le suivi de vos premières locations.",
+      "reprise": "Reprise de vos fiches matériel existantes, photos comprises, sans ressaisie de votre part.",
+      "influence": "Vos retours orientent en priorité les fonctionnalités professionnelles listées ci-dessus.",
+      "action": "Prendre contact"
+    },
+    "faq": {
+      "titre": "Questions fréquentes",
+      "q1": "Suis-je obligé de tout mettre sur la plateforme ?",
+      "r1": "Non. Vous choisissez les matériels que vous publiez et les périodes que vous ouvrez. Beaucoup de loueurs commencent par ouvrir les week-ends et la basse saison.",
+      "q2": "Comment éviter les doubles réservations avec mon logiciel actuel ?",
+      "r2": "À l'ouverture, en bloquant vos dates depuis le calendrier de la plateforme. La synchronisation iCal, qui automatise ce point, fait partie des fonctionnalités en préparation.",
+      "q3": "Quelle commission s'applique à un professionnel ?",
+      "r3": "Le barème public s'applique à tous au lancement ; il figure sur la page des tarifs. Une formule d'abonnement à commission réduite est prévue pour les comptes à volume régulier."
+    }
+  },
   "outilPermis": {
     "metaTitre": "Quel permis pour quelle remorque ? Calculateur B, B96 et BE",
     "metaDescription": "Entrez le poids de votre véhicule et de la remorque : découvrez immédiatement si votre permis B suffit, s'il vous faut le B96 ou le BE.",
