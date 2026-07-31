@@ -312,12 +312,305 @@
           "annonces": "Annonces actives",
           "reservations": "Réservations",
           "volume": "Volume d’affaires"
-        }
+        },
+        "croissanceTitre": "Inscriptions par mois",
+        "croissanceLegende": "Nombre d’inscriptions par mois sur les douze derniers mois",
+        "utilisateurs": "Utilisateurs",
+        "utilisateursPrecision": "{nombre} inscrits ces trente derniers jours",
+        "gel": "Fonds gelés",
+        "gelPrecision": "Litiges et sinistres en cours, versements suspendus",
+        "annonces": "Annonces actives",
+        "annoncesPrecision": "Publiées et visibles au catalogue",
+        "support": "Tickets ouverts",
+        "supportPrecision": "Support et réclamations",
+        "aucuneFile": "Rien en attente."
       },
       "groupe": {
         "exploitation": "Exploitation",
         "argent": "Finance",
         "configuration": "Configuration"
+      },
+      "commun": {
+        "rechercher": "Rechercher",
+        "aucunResultat": "Aucun résultat",
+        "exporter": "Exporter",
+        "filtrer": "Filtrer",
+        "toutes": "Tous",
+        "voir": "Voir",
+        "total": "Total"
+      },
+      "utilisateurs": {
+        "titre": "Utilisateurs",
+        "chapo": "{nombre, plural, =0 {Aucun inscrit.} =1 {Un inscrit.} other {# inscrits.}}",
+        "nom": "Nom",
+        "courriel": "Courriel",
+        "localisation": "Ville",
+        "role": "Rôle",
+        "verification": "Identité",
+        "inscrit": "Inscrit le",
+        "activite": "Activité",
+        "locations": "{nombre, plural, =1 {1 location} other {# locations}}",
+        "annonces": "{nombre, plural, =1 {1 annonce} other {# annonces}}",
+        "suspendu": "Suspendu",
+        "roles": {
+          "locataire": "Locataire",
+          "loueur": "Loueur",
+          "les_deux": "Les deux"
+        },
+        "verifications": {
+          "verifie": "Vérifiée",
+          "en_attente": "En attente",
+          "non_soumis": "Non soumise",
+          "refuse": "Refusée"
+        },
+        "filtres": {
+          "tous": "Tous",
+          "aVerifier": "À vérifier",
+          "loueurs": "Loueurs",
+          "suspendus": "Suspendus"
+        }
+      },
+      "annonces": {
+        "titre": "Annonces",
+        "chapo": "{nombre, plural, =0 {Aucune annonce au catalogue.} =1 {Une annonce au catalogue.} other {# annonces au catalogue.}}",
+        "materiel": "Matériel",
+        "proprietaire": "Propriétaire",
+        "ville": "Ville",
+        "prix": "Prix / jour",
+        "caution": "Caution",
+        "note": "Note",
+        "nonNotee": "Pas encore notée",
+        "voirPublic": "Voir la fiche",
+        "moderation": "Modération",
+        "moderationTexte": "Une annonce n’est visible au catalogue qu’après vérification des photographies et de la cohérence des caractéristiques déclarées."
+      },
+      "reservations": {
+        "titre": "Réservations",
+        "chapo": "Toutes les locations de la plateforme, tous pays confondus.",
+        "reference": "Référence",
+        "locataire": "Locataire",
+        "materiel": "Matériel",
+        "dates": "Dates",
+        "brut": "Brut",
+        "commission": "Commission",
+        "statut": "Statut",
+        "repartitionTitre": "Répartition par statut"
+      },
+      "finance": {
+        "titre": "Finance",
+        "chapo": "Volume d’affaires, commission perçue, fonds gelés et versements à venir.",
+        "volume": "Volume d’affaires",
+        "volumePrecision": "Somme des locations encaissées",
+        "commission": "Commission perçue",
+        "commissionPrecision": "Revenu brut de la plateforme",
+        "reverse": "Reversé aux loueurs",
+        "reversePrecision": "Net après commission",
+        "gel": "Fonds gelés",
+        "gelPrecision": "Immobilisés par un litige ou un sinistre",
+        "courbeTitre": "Volume d’affaires par mois",
+        "courbeLegende": "Volume d’affaires mensuel sur les douze derniers mois",
+        "repartitionTitre": "Où va l’argent encaissé",
+        "repartitionLegende": "Répartition entre le net reversé aux loueurs et la commission de la plateforme",
+        "partLoueurs": "Reversé aux loueurs",
+        "partCommission": "Commission de la plateforme",
+        "detailTitre": "Détail mensuel",
+        "mois": "Mois",
+        "locations": "Locations",
+        "net": "Reversé",
+        "gelTitre": "Détail des fonds gelés",
+        "gelTexte": "Un litige ou un sinistre ouvert interdit le transfert au propriétaire comme la libération de la caution. Le déblocage n’est possible qu’après clôture du dossier, et laisse une trace au journal d’audit.",
+        "gelOrigine": "Origine",
+        "gelLitiges": "Litiges en cours",
+        "gelSinistres": "Sinistres en cours",
+        "montant": "Montant"
+      },
+      "litiges": {
+        "titre": "Litiges",
+        "chapo": "Chaque litige ouvert gèle les fonds de la réservation concernée jusqu’à sa résolution.",
+        "reference": "Référence",
+        "reservation": "Réservation",
+        "ouvertLe": "Ouvert le",
+        "motif": "Motif",
+        "partie": "Ouvert par",
+        "enJeu": "Montant en jeu",
+        "geles": "Fonds gelés",
+        "statut": "Statut",
+        "motifs": {
+          "dommage": "Dommage au matériel",
+          "retard": "Retard de restitution",
+          "non_conformite": "Matériel non conforme",
+          "annulation": "Annulation contestée",
+          "paiement": "Incident de paiement"
+        },
+        "statuts": {
+          "ouvert": "Ouvert",
+          "en_instruction": "En instruction",
+          "resolu": "Résolu"
+        },
+        "parties": {
+          "locataire": "Le locataire",
+          "proprietaire": "Le propriétaire"
+        },
+        "vide": {
+          "titre": "Aucun litige",
+          "texte": "Les litiges ouverts par un locataire ou un propriétaire apparaîtront ici."
+        }
+      },
+      "assurance": {
+        "titre": "Assurance",
+        "chapo": "Sinistres déclarés et suivi de leur transmission au partenaire assureur.",
+        "reference": "Référence",
+        "reservation": "Réservation",
+        "declareLe": "Déclaré le",
+        "nature": "Nature",
+        "montant": "Montant estimé",
+        "statut": "Statut",
+        "transmisLe": "Transmis le",
+        "nonTransmis": "Non transmis",
+        "natures": {
+          "collision": "Collision",
+          "vol": "Vol",
+          "bris": "Bris",
+          "incendie": "Incendie"
+        },
+        "statuts": {
+          "declare": "Déclaré",
+          "transmis": "Transmis à l’assureur",
+          "indemnise": "Indemnisé",
+          "refuse": "Refusé"
+        },
+        "delaiTitre": "Délai de transmission",
+        "delaiTexte": "Un sinistre doit être transmis au partenaire assureur sous cinq jours ouvrables. Au-delà, la prise en charge peut être refusée pour déclaration tardive.",
+        "vide": {
+          "titre": "Aucun sinistre déclaré",
+          "texte": "Les sinistres déclarés par les loueurs ou les locataires apparaîtront ici."
+        }
+      },
+      "pays": {
+        "titre": "Pays",
+        "chapo": "Commission, TVA, plafond de caution et délai de versement. Ces valeurs pilotent la tarification et sont modifiables sans redéploiement.",
+        "avertissement": "Toute modification s’applique aux réservations créées après l’enregistrement. Les réservations en cours conservent les conditions acceptées par les deux parties.",
+        "pays": "Pays",
+        "devise": "Devise",
+        "commission": "Commission",
+        "tva": "TVA",
+        "plafond": "Plafond de caution",
+        "delai": "Délai de versement",
+        "jours": "{nombre, plural, =1 {1 jour} other {# jours}}",
+        "etat": "État",
+        "actif": "Ouvert",
+        "inactif": "Fermé",
+        "modifier": "Modifier",
+        "activite": "Activité constatée",
+        "annonces": "Annonces",
+        "reservations": "Réservations",
+        "volume": "Volume",
+        "utilisateurs": "Utilisateurs"
+      },
+      "contenu": {
+        "titre": "Contenu",
+        "chapo": "Pages éditoriales, villes couvertes et catégories de matériel.",
+        "villes": "Villes couvertes",
+        "villesChapo": "Chaque ville publiée génère une page locale indexable. C’est le premier levier de référencement de la plateforme.",
+        "categories": "Catégories de matériel",
+        "categoriesChapo": "Une catégorie ajoutée apparaît dans les filtres de recherche et dans le formulaire de publication.",
+        "pages": "Pages éditoriales",
+        "ville": "Ville",
+        "pays": "Pays",
+        "annoncesVille": "Annonces",
+        "categorie": "Catégorie",
+        "page": "Page",
+        "adresse": "Adresse",
+        "etat": "État",
+        "publiee": "Publiée"
+      },
+      "support": {
+        "titre": "Support",
+        "chapo": "Demandes reçues, par ordre d’arrivée.",
+        "reference": "Référence",
+        "demandeur": "Demandeur",
+        "sujet": "Sujet",
+        "canal": "Canal",
+        "priorite": "Priorité",
+        "statut": "Statut",
+        "ouvertLe": "Ouvert le",
+        "canaux": {
+          "courriel": "Courriel",
+          "formulaire": "Formulaire",
+          "telephone": "Téléphone"
+        },
+        "priorites": {
+          "basse": "Basse",
+          "normale": "Normale",
+          "haute": "Haute"
+        },
+        "statuts": {
+          "ouvert": "Ouvert",
+          "en_cours": "En cours",
+          "resolu": "Résolu"
+        },
+        "vide": {
+          "titre": "Aucune demande",
+          "texte": "Les demandes reçues par formulaire, courriel ou téléphone apparaîtront ici."
+        }
+      },
+      "statistiques": {
+        "titre": "Statistiques",
+        "chapo": "Croissance, activité et qualité de service.",
+        "croissance": "Croissance",
+        "inscriptionsTitre": "Inscriptions par mois",
+        "inscriptionsLegende": "Nombre d’inscriptions par mois sur les douze derniers mois",
+        "volumeTitre": "Volume d’affaires par mois",
+        "volumeLegende": "Volume d’affaires mensuel sur les douze derniers mois",
+        "marche": "Marché",
+        "parPays": "Répartition par pays",
+        "parPaysLegende": "Part de chaque pays dans le volume d’affaires",
+        "parCategorie": "Réservations par catégorie",
+        "parVille": "Villes les plus actives",
+        "qualite": "Qualité de service",
+        "tauxLitige": "Taux de litige",
+        "tauxLitigePrecision": "Litiges rapportés aux locations encaissées",
+        "tauxSinistre": "Taux de sinistre",
+        "tauxSinistrePrecision": "Sinistres rapportés aux locations encaissées",
+        "noteMoyenne": "Note moyenne",
+        "noteMoyennePrecision": "Sur les avis déposés",
+        "panierMoyen": "Panier moyen",
+        "panierMoyenPrecision": "Montant brut moyen par location"
+      },
+      "parametres": {
+        "titre": "Paramètres",
+        "chapo": "Réglages généraux de la plateforme.",
+        "general": "Général",
+        "nomPlateforme": "Nom de la plateforme",
+        "courrielContact": "Adresse de contact",
+        "delaiReponse": "Délai laissé au loueur pour répondre à une demande",
+        "delaiAvis": "Délai de dépôt d’un avis après restitution",
+        "heures": "{nombre, plural, =1 {1 heure} other {# heures}}",
+        "jours": "{nombre, plural, =1 {1 jour} other {# jours}}",
+        "moderation": "Modération",
+        "moderationApriori": "Vérifier les annonces avant leur mise en ligne",
+        "moderationAprioriAide": "Décoché, les annonces sont publiées immédiatement et vérifiées après coup.",
+        "verificationObligatoire": "Exiger une identité vérifiée avant la première location",
+        "maintenance": "Maintenance",
+        "maintenanceTexte": "Le mode maintenance rend le site inaccessible au public et affiche une page d’information. Les espaces authentifiés restent ouverts.",
+        "activerMaintenance": "Activer le mode maintenance",
+        "enregistrer": "Enregistrer"
+      },
+      "journalAudit": {
+        "titre": "Journal d’audit",
+        "chapo": "Toute action administrative y est inscrite avec son auteur, son motif et l’état avant et après. La table est en écriture seule : une entrée ne peut être ni modifiée ni supprimée.",
+        "horodatage": "Date et heure",
+        "auteur": "Auteur",
+        "action": "Action",
+        "cible": "Cible",
+        "motif": "Motif",
+        "avant": "Avant",
+        "apres": "Après",
+        "sansChangement": "—",
+        "vide": {
+          "titre": "Journal vide",
+          "texte": "Aucune action administrative n’a encore été enregistrée."
+        }
       }
     },
     "replier": "Replier",
