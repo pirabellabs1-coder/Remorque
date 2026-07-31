@@ -4,6 +4,7 @@ import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
 import { DonneesStructurees } from "@/components/ui/carte";
+import { TuileLien } from "@/components/ui/tuile-lien";
 import { ESPACEMENT, TITRE, TitreSection } from "@/components/ui/typographie";
 import { CATEGORIES, type DefinitionCategorie } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
@@ -13,7 +14,6 @@ import { Link, getPathname } from "@/i18n/navigation";
 import { cn, PRIX_AFFICHE } from "@/lib/cn";
 import {
   annoncesDeLaVille,
-  compterCategoriesDansLaVille,
   prixMinimumDansLaVille,
 } from "@/server/annonces/catalogue";
 
@@ -49,7 +49,6 @@ export async function ContenuLocal({
   const base = clientEnv.NEXT_PUBLIC_SITE_URL;
 
   const annonces = await annoncesDeLaVille(ville.slug, categorie?.slug);
-  const parCategorie = await compterCategoriesDansLaVille(ville.slug);
   const prixMinimum = await prixMinimumDansLaVille(ville.slug, categorie?.slug);
   const voisines = villesVoisines(ville);
 
@@ -178,43 +177,22 @@ export async function ContenuLocal({
         >
           <TitreSection>{t("categories", { ville: ville.nom })}</TitreSection>
 
-          <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {CATEGORIES.map((entree) => {
-              const nombre = parCategorie.get(entree.slug) ?? 0;
-              const active = categorie?.slug === entree.slug;
-
-              return (
-                <li key={entree.slug}>
-                  <Link
-                    href={{
-                      pathname: "/location-remorque/[ville]/[type]",
-                      params: { ville: ville.slug, type: entree.slug },
-                    }}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "flex items-center justify-between gap-4 rounded-champ border bg-fond-eleve px-4 py-3 transition-colors",
-                      active
-                        ? "border-accent"
-                        : "border-bordure hover:border-accent",
-                    )}
-                  >
-                    <span className="text-[0.9375rem] font-medium">
-                      {t("categorieDansVille", {
-                        categorie: entree.nom,
-                        ville: ville.nom,
-                      })}
-                    </span>
-                    {/* Le compte n'apparaît que s'il y a quelque chose à
-                        compter : « 0 annonce » décourage sans informer. */}
-                    {nombre > 0 ? (
-                      <span className="shrink-0 text-sm tabular-nums text-texte-attenue">
-                        {nombre}
-                      </span>
-                    ) : null}
-                  </Link>
-                </li>
-              );
-            })}
+          <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {CATEGORIES.map((entree) => (
+              <li key={entree.slug}>
+                <TuileLien
+                  href={{
+                    pathname: "/location-remorque/[ville]/[type]",
+                    params: { ville: ville.slug, type: entree.slug },
+                  }}
+                  className={
+                    categorie?.slug === entree.slug ? "border-accent" : undefined
+                  }
+                >
+                  {entree.nom}
+                </TuileLien>
+              </li>
+            ))}
           </ul>
         </div>
       </section>
@@ -226,21 +204,18 @@ export async function ContenuLocal({
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           <div>
             <TitreSection>{t("voisines", { ville: ville.nom })}</TitreSection>
-            <ul className="mt-8 flex flex-wrap gap-2">
+            <ul className="mt-8 grid grid-cols-2 gap-3">
               {voisines.map((voisine) => (
                 <li key={voisine.slug}>
-                  <Link
+                  <TuileLien
                     href={{
                       pathname: "/location-remorque/[ville]",
                       params: { ville: voisine.slug },
                     }}
-                    className="inline-flex items-baseline gap-2 rounded-full border border-bordure bg-fond-eleve px-3 py-1.5 text-sm transition-colors hover:border-accent"
+                    legende={t("distance", { km: voisine.distanceKm })}
                   >
                     {voisine.nom}
-                    <span className="text-xs tabular-nums text-texte-attenue">
-                      {t("distance", { km: voisine.distanceKm })}
-                    </span>
-                  </Link>
+                  </TuileLien>
                 </li>
               ))}
             </ul>
@@ -250,28 +225,17 @@ export async function ContenuLocal({
             <TitreSection>{t("avantDeLouer")}</TitreSection>
             <ul className="mt-8 space-y-3">
               <li>
-                <Link
-                  href="/quel-permis-pour-quelle-remorque"
-                  className="block rounded-champ border border-bordure bg-fond-eleve px-4 py-3 text-[0.9375rem] transition-colors hover:border-accent"
-                >
+                <TuileLien href="/quel-permis-pour-quelle-remorque">
                   {t("lienPermis")}
-                </Link>
+                </TuileLien>
               </li>
               <li>
-                <Link
-                  href="/calculateur-de-charge"
-                  className="block rounded-champ border border-bordure bg-fond-eleve px-4 py-3 text-[0.9375rem] transition-colors hover:border-accent"
-                >
+                <TuileLien href="/calculateur-de-charge">
                   {t("lienCharge")}
-                </Link>
+                </TuileLien>
               </li>
               <li>
-                <Link
-                  href="/assurance"
-                  className="block rounded-champ border border-bordure bg-fond-eleve px-4 py-3 text-[0.9375rem] transition-colors hover:border-accent"
-                >
-                  {t("lienAssurance")}
-                </Link>
+                <TuileLien href="/assurance">{t("lienAssurance")}</TuileLien>
               </li>
             </ul>
           </div>

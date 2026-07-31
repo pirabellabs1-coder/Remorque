@@ -469,23 +469,6 @@ export async function compterAnnoncesParVille(): Promise<Map<string, number>> {
   return comptes;
 }
 
-/** Répartition par catégorie au sein d'une ville, pour la longue traîne. */
-export async function compterCategoriesDansLaVille(
-  villeSlug: string,
-): Promise<Map<string, number>> {
-  const comptes = new Map<string, number>();
-  if (!DEMONSTRATION_AUTORISEE) return comptes;
-
-  for (const annonce of JEU_DE_DEMONSTRATION) {
-    if (annonce.villeSlug !== villeSlug) continue;
-    comptes.set(
-      annonce.categorie,
-      (comptes.get(annonce.categorie) ?? 0) + 1,
-    );
-  }
-  return comptes;
-}
-
 /** Prix journalier le plus bas d'une ville, en centimes. */
 export async function prixMinimumDansLaVille(
   villeSlug: string,

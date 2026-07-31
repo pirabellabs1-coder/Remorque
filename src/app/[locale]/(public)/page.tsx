@@ -5,6 +5,7 @@ import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche
 import { Bouton } from "@/components/ui/bouton";
 import { DonneesStructurees } from "@/components/ui/carte";
 import { Illustration } from "@/components/ui/illustration";
+import { TuileLien } from "@/components/ui/tuile-lien";
 import {
   Chapo,
   ESPACEMENT,
@@ -226,9 +227,9 @@ export default async function PageAccueil({ params }: Props) {
           Le maillage vers les pages locales, qui portent 60 à 80 % du trafic
           attendu. Sans lien depuis l'accueil, elles restent orphelines.
 
-          Groupées par pays, et non en une liste unique d'une centaine de
-          pastilles : un visiteur belge doit trouver sa ville sans balayer
-          l'Europe, et l'ordre des pays dit lequel ouvre en premier. */}
+          Une grille de tuiles par pays, et non une liste à puces : à cette
+          densité, l'œil balaie une grille bien plus vite qu'une colonne, et
+          chaque cellule encadrée se lit comme une destination. */}
       <section className="bg-fond-doux">
         <div
           className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}
@@ -238,38 +239,34 @@ export default async function PageAccueil({ params }: Props) {
             <p className="mt-5 text-texte-attenue">{t("villes.mention")}</p>
           </div>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {PAYS.map((pays) => {
-              const visibles = villesDuPays(pays).slice(0, VILLES_PAR_PAYS);
-
-              return (
-                <section
-                  key={pays}
-                  className="rounded-carte border border-bordure bg-fond-eleve p-5 shadow-(--ombre-carte)"
-                >
-                  <h3 className="text-[0.9375rem] font-semibold">
+          <div className="mt-12 space-y-10">
+            {PAYS.map((pays) => (
+              <section key={pays}>
+                <div className="flex items-center gap-4">
+                  <h3 className="text-[0.6875rem] font-semibold tracking-[0.14em] text-texte-attenue uppercase">
                     {t(`villes.pays.${pays}`)}
                   </h3>
+                  <span aria-hidden className="h-px flex-1 bg-bordure" />
+                </div>
 
-                  <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-0.5">
-                    {visibles.map((ville) => (
+                <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {villesDuPays(pays)
+                    .slice(0, VILLES_PAR_PAYS)
+                    .map((ville) => (
                       <li key={ville.slug}>
-                        <Link
+                        <TuileLien
                           href={{
                             pathname: "/location-remorque/[ville]",
                             params: { ville: ville.slug },
                           }}
-                          className="block truncate rounded-champ px-2 py-1.5 text-sm transition-colors hover:bg-fond-doux hover:text-accent"
                         >
                           {ville.nom}
-                        </Link>
+                        </TuileLien>
                       </li>
                     ))}
-                  </ul>
-
-                </section>
-              );
-            })}
+                </ul>
+              </section>
+            ))}
           </div>
         </div>
       </section>
