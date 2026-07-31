@@ -21,8 +21,11 @@ import { cn } from "@/lib/cn";
 import { metadonneesPage } from "@/lib/metadonnees";
 import { annoncesEnVitrine } from "@/server/annonces/catalogue";
 
-/** Villes montrées par pays sur l'accueil ; la page locale porte le reste. */
-const VILLES_PAR_PAYS = 8;
+/**
+ * Villes montrées par pays sur l'accueil. Les autres restent atteignables par
+ * la recherche et par le maillage des villes voisines, sur chaque page locale.
+ */
+const VILLES_PAR_PAYS = 12;
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -237,25 +240,16 @@ export default async function PageAccueil({ params }: Props) {
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {PAYS.map((pays) => {
-              const villes = villesDuPays(pays);
-              const visibles = villes.slice(0, VILLES_PAR_PAYS);
-              const reste = villes.length - visibles.length;
+              const visibles = villesDuPays(pays).slice(0, VILLES_PAR_PAYS);
 
               return (
                 <section
                   key={pays}
                   className="rounded-carte border border-bordure bg-fond-eleve p-5 shadow-(--ombre-carte)"
                 >
-                  <div className="flex items-baseline justify-between gap-3">
-                    <h3 className="text-[0.9375rem] font-semibold">
-                      {t(`villes.pays.${pays}`)}
-                    </h3>
-                    {/* Un compte de villes couvertes, pas un compte d'annonces :
-                        celui-ci est vérifiable, l'autre serait une promesse. */}
-                    <span className="text-xs tabular-nums text-texte-attenue">
-                      {t("villes.nombre", { nombre: villes.length })}
-                    </span>
-                  </div>
+                  <h3 className="text-[0.9375rem] font-semibold">
+                    {t(`villes.pays.${pays}`)}
+                  </h3>
 
                   <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-0.5">
                     {visibles.map((ville) => (
@@ -273,11 +267,6 @@ export default async function PageAccueil({ params }: Props) {
                     ))}
                   </ul>
 
-                  {reste > 0 ? (
-                    <p className="mt-3 px-2 text-xs text-texte-attenue">
-                      {t("villes.reste", { nombre: reste })}
-                    </p>
-                  ) : null}
                 </section>
               );
             })}

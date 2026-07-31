@@ -138,13 +138,35 @@ export function EnTetePublic() {
                   }
                   onMouseEnter={() => survoler(declencheur.cle)}
                   className={cn(
-                    "rounded-champ px-4 py-2 text-[0.9375rem] font-medium transition-colors",
+                    "group inline-flex items-center gap-1.5 rounded-champ px-4 py-2",
+                    "text-[0.9375rem] font-medium transition-colors",
                     ouvert === declencheur.cle
                       ? "bg-fond-doux text-accent"
                       : "hover:bg-fond-doux hover:text-accent",
                   )}
                 >
                   {declencheur.libelle}
+                  {/* Le chevron est ce qui distingue une entrée dépliante d'un
+                      simple lien : sans lui, rien n'indique qu'un panneau
+                      attend derrière, et le menu n'est découvert qu'au hasard
+                      d'un survol. */}
+                  <svg
+                    viewBox="0 0 12 12"
+                    aria-hidden
+                    className={cn(
+                      "size-3 transition-transform duration-200",
+                      ouvert === declencheur.cle && "rotate-180",
+                    )}
+                    fill="none"
+                  >
+                    <path
+                      d="m2.5 4.5 3.5 3.5 3.5-3.5"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
               </li>
             ))}

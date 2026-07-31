@@ -72,9 +72,7 @@
     },
     "villes": {
       "titre": "Où louer une remorque",
-      "mention": "Une plateforme européenne. Le service ouvre pays par pays, la Belgique d’abord.",
-      "nombre": "{nombre, plural, one {# ville} other {# villes}}",
-      "reste": "et {nombre, plural, one {# autre ville} other {# autres villes}}",
+      "mention": "Une plateforme européenne. Le service ouvre pays par pays.",
       "pays": {
         "BE": "Belgique",
         "FR": "France",
