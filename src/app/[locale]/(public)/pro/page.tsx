@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { Faq } from "@/components/ui/faq";
 import { Bouton } from "@/components/ui/bouton";
 import { Carte, DonneesStructurees, EnTetePage } from "@/components/ui/carte";
 import type { Market } from "@/config/markets";
@@ -159,14 +160,7 @@ export default async function PagePro({ params }: Props) {
           <h2 className="text-2xl font-semibold tracking-tight">
             {t("faq.titre")}
           </h2>
-          <dl className="mt-8 space-y-6">
-            {questions.map((entree) => (
-              <div key={entree.question} className="border-t border-bordure pt-6">
-                <dt className="font-medium">{entree.question}</dt>
-                <dd className="mt-2 text-texte-attenue">{entree.reponse}</dd>
-              </div>
-            ))}
-          </dl>
+          <Faq questions={questions} className="mt-10" />
         </section>
       </div>
 

@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Etapes } from "@/components/marketing/etapes";
 import { SimulateurRevenus } from "@/components/proprietaire/simulateur-revenus";
+import { Faq } from "@/components/ui/faq";
 import { Bouton } from "@/components/ui/bouton";
 import { Carte, DonneesStructurees } from "@/components/ui/carte";
 import { MARKETS, type Market } from "@/config/markets";
@@ -158,14 +159,7 @@ export default async function PageMettreEnLocation({ params }: Props) {
         <h2 className="text-3xl font-semibold tracking-tight">
           {t("faq.titre")}
         </h2>
-        <dl className="mt-8 space-y-6">
-          {questions.map((entree) => (
-            <div key={entree.question} className="border-t border-bordure pt-6">
-              <dt className="font-medium">{entree.question}</dt>
-              <dd className="mt-2 text-texte-attenue">{entree.reponse}</dd>
-            </div>
-          ))}
-        </dl>
+        <Faq questions={questions} className="mt-10" />
       </section>
 
       <DonneesStructurees

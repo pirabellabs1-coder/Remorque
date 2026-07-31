@@ -3,7 +3,9 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
+import { Faq } from "@/components/ui/faq";
 import { DonneesStructurees } from "@/components/ui/carte";
+import { Illustration } from "@/components/ui/illustration";
 import { TuileLien } from "@/components/ui/tuile-lien";
 import { ESPACEMENT, TITRE, TitreSection } from "@/components/ui/typographie";
 import { CATEGORIES, type DefinitionCategorie } from "@/config/categories";
@@ -72,13 +74,30 @@ export async function ContenuLocal({
 
   return (
     <main>
-      {/* ================= En-tête locale ================= */}
-      <section className="border-b border-bordure bg-fond-eleve">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-10 pb-12 sm:px-6">
+      {/* ================= En-tête locale =================
+          Une vraie première vue, et non un simple fil d'Ariane suivi d'un
+          titre : ces pages sont souvent la porte d'entrée du site depuis un
+          moteur de recherche, pour un visiteur qui n'a jamais vu l'accueil. */}
+      <section className="relative overflow-hidden bg-encre text-encre-texte">
+        <div className="absolute inset-0">
+          <Illustration
+            src="/images/hero.webp"
+            alt=""
+            className="h-full w-full"
+            tailles="100vw"
+          />
+        </div>
+        <div aria-hidden className="absolute inset-0 bg-marque-950/70" />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-linear-to-r from-marque-950/90 via-marque-950/60 to-transparent"
+        />
+
+        <div className="relative mx-auto w-full max-w-6xl px-4 pt-8 pb-12 sm:px-6 sm:pt-10 sm:pb-16">
           <nav aria-label={t("filAriane")}>
-            <ol className="flex flex-wrap items-center gap-2 text-sm text-texte-attenue">
+            <ol className="flex flex-wrap items-center gap-2 text-sm text-encre-texte-attenue">
               <li>
-                <Link href="/" className="hover:text-texte">
+                <Link href="/" className="hover:text-encre-texte">
                   {t("accueil")}
                 </Link>
               </li>
@@ -91,28 +110,30 @@ export async function ContenuLocal({
                         pathname: "/location-remorque/[ville]",
                         params: { ville: ville.slug },
                       }}
-                      className="hover:text-texte"
+                      className="hover:text-encre-texte"
                     >
                       {ville.nom}
                     </Link>
                   </li>
                   <li aria-hidden>/</li>
-                  <li aria-current="page" className="text-texte">
+                  <li aria-current="page" className="text-encre-texte">
                     {categorie.nom}
                   </li>
                 </>
               ) : (
-                <li aria-current="page" className="text-texte">
+                <li aria-current="page" className="text-encre-texte">
                   {ville.nom}
                 </li>
               )}
             </ol>
           </nav>
 
-          <h1 className={cn(TITRE.section, "mt-5 text-balance")}>{titre}</h1>
+          <h1 className={cn(TITRE.section, "mt-6 max-w-2xl text-balance")}>
+            {titre}
+          </h1>
 
           {/* Aucun chiffre n'est affiché s'il n'existe pas. */}
-          <p className="mt-4 text-[1.0625rem] text-texte-attenue">
+          <p className="mt-4 max-w-xl text-[1.0625rem] text-encre-texte-attenue">
             {annonces.length > 0
               ? t("resume", {
                   nombre: annonces.length,
@@ -142,7 +163,7 @@ export async function ContenuLocal({
                   })
                 : t("annonces", { ville: ville.nom })}
             </TitreSection>
-            <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {annonces.map((annonce) => (
                 <li key={annonce.id}>
                   <CarteAnnonce annonce={annonce} />
@@ -248,16 +269,7 @@ export async function ContenuLocal({
           className={cn("mx-auto w-full max-w-3xl px-4 sm:px-6", ESPACEMENT.standard)}
         >
           <TitreSection>{t("faq.titre")}</TitreSection>
-          <dl className="mt-10 space-y-6">
-            {questions.map((entree) => (
-              <div key={entree.question} className="border-t border-bordure pt-6">
-                <dt className={TITRE.carte}>{entree.question}</dt>
-                <dd className="mt-2 text-[0.9375rem] leading-[1.6] text-texte-attenue">
-                  {entree.reponse}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <Faq questions={questions} className="mt-10" />
         </div>
       </section>
 

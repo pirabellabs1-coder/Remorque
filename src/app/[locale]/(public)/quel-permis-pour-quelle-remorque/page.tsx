@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { OutilPermis } from "@/components/outils/outil-permis";
 import { Carte, DonneesStructurees, EnTetePage } from "@/components/ui/carte";
+import { Faq } from "@/components/ui/faq";
 import type { Market } from "@/config/markets";
 import { BAREME_FR } from "@/domain/compatibilite/permis";
 import { metadonneesPage } from "@/lib/metadonnees";
@@ -77,14 +78,7 @@ export default async function PagePermis({ params }: Props) {
 
         <section className="mt-16">
           <h2 className="text-2xl font-semibold">{t("faq.titre")}</h2>
-          <dl className="mt-6 space-y-6">
-            {questions.map((entree) => (
-              <div key={entree.question} className="border-t border-bordure pt-6">
-                <dt className="font-medium">{entree.question}</dt>
-                <dd className="mt-2 text-texte-attenue">{entree.reponse}</dd>
-              </div>
-            ))}
-          </dl>
+          <Faq questions={questions} className="mt-10" />
         </section>
       </div>
 

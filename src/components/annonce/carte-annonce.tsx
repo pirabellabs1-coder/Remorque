@@ -36,9 +36,11 @@ export function CarteAnnonce({ annonce }: { annonce: AnnonceResume }) {
         </p>
       ) : null}
 
-      <div className="p-4">
+      {/* Plus resserré sur mobile : à deux colonnes, chaque carte fait
+          moins de 180 px de large. */}
+      <div className="p-3 sm:p-4">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-medium leading-snug">
+          <h3 className="text-[0.9375rem] leading-snug font-medium sm:text-base">
             {/* Lien étendu : toute la carte est cliquable, sans imbriquer de
                 lien dans un lien. */}
             <Link

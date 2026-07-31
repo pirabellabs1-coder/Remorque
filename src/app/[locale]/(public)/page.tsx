@@ -141,14 +141,11 @@ export default async function PageAccueil({ params }: Props) {
             </Link>
           </div>
 
-          {/* Défilement horizontal sur mobile plutôt qu'une colonne de quatre
-              cartes hautes : on montre qu'il y a une suite. */}
-          <ul className="-mx-4 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
+          {/* Deux colonnes dès le mobile : le défilement horizontal cachait
+              la moitié des annonces derrière un geste que rien n'annonçait. */}
+          <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {vitrine.map((annonce) => (
-              <li
-                key={annonce.id}
-                className="w-[17rem] shrink-0 snap-start sm:w-auto"
-              >
+              <li key={annonce.id}>
                 <CarteAnnonce annonce={annonce} />
               </li>
             ))}
