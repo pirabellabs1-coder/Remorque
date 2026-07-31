@@ -17,7 +17,7 @@ export const ESPACES = [
   "public",
   "reservation",
   "compte",
-  // À créer avec les espaces correspondants : "proprietaire", "admin".
+  "espaces",
 ] as const;
 
 export type Espace = (typeof ESPACES)[number];

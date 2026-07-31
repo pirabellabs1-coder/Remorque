@@ -76,7 +76,11 @@ export function FormulaireRecherche({
           placeholder={t("ouPlaceholder")}
           value={ville}
           onChange={(evenement) => setVille(evenement.target.value)}
-          className="h-14 w-full rounded-champ border border-bordure bg-fond-eleve px-4 text-base"
+          // `text-texte` est indispensable : dans la première vue, le
+          // formulaire est posé dans une section en `text-encre-texte`, donc
+          // blanche. Sans cette classe, le champ héritait du blanc et l'on
+          // écrivait en blanc sur blanc.
+          className="h-14 w-full rounded-champ border border-bordure bg-fond-eleve px-4 text-base text-texte placeholder:text-texte-attenue"
         />
       </div>
 

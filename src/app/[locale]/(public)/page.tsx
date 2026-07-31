@@ -50,7 +50,9 @@ export default async function PageAccueil({ params }: Props) {
   const tParcours = await getTranslations("parcoursLocataire");
   const base = clientEnv.NEXT_PUBLIC_SITE_URL;
 
-  const vitrine = await annoncesEnVitrine(4);
+  // Deux rangées de quatre : une seule rangée donnait un aperçu trop
+  // maigre pour juger de l'offre.
+  const vitrine = await annoncesEnVitrine(8);
 
   const etapes = [1, 2, 3, 4].map((numero) => ({
     titre: tParcours(`etapes.e${numero}.titre`),

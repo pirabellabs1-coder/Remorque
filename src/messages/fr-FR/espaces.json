@@ -1,0 +1,121 @@
+{
+  "espaces": {
+    "enAttente": "Les données arriveront avec la base. Les écrans sont en place, ils n’affichent encore aucun chiffre réel.",
+    "ouvrirMenu": "Ouvrir le menu",
+    "fermerMenu": "Fermer le menu",
+    "locataire": {
+      "nom": "Mes locations",
+      "bascule": "Passer en loueur",
+      "nav": {
+        "tableauDeBord": "Tableau de bord",
+        "reservations": "Mes réservations",
+        "favoris": "Favoris",
+        "messages": "Messages",
+        "paiements": "Paiements et cautions",
+        "avis": "Avis",
+        "profil": "Profil et véhicule",
+        "parametres": "Paramètres"
+      },
+      "tableau": {
+        "titre": "Tableau de bord",
+        "chapo": "Vos locations en cours, à venir et passées.",
+        "aVenir": "Locations à venir",
+        "aVenirPrecision": "Adresse et code de retrait dès la confirmation",
+        "cautions": "Cautions en cours",
+        "cautionsPrecision": "Empreinte bancaire, jamais prélevée sans motif",
+        "messages": "Messages non lus",
+        "messagesPrecision": "Conversations rattachées à une réservation",
+        "prochaine": "Prochaine location",
+        "vide": {
+          "titre": "Aucune location pour l’instant",
+          "texte": "Vos réservations apparaîtront ici, avec le contrat, l’itinéraire et les états des lieux.",
+          "action": "Chercher une remorque"
+        }
+      }
+    },
+    "loueur": {
+      "nom": "Espace loueur",
+      "bascule": "Passer en locataire",
+      "nav": {
+        "tableauDeBord": "Tableau de bord",
+        "annonces": "Mes annonces",
+        "calendrier": "Calendrier",
+        "reservations": "Réservations",
+        "etatsDesLieux": "États des lieux",
+        "messages": "Messages",
+        "revenus": "Revenus",
+        "avis": "Avis reçus",
+        "profil": "Profil et paiements",
+        "parametres": "Paramètres"
+      },
+      "tableau": {
+        "titre": "Tableau de bord",
+        "chapo": "Votre parc, vos demandes et vos versements.",
+        "action": "Publier une annonce",
+        "revenus": "Revenus du mois",
+        "revenusPrecision": "Net perçu, commission déduite",
+        "occupation": "Taux d’occupation",
+        "occupationPrecision": "Jours loués sur jours disponibles",
+        "demandes": "Demandes en attente",
+        "demandesPrecision": "Vingt-quatre heures pour accepter ou refuser",
+        "note": "Note moyenne",
+        "notePrecision": "Sur les avis vérifiés",
+        "actions": "Actions requises",
+        "vide": {
+          "titre": "Rien ne vous attend",
+          "texte": "Les demandes à accepter, les états des lieux à signer et les versements à venir apparaîtront ici.",
+          "action": "Publier une annonce"
+        }
+      }
+    },
+    "admin": {
+      "nom": "Administration",
+      "nav": {
+        "vueDensemble": "Vue d’ensemble",
+        "utilisateurs": "Utilisateurs",
+        "annonces": "Annonces",
+        "reservations": "Réservations",
+        "finance": "Finance",
+        "litiges": "Litiges",
+        "assurance": "Assurance",
+        "pays": "Pays",
+        "contenu": "Contenu",
+        "support": "Support",
+        "statistiques": "Statistiques",
+        "parametres": "Paramètres",
+        "journalAudit": "Journal d’audit"
+      },
+      "tableau": {
+        "titre": "Vue d’ensemble",
+        "chapo": "L’activité de la plateforme et ce qui attend une décision.",
+        "activite": "Activité",
+        "volume": "Volume d’affaires",
+        "volumePrecision": "Locations payées sur la période",
+        "reservations": "Réservations",
+        "reservationsPrecision": "Confirmées et clôturées",
+        "commission": "Taux de commission réel",
+        "commissionPrecision": "Revenu net rapporté au volume",
+        "densite": "Densité d’offre",
+        "densitePrecision": "Annonces actives par ville — l’indicateur avancé",
+        "files": "Files d’attente",
+        "file": {
+          "moderation": "Annonces à modérer",
+          "moderationPrecision": "Avant première mise en ligne",
+          "verifications": "Identités à vérifier",
+          "verificationsPrecision": "Pièces d’identité et permis",
+          "litiges": "Litiges ouverts",
+          "litigesPrecision": "Fonds gelés tant qu’ils le restent",
+          "sinistres": "Sinistres déclarés",
+          "sinistresPrecision": "À transmettre au partenaire"
+        },
+        "pays": "Comparaison entre pays",
+        "colonne": {
+          "pays": "Pays",
+          "annonces": "Annonces actives",
+          "reservations": "Réservations",
+          "volume": "Volume d’affaires"
+        }
+      }
+    }
+  }
+}

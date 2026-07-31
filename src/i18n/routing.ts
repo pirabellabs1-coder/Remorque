@@ -58,6 +58,43 @@ export const pathnames = {
   "/mentions-legales": "/mentions-legales",
   "/mediation": "/mediation",
   "/plan-du-site": "/plan-du-site",
+
+  /* --- Espace locataire ------------------------------------------------- */
+  "/compte": "/compte",
+  "/compte/reservations": "/compte/reservations",
+  "/compte/favoris": "/compte/favoris",
+  "/compte/messages": "/compte/messages",
+  "/compte/paiements": "/compte/paiements",
+  "/compte/profil": "/compte/profil",
+  "/compte/avis": "/compte/avis",
+  "/compte/parametres": "/compte/parametres",
+
+  /* --- Espace loueur ---------------------------------------------------- */
+  "/proprietaire": "/proprietaire",
+  "/proprietaire/annonces": "/proprietaire/annonces",
+  "/proprietaire/calendrier": "/proprietaire/calendrier",
+  "/proprietaire/reservations": "/proprietaire/reservations",
+  "/proprietaire/etats-des-lieux": "/proprietaire/etats-des-lieux",
+  "/proprietaire/messages": "/proprietaire/messages",
+  "/proprietaire/revenus": "/proprietaire/revenus",
+  "/proprietaire/avis": "/proprietaire/avis",
+  "/proprietaire/profil": "/proprietaire/profil",
+  "/proprietaire/parametres": "/proprietaire/parametres",
+
+  /* --- Super administration --------------------------------------------- */
+  "/admin": "/admin",
+  "/admin/utilisateurs": "/admin/utilisateurs",
+  "/admin/annonces": "/admin/annonces",
+  "/admin/reservations": "/admin/reservations",
+  "/admin/finance": "/admin/finance",
+  "/admin/litiges": "/admin/litiges",
+  "/admin/assurance": "/admin/assurance",
+  "/admin/pays": "/admin/pays",
+  "/admin/contenu": "/admin/contenu",
+  "/admin/support": "/admin/support",
+  "/admin/statistiques": "/admin/statistiques",
+  "/admin/parametres": "/admin/parametres",
+  "/admin/journal-audit": "/admin/journal-audit",
 } as const;
 
 export const routing = defineRouting({
