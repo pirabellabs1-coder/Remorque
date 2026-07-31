@@ -31,6 +31,10 @@
           "texte": "Vos réservations apparaîtront ici, avec le contrat, l’itinéraire et les états des lieux.",
           "action": "Chercher une remorque"
         }
+      },
+      "groupe": {
+        "suivi": "Suivi",
+        "compte": "Compte"
       }
     },
     "loueur": {
@@ -65,7 +69,201 @@
           "titre": "Rien ne vous attend",
           "texte": "Les demandes à accepter, les états des lieux à signer et les versements à venir apparaîtront ici.",
           "action": "Publier une annonce"
+        },
+        "revenusTitre": "Revenus nets, douze derniers mois",
+        "revenusLegende": "Évolution du revenu net mensuel, commission déduite, sur les douze derniers mois",
+        "versusMoisPrecedent": "{signe}{pourcentage} % par rapport au mois précédent",
+        "aucunMoisPrecedent": "Premier mois d’activité",
+        "demandesTitre": "Demandes à traiter",
+        "demandesChapo": "Vingt-quatre heures pour répondre, au-delà la demande expire.",
+        "aVenirTitre": "Prochaines locations",
+        "repartitionTitre": "Revenus par annonce",
+        "repartitionLegende": "Part de chaque annonce dans votre revenu net",
+        "toutVoir": "Tout voir",
+        "locationsCloturees": "Locations clôturées",
+        "locationsClotureesPrecision": "Depuis l’ouverture de votre compte",
+        "tauxAcceptation": "Taux d’acceptation",
+        "tauxAcceptationPrecision": "Sur les demandes tranchées",
+        "aVenirCourt": "Locations à venir",
+        "aVenirCourtPrecision": "Confirmées et payées",
+        "netTotal": "Revenu net total",
+        "netTotalPrecision": "Commission de la plateforme déduite",
+        "aucuneDemande": "Aucune demande en attente.",
+        "aucuneAvenir": "Aucune location à venir."
+      },
+      "groupe": {
+        "locations": "Locations",
+        "argent": "Revenus",
+        "compte": "Compte"
+      },
+      "annonces": {
+        "titre": "Mes annonces",
+        "chapo": "{nombre, plural, =0 {Aucune annonce publiée pour l’instant.} =1 {Une annonce en ligne.} other {# annonces en ligne.}}",
+        "parc": "Parc publié",
+        "parJour": "par jour",
+        "voir": "Voir en ligne",
+        "vide": {
+          "titre": "Aucune annonce publiée",
+          "texte": "Publiez votre première remorque avec le formulaire ci-dessous : elle apparaîtra immédiatement dans le catalogue public."
         }
+      },
+      "publication": {
+        "titre": "Publier une annonce",
+        "chapo": "L’annonce est mise en ligne immédiatement et devient visible dans la recherche, sur la page de sa ville et sur l’accueil.",
+        "materiel": "Le matériel",
+        "titrePlaceholder": "Benne basculante 750 kg",
+        "categorie": "Catégorie",
+        "ville": "Ville",
+        "description": "Description",
+        "descriptionPlaceholder": "Décrivez le matériel, son état, les conditions de retrait et ce qui est fourni avec.",
+        "caracteristiques": "Caractéristiques",
+        "ptac": "PTAC (kg)",
+        "poidsVide": "Poids à vide (kg)",
+        "poidsVideAide": "La charge utile en est déduite automatiquement.",
+        "longueur": "Longueur utile (mm)",
+        "largeur": "Largeur utile (mm)",
+        "freinee": "Remorque freinée",
+        "conditions": "Conditions de location",
+        "prix": "Prix par jour (€)",
+        "caution": "Caution (€)",
+        "cautionAide": "Empreinte bancaire, prélevée uniquement en cas de dommage.",
+        "annulation": "Politique d’annulation",
+        "annulationSouple": "Souple — remboursement intégral jusqu’à 24 h avant",
+        "annulationModeree": "Modérée — remboursement intégral jusqu’à 3 jours avant",
+        "annulationStricte": "Stricte — 50 % remboursés jusqu’à 7 jours avant",
+        "equipements": "Équipements fournis",
+        "equipementsPlaceholder": "Sangles, bâche, roue de secours",
+        "equipementsAide": "Séparez par des virgules.",
+        "instantanee": "Réservation instantanée",
+        "instantaneeAide": "Le locataire réserve sans attendre votre accord. Les annonces instantanées sont réservées deux fois plus souvent.",
+        "publier": "Publier l’annonce",
+        "enCours": "Publication…",
+        "publiee": "Annonce publiée et visible dans le catalogue.",
+        "voirEnLigne": "La voir en ligne",
+        "erreur": "Champ invalide : {champ}",
+        "titreChamp": "Titre de l’annonce"
+      },
+      "reservations": {
+        "titre": "Réservations",
+        "chapo": "{nombre, plural, =0 {Aucune réservation.} =1 {Une réservation.} other {# réservations.}}",
+        "toutes": "Toutes",
+        "aTraiter": "À traiter",
+        "aVenir": "À venir",
+        "enCours": "En cours",
+        "terminees": "Terminées",
+        "reference": "Référence",
+        "locataire": "Locataire",
+        "materiel": "Matériel",
+        "dates": "Dates",
+        "montant": "Net perçu",
+        "statut": "Statut",
+        "duree": "{nombre, plural, =1 {1 jour} other {# jours}}",
+        "vide": {
+          "titre": "Aucune réservation dans ce filtre",
+          "texte": "Changez de filtre, ou publiez une annonce pour recevoir vos premières demandes."
+        }
+      },
+      "revenus": {
+        "titre": "Revenus",
+        "chapo": "Ce que vous avez perçu, ce que la plateforme a prélevé, et quand vous êtes viré.",
+        "courbeTitre": "Revenu net par mois",
+        "courbeLegende": "Revenu net mensuel, commission déduite, sur les douze derniers mois",
+        "detailTitre": "Détail mensuel",
+        "mois": "Mois",
+        "locations": "Locations",
+        "brut": "Montant brut",
+        "commission": "Commission",
+        "net": "Net perçu",
+        "total": "Total",
+        "parAnnonceTitre": "Répartition par annonce",
+        "commissionTitre": "Où va l’argent",
+        "commissionLegende": "Répartition entre le net perçu et la commission de la plateforme",
+        "partNet": "Votre net",
+        "partCommission": "Commission de la plateforme",
+        "versementTitre": "Versements",
+        "versementTexte": "Le virement part sept jours après la restitution du matériel, une fois l’état des lieux de retour signé. Un litige ou un sinistre ouvert suspend le versement jusqu’à sa résolution."
+      },
+      "avis": {
+        "titre": "Avis reçus",
+        "chapo": "{nombre, plural, =0 {Aucun avis pour l’instant.} =1 {Un avis reçu.} other {# avis reçus.}}",
+        "moyenne": "Note moyenne",
+        "repartition": "Répartition des notes",
+        "etoiles": "{nombre, plural, =1 {1 étoile} other {# étoiles}}",
+        "repondre": "Répondre",
+        "votreReponse": "Votre réponse",
+        "vide": {
+          "titre": "Aucun avis reçu",
+          "texte": "Les locataires peuvent déposer un avis dans les quatorze jours suivant la restitution."
+        }
+      },
+      "calendrier": {
+        "titre": "Calendrier",
+        "chapo": "Vos locations mois par mois, toutes annonces confondues.",
+        "moisPrecedent": "Mois précédent",
+        "moisSuivant": "Mois suivant",
+        "legendeLouee": "Journée louée",
+        "legendeDemande": "Demande en attente",
+        "legendeLibre": "Disponible",
+        "aucuneCeMois": "Aucune location ce mois-ci.",
+        "detailMois": "Locations du mois"
+      },
+      "etatsDesLieux": {
+        "titre": "États des lieux",
+        "chapo": "Photographies horodatées au départ et au retour. C’est la seule pièce qui vous protège en cas de dommage contesté.",
+        "aFaire": "À réaliser",
+        "realises": "Réalisés",
+        "depart": "Départ",
+        "retour": "Retour",
+        "faire": "Réaliser l’état des lieux",
+        "vide": {
+          "titre": "Aucun état des lieux à réaliser",
+          "texte": "Un état des lieux vous sera demandé au départ et au retour de chaque location."
+        }
+      },
+      "messages": {
+        "titre": "Messages",
+        "chapo": "Les conversations sont rattachées à une réservation et conservées comme preuve.",
+        "nonLus": "{nombre, plural, =1 {1 non lu} other {# non lus}}",
+        "vide": {
+          "titre": "Aucune conversation",
+          "texte": "Les échanges avec vos locataires apparaîtront ici."
+        }
+      },
+      "profil": {
+        "titre": "Profil et paiements",
+        "chapo": "Vos coordonnées, votre identité vérifiée et le compte sur lequel vous êtes payé.",
+        "identite": "Identité",
+        "prenom": "Prénom",
+        "nom": "Nom",
+        "courriel": "Adresse électronique",
+        "telephone": "Téléphone",
+        "professionnel": "Je loue à titre professionnel",
+        "professionnelAide": "Un statut professionnel implique une facturation avec TVA et un numéro d’entreprise.",
+        "paiement": "Versements",
+        "iban": "IBAN",
+        "ibanAide": "Le compte sur lequel vos revenus sont virés. Il doit être à votre nom.",
+        "titulaire": "Titulaire du compte",
+        "verification": "Vérification d’identité",
+        "verificationTexte": "La pièce d’identité est exigée avant le premier versement. Elle est vérifiée par notre prestataire de paiement et n’est jamais conservée sur nos serveurs.",
+        "enregistrer": "Enregistrer"
+      },
+      "parametres": {
+        "titre": "Paramètres",
+        "chapo": "Notifications, conditions de location et fermeture du compte.",
+        "notifications": "Notifications",
+        "notifDemande": "Nouvelle demande de réservation",
+        "notifMessage": "Nouveau message",
+        "notifVersement": "Versement effectué",
+        "notifAvis": "Nouvel avis reçu",
+        "courriel": "Courriel",
+        "sms": "SMS",
+        "conditions": "Conditions par défaut",
+        "preavis": "Préavis minimum avant une location",
+        "dureeMax": "Durée maximale d’une location",
+        "danger": "Fermeture du compte",
+        "dangerTexte": "La fermeture retire vos annonces du catalogue. Elle est impossible tant qu’une location est en cours ou qu’un litige est ouvert.",
+        "fermer": "Fermer mon compte",
+        "enregistrer": "Enregistrer"
       }
     },
     "admin": {
@@ -115,7 +313,27 @@
           "reservations": "Réservations",
           "volume": "Volume d’affaires"
         }
+      },
+      "groupe": {
+        "exploitation": "Exploitation",
+        "argent": "Finance",
+        "configuration": "Configuration"
       }
+    },
+    "replier": "Replier",
+    "deplier": "Déplier le menu",
+    "voirLeSite": "Voir le site",
+    "statuts": {
+      "demandee": "Demande reçue",
+      "acceptee": "Acceptée, en attente de paiement",
+      "payee": "Payée",
+      "confirmee": "Confirmée",
+      "en_cours": "En cours",
+      "restituee": "Restituée, à clôturer",
+      "cloturee": "Clôturée",
+      "refusee": "Refusée",
+      "expiree": "Expirée",
+      "annulee": "Annulée"
     }
   }
 }

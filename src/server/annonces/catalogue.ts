@@ -1,5 +1,7 @@
 import { CATEGORIES, type SlugCategorie } from "@/config/categories";
 
+import { listerAnnonces } from "./depot";
+
 /**
  * Accès au catalogue d'annonces.
  *
@@ -62,7 +64,8 @@ const photoDe = (slug: SlugCategorie) => {
   return { photo: categorie.photo, photoAlt: categorie.alt };
 };
 
-const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
+/** Graine du dépôt (`depot.ts`), et non source de lecture directe. */
+export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
   {
     id: "d1",
     slug: "benne-basculante-750-kg",
@@ -414,7 +417,7 @@ export async function rechercherAnnonces(
   const { ville, categorie, tri = "pertinence" } = criteres;
   const villeRecherchee = ville ? normaliserVille(ville) : undefined;
 
-  const annonces = JEU_DE_DEMONSTRATION.filter((annonce) => {
+  const annonces = listerAnnonces().filter((annonce) => {
     if (categorie && annonce.categorie !== categorie) return false;
     // Sans ce filtre, une recherche « Bordeaux » renvoyait les annonces de
     // Lyon sous le titre « Remorques à louer à Bordeaux ».
@@ -430,7 +433,7 @@ export async function annoncesEnVitrine(
   nombre: number,
 ): Promise<AnnonceResume[]> {
   if (!DEMONSTRATION_AUTORISEE) return [];
-  return [...JEU_DE_DEMONSTRATION]
+  return [...listerAnnonces()]
     .sort(comparateurs.pertinence)
     .slice(0, nombre);
 }
@@ -445,7 +448,7 @@ export async function annoncesDeLaVille(
 ): Promise<AnnonceResume[]> {
   if (!DEMONSTRATION_AUTORISEE) return [];
 
-  return JEU_DE_DEMONSTRATION.filter(
+  return listerAnnonces().filter(
     (annonce) =>
       annonce.villeSlug === villeSlug &&
       (!categorie || annonce.categorie === categorie),
@@ -463,7 +466,7 @@ export async function compterAnnoncesParVille(): Promise<Map<string, number>> {
   const comptes = new Map<string, number>();
   if (!DEMONSTRATION_AUTORISEE) return comptes;
 
-  for (const annonce of JEU_DE_DEMONSTRATION) {
+  for (const annonce of listerAnnonces()) {
     comptes.set(annonce.villeSlug, (comptes.get(annonce.villeSlug) ?? 0) + 1);
   }
   return comptes;
@@ -484,7 +487,7 @@ export async function trouverAnnonce(
   slug: string,
 ): Promise<AnnonceDetail | null> {
   return (
-    JEU_DE_DEMONSTRATION.find(
+    listerAnnonces().find(
       (annonce) => annonce.villeSlug === villeSlug && annonce.slug === slug,
     ) ?? null
   );
@@ -492,7 +495,7 @@ export async function trouverAnnonce(
 
 /** Adresses des fiches, pour la pré-génération et le plan de site. */
 export async function listerAdressesAnnonces() {
-  return JEU_DE_DEMONSTRATION.map(({ villeSlug, slug }) => ({
+  return listerAnnonces().map(({ villeSlug, slug }) => ({
     ville: villeSlug,
     slug,
   }));

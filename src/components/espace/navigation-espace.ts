@@ -1,3 +1,4 @@
+import type { NomIcone } from "@/components/espace/icone";
 import type { pathnames } from "@/i18n/routing";
 
 /**
@@ -6,6 +7,11 @@ import type { pathnames } from "@/i18n/routing";
  * Un seul fichier pour les trois : ils partagent la même coquille, et leur
  * arborescence est le contrat de la section 04 du cadrage. La voir d'un bloc
  * évite qu'une entrée de l'un dérive de son équivalent dans l'autre.
+ *
+ * Les entrées sont réunies en groupes. Treize entrées à plat, comme en compte
+ * l'administration, ne se parcourent pas : on les relit une à une à chaque
+ * fois. Regroupées par nature — l'activité, l'argent, le réglage — on va
+ * directement à la bonne section.
  *
  * Sur les appellations
  * -------------------
@@ -25,44 +31,103 @@ export type EntreeEspace = {
   /** Clé de traduction, dans l'espace de noms `espaces`. */
   cle: string;
   href: AdresseStatique;
+  icone: NomIcone;
+};
+
+export type GroupeEspace = {
+  /** Clé de traduction du titre de groupe ; absente pour le premier groupe. */
+  cle?: string;
+  entrees: readonly EntreeEspace[];
 };
 
 export const NAVIGATION_LOCATAIRE = [
-  { cle: "tableauDeBord", href: "/compte" },
-  { cle: "reservations", href: "/compte/reservations" },
-  { cle: "favoris", href: "/compte/favoris" },
-  { cle: "messages", href: "/compte/messages" },
-  { cle: "paiements", href: "/compte/paiements" },
-  { cle: "avis", href: "/compte/avis" },
-  { cle: "profil", href: "/compte/profil" },
-  { cle: "parametres", href: "/compte/parametres" },
-] as const satisfies readonly EntreeEspace[];
+  {
+    entrees: [
+      { cle: "tableauDeBord", href: "/compte", icone: "tableau" },
+      { cle: "reservations", href: "/compte/reservations", icone: "reservation" },
+      { cle: "messages", href: "/compte/messages", icone: "message" },
+    ],
+  },
+  {
+    cle: "groupe.suivi",
+    entrees: [
+      { cle: "favoris", href: "/compte/favoris", icone: "coeur" },
+      { cle: "paiements", href: "/compte/paiements", icone: "carte" },
+      { cle: "avis", href: "/compte/avis", icone: "etoile" },
+    ],
+  },
+  {
+    cle: "groupe.compte",
+    entrees: [
+      { cle: "profil", href: "/compte/profil", icone: "profil" },
+      { cle: "parametres", href: "/compte/parametres", icone: "reglages" },
+    ],
+  },
+] as const satisfies readonly GroupeEspace[];
 
 export const NAVIGATION_LOUEUR = [
-  { cle: "tableauDeBord", href: "/proprietaire" },
-  { cle: "annonces", href: "/proprietaire/annonces" },
-  { cle: "calendrier", href: "/proprietaire/calendrier" },
-  { cle: "reservations", href: "/proprietaire/reservations" },
-  { cle: "etatsDesLieux", href: "/proprietaire/etats-des-lieux" },
-  { cle: "messages", href: "/proprietaire/messages" },
-  { cle: "revenus", href: "/proprietaire/revenus" },
-  { cle: "avis", href: "/proprietaire/avis" },
-  { cle: "profil", href: "/proprietaire/profil" },
-  { cle: "parametres", href: "/proprietaire/parametres" },
-] as const satisfies readonly EntreeEspace[];
+  {
+    entrees: [
+      { cle: "tableauDeBord", href: "/proprietaire", icone: "tableau" },
+      { cle: "annonces", href: "/proprietaire/annonces", icone: "annonce" },
+      { cle: "calendrier", href: "/proprietaire/calendrier", icone: "calendrier" },
+    ],
+  },
+  {
+    cle: "groupe.locations",
+    entrees: [
+      { cle: "reservations", href: "/proprietaire/reservations", icone: "reservation" },
+      { cle: "etatsDesLieux", href: "/proprietaire/etats-des-lieux", icone: "photo" },
+      { cle: "messages", href: "/proprietaire/messages", icone: "message" },
+    ],
+  },
+  {
+    cle: "groupe.argent",
+    entrees: [
+      { cle: "revenus", href: "/proprietaire/revenus", icone: "euro" },
+      { cle: "avis", href: "/proprietaire/avis", icone: "etoile" },
+    ],
+  },
+  {
+    cle: "groupe.compte",
+    entrees: [
+      { cle: "profil", href: "/proprietaire/profil", icone: "profil" },
+      { cle: "parametres", href: "/proprietaire/parametres", icone: "reglages" },
+    ],
+  },
+] as const satisfies readonly GroupeEspace[];
 
 export const NAVIGATION_ADMIN = [
-  { cle: "vueDensemble", href: "/admin" },
-  { cle: "utilisateurs", href: "/admin/utilisateurs" },
-  { cle: "annonces", href: "/admin/annonces" },
-  { cle: "reservations", href: "/admin/reservations" },
-  { cle: "finance", href: "/admin/finance" },
-  { cle: "litiges", href: "/admin/litiges" },
-  { cle: "assurance", href: "/admin/assurance" },
-  { cle: "pays", href: "/admin/pays" },
-  { cle: "contenu", href: "/admin/contenu" },
-  { cle: "support", href: "/admin/support" },
-  { cle: "statistiques", href: "/admin/statistiques" },
-  { cle: "parametres", href: "/admin/parametres" },
-  { cle: "journalAudit", href: "/admin/journal-audit" },
-] as const satisfies readonly EntreeEspace[];
+  {
+    entrees: [
+      { cle: "vueDensemble", href: "/admin", icone: "tableau" },
+      { cle: "statistiques", href: "/admin/statistiques", icone: "courbe" },
+    ],
+  },
+  {
+    cle: "groupe.exploitation",
+    entrees: [
+      { cle: "utilisateurs", href: "/admin/utilisateurs", icone: "utilisateurs" },
+      { cle: "annonces", href: "/admin/annonces", icone: "annonce" },
+      { cle: "reservations", href: "/admin/reservations", icone: "reservation" },
+      { cle: "support", href: "/admin/support", icone: "aide" },
+    ],
+  },
+  {
+    cle: "groupe.argent",
+    entrees: [
+      { cle: "finance", href: "/admin/finance", icone: "euro" },
+      { cle: "litiges", href: "/admin/litiges", icone: "balance" },
+      { cle: "assurance", href: "/admin/assurance", icone: "bouclier" },
+    ],
+  },
+  {
+    cle: "groupe.configuration",
+    entrees: [
+      { cle: "pays", href: "/admin/pays", icone: "globe" },
+      { cle: "contenu", href: "/admin/contenu", icone: "document" },
+      { cle: "parametres", href: "/admin/parametres", icone: "reglages" },
+      { cle: "journalAudit", href: "/admin/journal-audit", icone: "journal" },
+    ],
+  },
+] as const satisfies readonly GroupeEspace[];
