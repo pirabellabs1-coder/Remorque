@@ -6,7 +6,7 @@ import { ContenuLocal } from "@/components/local/contenu-local";
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
 import { MARKETS, type Market } from "@/config/markets";
-import { VILLES, trouverVille } from "@/config/villes";
+import { VILLES, trouverVille, type CodePays } from "@/config/villes";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { PRIX_AFFICHE } from "@/lib/cn";
@@ -22,14 +22,25 @@ type Props = {
 /**
  * Croisement ville × catégorie — la longue traîne (section 4.1).
  *
- * « Remorque benne à Lyon » se cherche bien davantage que « location de
+ * « Remorque benne à Bruxelles » se cherche bien davantage que « location de
  * remorque » : ce sont ces pages qui captent l'intention précise, donc celle
- * qui convertit. Trente-six villes × dix catégories font 360 pages, toutes
- * pré-générées à partir des données réelles.
+ * qui convertit.
+ *
+ * Seuls les pays d'ouverture sont pré-générés. Une centaine de villes par dix
+ * catégories feraient un millier de pages construites à chaque déploiement,
+ * dont la grande majorité pour des marchés qui n'ouvrent pas avant plusieurs
+ * mois. Les autres sont rendues à la première visite, puis servies depuis le
+ * cache : le référencement n'y perd rien, la durée de compilation si.
  */
+const PAYS_PRE_GENERES: readonly CodePays[] = ["BE", "FR"];
+
 export function generateStaticParams() {
+  const villes = VILLES.filter((ville) =>
+    PAYS_PRE_GENERES.includes(ville.pays),
+  );
+
   return routing.locales.flatMap((locale) =>
-    VILLES.flatMap((ville) =>
+    villes.flatMap((ville) =>
       CATEGORIES.map((categorie) => ({
         locale,
         ville: ville.slug,

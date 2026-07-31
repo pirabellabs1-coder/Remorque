@@ -5,7 +5,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { ContenuLocal } from "@/components/local/contenu-local";
 import { clientEnv } from "@/config/env-client";
 import { MARKETS, type Market } from "@/config/markets";
-import { VILLES, trouverVille } from "@/config/villes";
+import { VILLES, trouverVille, zoneDe } from "@/config/villes";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { PRIX_AFFICHE } from "@/lib/cn";
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonique = new URL(chemin, clientEnv.NEXT_PUBLIC_SITE_URL).toString();
 
   return {
-    title: t("metaTitre", { ville: ville.nom, departement: ville.departement }),
+    title: t("metaTitre", { ville: ville.nom, zone: zoneDe(ville) }),
     description,
     alternates: { canonical: canonique },
     openGraph: { url: canonique, type: "website" },

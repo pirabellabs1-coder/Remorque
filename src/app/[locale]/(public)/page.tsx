@@ -15,11 +15,14 @@ import {
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
 import type { Market } from "@/config/markets";
-import { VILLES } from "@/config/villes";
+import { PAYS, villesDuPays } from "@/config/villes";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { metadonneesPage } from "@/lib/metadonnees";
 import { annoncesEnVitrine } from "@/server/annonces/catalogue";
+
+/** Villes montrées par pays sur l'accueil ; la page locale porte le reste. */
+const VILLES_PAR_PAYS = 8;
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -218,30 +221,68 @@ export default async function PageAccueil({ params }: Props) {
 
       {/* ================= Villes =================
           Le maillage vers les pages locales, qui portent 60 à 80 % du trafic
-          attendu. Sans lien depuis l'accueil, elles restent orphelines. */}
-      <section
-        className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}
-      >
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <TitreSection>{t("villes.titre")}</TitreSection>
-          <p className="pb-5 text-sm text-texte-attenue">{t("villes.mention")}</p>
-        </div>
+          attendu. Sans lien depuis l'accueil, elles restent orphelines.
 
-        <ul className="mt-10 flex flex-wrap gap-2">
-          {VILLES.map((ville) => (
-            <li key={ville.slug}>
-              <Link
-                href={{
-                  pathname: "/location-remorque/[ville]",
-                  params: { ville: ville.slug },
-                }}
-                className="inline-block rounded-full border border-bordure bg-fond-eleve px-4 py-2 text-sm transition-colors hover:border-accent hover:text-accent"
-              >
-                {ville.nom}
-              </Link>
-            </li>
-          ))}
-        </ul>
+          Groupées par pays, et non en une liste unique d'une centaine de
+          pastilles : un visiteur belge doit trouver sa ville sans balayer
+          l'Europe, et l'ordre des pays dit lequel ouvre en premier. */}
+      <section className="bg-fond-doux">
+        <div
+          className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}
+        >
+          <div className="max-w-2xl">
+            <TitreSection>{t("villes.titre")}</TitreSection>
+            <p className="mt-5 text-texte-attenue">{t("villes.mention")}</p>
+          </div>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {PAYS.map((pays) => {
+              const villes = villesDuPays(pays);
+              const visibles = villes.slice(0, VILLES_PAR_PAYS);
+              const reste = villes.length - visibles.length;
+
+              return (
+                <section
+                  key={pays}
+                  className="rounded-carte border border-bordure bg-fond-eleve p-5 shadow-(--ombre-carte)"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <h3 className="text-[0.9375rem] font-semibold">
+                      {t(`villes.pays.${pays}`)}
+                    </h3>
+                    {/* Un compte de villes couvertes, pas un compte d'annonces :
+                        celui-ci est vérifiable, l'autre serait une promesse. */}
+                    <span className="text-xs tabular-nums text-texte-attenue">
+                      {t("villes.nombre", { nombre: villes.length })}
+                    </span>
+                  </div>
+
+                  <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-0.5">
+                    {visibles.map((ville) => (
+                      <li key={ville.slug}>
+                        <Link
+                          href={{
+                            pathname: "/location-remorque/[ville]",
+                            params: { ville: ville.slug },
+                          }}
+                          className="block truncate rounded-champ px-2 py-1.5 text-sm transition-colors hover:bg-fond-doux hover:text-accent"
+                        >
+                          {ville.nom}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {reste > 0 ? (
+                    <p className="mt-3 px-2 text-xs text-texte-attenue">
+                      {t("villes.reste", { nombre: reste })}
+                    </p>
+                  ) : null}
+                </section>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
       {/* ================= Confiance =================
