@@ -58,7 +58,12 @@ export function EnTetePage({
  * Données structurées (M15). Le contenu est sérialisé côté serveur ; aucune
  * donnée saisie par un utilisateur ne doit transiter par ce composant.
  */
-export function DonneesStructurees({ donnees }: { donnees: object }) {
+export function DonneesStructurees({
+  donnees,
+}: {
+  /** Un objet, ou plusieurs graphes à déclarer sur la même page. */
+  donnees: object | object[];
+}) {
   return (
     <script
       type="application/ld+json"

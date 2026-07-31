@@ -15,6 +15,7 @@ import {
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
 import type { Market } from "@/config/markets";
+import { VILLES } from "@/config/villes";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { metadonneesPage } from "@/lib/metadonnees";
@@ -215,6 +216,34 @@ export default async function PageAccueil({ params }: Props) {
             })}
           </ul>
         </div>
+      </section>
+
+      {/* ================= Villes =================
+          Le maillage vers les pages locales, qui portent 60 à 80 % du trafic
+          attendu. Sans lien depuis l'accueil, elles restent orphelines. */}
+      <section
+        className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}
+      >
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <TitreSection>{t("villes.titre")}</TitreSection>
+          <p className="pb-5 text-sm text-texte-attenue">{t("villes.mention")}</p>
+        </div>
+
+        <ul className="mt-10 flex flex-wrap gap-2">
+          {VILLES.map((ville) => (
+            <li key={ville.slug}>
+              <Link
+                href={{
+                  pathname: "/location-remorque/[ville]",
+                  params: { ville: ville.slug },
+                }}
+                className="inline-block rounded-full border border-bordure bg-fond-eleve px-4 py-2 text-sm transition-colors hover:border-accent hover:text-accent"
+              >
+                {ville.nom}
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
       {/* ================= Confiance =================

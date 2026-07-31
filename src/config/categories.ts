@@ -12,6 +12,13 @@
 export type DefinitionCategorie = {
   slug: string;
   nom: string;
+  /**
+   * Le nom tel qu'il s'emploie en milieu de phrase, sans capitale initiale.
+   * « Location de remorque benne à Lyon », et non « Location de Remorque
+   * benne à Lyon » : un gabarit qui réutilise `nom` produit cette faute sur
+   * les 360 pages locales.
+   */
+  nomEnPhrase: string;
   usages: string;
   /** Photographie de la catégorie, servie depuis `public/images`. */
   photo: string;
@@ -31,6 +38,7 @@ export const CATEGORIES = [
     photo: "/images/remorque-benne.webp",
     alt: "Remorque benne galvanisée à ridelles hautes, chargée de gravats et de déchets verts",
     nom: "Remorque benne",
+    nomEnPhrase: "remorque benne",
     usages: "Gravats, terre, déchets verts, débarras",
     releveKilometrique: false,
   },
@@ -39,6 +47,7 @@ export const CATEGORIES = [
     photo: "/images/remorque-plateau.webp",
     alt: "Remorque plateau à ridelles basses, plancher bois vide, stationnée sur une cour pavée",
     nom: "Remorque plateau",
+    nomEnPhrase: "remorque plateau",
     usages: "Matériaux longs, palettes, mobilier volumineux",
     releveKilometrique: false,
   },
@@ -47,6 +56,7 @@ export const CATEGORIES = [
     photo: "/images/porte-voiture.webp",
     alt: "Porte-voiture à double essieu, une citadine grise sanglée sur le plateau",
     nom: "Porte-voiture",
+    nomEnPhrase: "porte-voiture",
     usages: "Véhicule en panne, voiture de collection, transfert",
     releveKilometrique: false,
   },
@@ -55,6 +65,7 @@ export const CATEGORIES = [
     photo: "/images/remorque-bagagere.webp",
     alt: "Petite remorque bagagère fermée à couvercle blanc, dans une allée résidentielle",
     nom: "Remorque bagagère",
+    nomEnPhrase: "remorque bagagère",
     usages: "Déménagement, vacances, cartons et meubles",
     releveKilometrique: false,
   },
@@ -63,6 +74,7 @@ export const CATEGORIES = [
     photo: "/images/van-a-chevaux.webp",
     alt: "Van à chevaux blanc à deux places, pont arrière relevé, en bordure de paddock",
     nom: "Van à chevaux",
+    nomEnPhrase: "van à chevaux",
     usages: "Concours, transhumance, transport équin",
     releveKilometrique: false,
   },
@@ -71,6 +83,7 @@ export const CATEGORIES = [
     photo: "/images/porte-bateau.webp",
     alt: "Porte-bateau galvanisé supportant un petit bateau à moteur blanc, sur une cale de mise à l'eau",
     nom: "Porte-bateau",
+    nomEnPhrase: "porte-bateau",
     usages: "Mise à l'eau, hivernage, transport de coque",
     releveKilometrique: false,
   },
@@ -79,6 +92,7 @@ export const CATEGORIES = [
     photo: "/images/porte-moto.webp",
     alt: "Porte-moto à essieu unique avec rampe de chargement, une moto sportive sanglée",
     nom: "Porte-moto",
+    nomEnPhrase: "porte-moto",
     usages: "Circuit, rassemblement, moto immobilisée",
     releveKilometrique: false,
   },
@@ -87,6 +101,7 @@ export const CATEGORIES = [
     photo: "/images/remorque-frigorifique.webp",
     alt: "Remorque frigorifique blanche à porte inox, groupe de froid en toiture",
     nom: "Remorque frigorifique",
+    nomEnPhrase: "remorque frigorifique",
     usages: "Traiteur, événement, produits frais",
     releveKilometrique: false,
   },
@@ -95,6 +110,7 @@ export const CATEGORIES = [
     photo: "/images/nacelle-et-materiel-chantier.webp",
     alt: "Nacelle élévatrice compacte sur châssis remorquable, stabilisateurs repliés",
     nom: "Nacelle et matériel de chantier",
+    nomEnPhrase: "nacelle et matériel de chantier",
     usages: "Travaux en hauteur, ravalement, élagage",
     releveKilometrique: true,
   },
@@ -103,6 +119,7 @@ export const CATEGORIES = [
     photo: "/images/utilitaire.webp",
     alt: "Fourgon utilitaire blanc portes arrière ouvertes sur un volume de chargement vide",
     nom: "Utilitaire",
+    nomEnPhrase: "utilitaire",
     usages: "Déménagement complet, livraison, transport de volume",
     releveKilometrique: true,
   },

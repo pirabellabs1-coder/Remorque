@@ -435,6 +435,67 @@ export async function annoncesEnVitrine(
     .slice(0, nombre);
 }
 
+/**
+ * Annonces d'une ville, éventuellement d'une seule catégorie.
+ * Alimente les pages locales `/location-remorque/[ville]`.
+ */
+export async function annoncesDeLaVille(
+  villeSlug: string,
+  categorie?: string,
+): Promise<AnnonceResume[]> {
+  if (!DEMONSTRATION_AUTORISEE) return [];
+
+  return JEU_DE_DEMONSTRATION.filter(
+    (annonce) =>
+      annonce.villeSlug === villeSlug &&
+      (!categorie || annonce.categorie === categorie),
+  ).sort(comparateurs.pertinence);
+}
+
+/**
+ * Nombre d'annonces actives par ville.
+ *
+ * C'est l'indicateur avancé du projet — la densité d'offre par ville, et non
+ * le trafic (section 15). Il est compté, jamais saisi : afficher un volume
+ * arrondi ou espéré serait une allégation invérifiable.
+ */
+export async function compterAnnoncesParVille(): Promise<Map<string, number>> {
+  const comptes = new Map<string, number>();
+  if (!DEMONSTRATION_AUTORISEE) return comptes;
+
+  for (const annonce of JEU_DE_DEMONSTRATION) {
+    comptes.set(annonce.villeSlug, (comptes.get(annonce.villeSlug) ?? 0) + 1);
+  }
+  return comptes;
+}
+
+/** Répartition par catégorie au sein d'une ville, pour la longue traîne. */
+export async function compterCategoriesDansLaVille(
+  villeSlug: string,
+): Promise<Map<string, number>> {
+  const comptes = new Map<string, number>();
+  if (!DEMONSTRATION_AUTORISEE) return comptes;
+
+  for (const annonce of JEU_DE_DEMONSTRATION) {
+    if (annonce.villeSlug !== villeSlug) continue;
+    comptes.set(
+      annonce.categorie,
+      (comptes.get(annonce.categorie) ?? 0) + 1,
+    );
+  }
+  return comptes;
+}
+
+/** Prix journalier le plus bas d'une ville, en centimes. */
+export async function prixMinimumDansLaVille(
+  villeSlug: string,
+  categorie?: string,
+): Promise<number | null> {
+  const annonces = await annoncesDeLaVille(villeSlug, categorie);
+  if (annonces.length === 0) return null;
+  return Math.min(...annonces.map((annonce) => annonce.prixJour));
+}
+
 export async function trouverAnnonce(
   villeSlug: string,
   slug: string,

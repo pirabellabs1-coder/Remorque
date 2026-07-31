@@ -69,6 +69,10 @@
     "vitrine": {
       "titre": "Annonces près de vous",
       "action": "Voir toutes les annonces"
+    },
+    "villes": {
+      "titre": "Où louer une remorque",
+      "mention": "Le service ouvre ville par ville."
     }
   },
   "recherche": {
@@ -599,5 +603,44 @@
       }
     },
     "chargeUtileValeur": "{kg, number} kg utiles"
+  },
+  "pageLocale": {
+    "metaTitre": "Location de remorque à {ville} ({departement})",
+    "metaDescription": "{nombre, plural, one {# remorque disponible} other {# remorques disponibles}} à {ville}, à partir de {prix} par jour. Assurance comprise, caution non prélevée.",
+    "metaDescriptionVide": "Louez une remorque à {ville} : benne, plateau, porte-voiture, bagagère. Assurance comprise, caution non prélevée.",
+    "metaTitreCategorie": "Location de {categorie} à {ville}",
+    "metaDescriptionCategorie": "{nombre, plural, one {# annonce} other {# annonces}} de {categorie} à {ville}, à partir de {prix} par jour. Assurance comprise.",
+    "metaDescriptionCategorieVide": "Louez une {categorie} à {ville}. Assurance comprise, caution non prélevée.",
+    "filAriane": "Fil d’Ariane",
+    "accueil": "Accueil",
+    "titre": "Location de remorque à {ville}",
+    "titreCategorie": "Location de {categorie} à {ville}",
+    "resume": "{nombre, plural, one {# remorque disponible} other {# remorques disponibles}} à {ville}, à partir de {prix} par jour.",
+    "resumeVide": "Aucune annonce à {ville} pour l’instant. Le catalogue s’ouvre ville par ville.",
+    "annonces": "Disponible à {ville}",
+    "annoncesCategorie": "{categorie} à {ville}",
+    "vide": {
+      "titre": "Pas encore de matériel à {ville}",
+      "texte": "Les premières annonces d’une ville sont les plus demandées. Si vous possédez une remorque, c’est le bon moment.",
+      "actionProprietaire": "Publier une annonce",
+      "actionRecherche": "Chercher ailleurs"
+    },
+    "categories": "Par type de matériel à {ville}",
+    "categorieDansVille": "{categorie} à {ville}",
+    "voisines": "Autour de {ville}",
+    "distance": "{km} km",
+    "avantDeLouer": "Avant de réserver",
+    "lienPermis": "Quel permis pour quelle remorque ?",
+    "lienCharge": "Calculateur de charge",
+    "lienAssurance": "Comment fonctionne l’assurance",
+    "faq": {
+      "titre": "Questions fréquentes",
+      "q1": "Faut-il un permis particulier à {ville} ?",
+      "r1": "La règle est nationale et dépend de l’ensemble véhicule et remorque, pas de la ville. Notre calculateur vous répond en dix secondes.",
+      "q2": "La remorque est-elle assurée ?",
+      "r2": "Oui. Chaque réservation confirmée couvre le matériel pendant toute la location, et l’attestation est téléchargeable avant le départ.",
+      "q3": "Où récupérer la remorque à {ville} ?",
+      "r3": "Chez le propriétaire. Le quartier est indiqué sur l’annonce ; l’adresse exacte vous est communiquée après confirmation."
+    }
   }
 }
