@@ -40,6 +40,14 @@
   --color-ardoise-900: #1f2531;
   --color-ardoise-950: #11151d;
 
+  /*
+   * Orange de signature — la couleur du logo. Elle ne sert qu'à l'identité :
+   * l'interface reste bleue et blanche. Orange et bleu marine se répondent
+   * sans se disputer, à condition que l'orange ne quitte pas la marque.
+   */
+  --color-signal-500: #f97316;
+  --color-signal-600: #ea580c;
+
   /* États — repris par les pastilles de statut d'une réservation. */
   --color-succes: #15803d;
   --color-attention: #b45309;

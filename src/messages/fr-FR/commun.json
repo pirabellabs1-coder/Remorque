@@ -1,6 +1,6 @@
 {
   "commun": {
-    "nomPlateforme": "Remorque",
+    "nomPlateforme": "FlexiTrailer",
     "chargement": "Chargement…",
     "rechercher": "Rechercher",
     "continuer": "Continuer",
@@ -9,7 +9,8 @@
     "enregistrer": "Enregistrer",
     "parJour": "{montant} / jour",
     "distance": "à {km} km",
-    "aPartirDe": "à partir de {montant}"
+    "aPartirDe": "à partir de {montant}",
+    "signature": "La location de remorques, en toute flexibilité"
   },
   "navigation": {
     "louer": "Louer une remorque",
@@ -20,7 +21,8 @@
     "connexion": "Connexion",
     "inscription": "Créer un compte",
     "monCompte": "Mon compte",
-    "espaceProprietaire": "Espace propriétaire"
+    "espaceProprietaire": "Espace propriétaire",
+    "accueil": "Accueil"
   },
   "piedPage": {
     "louer": "Louer",
@@ -34,5 +36,54 @@
     "introuvable": "Page introuvable",
     "introuvableTexte": "Cette page n'existe pas ou n'est plus disponible.",
     "retourAccueil": "Retour à l'accueil"
+  },
+  "menu": {
+    "principale": "Navigation principale",
+    "ouvrirMenu": "Ouvrir le menu",
+    "fermerMenu": "Fermer le menu",
+    "louer": "Louer",
+    "mettreEnLocation": "Mettre en location",
+    "aide": "Aide",
+    "categories": "Catégories",
+    "toutesCategories": "Voir toutes les annonces",
+    "villes": "Villes",
+    "avantDeReserver": "Avant de réserver",
+    "outils": {
+      "permis": {
+        "titre": "Quel permis ?",
+        "texte": "B, B96 ou BE selon les poids."
+      },
+      "charge": {
+        "titre": "Calculateur de charge",
+        "texte": "Ce que votre véhicule peut tirer."
+      }
+    },
+    "locataire": {
+      "rechercher": "Chercher une remorque",
+      "commentLouer": "Comment louer",
+      "assurance": "Assurance",
+      "tarifs": "Tarifs"
+    },
+    "proprietaire": {
+      "publier": "Publier une annonce",
+      "commentPublier": "Comment ça marche",
+      "tarifsProprietaire": "Commissions",
+      "pro": "Loueurs professionnels"
+    },
+    "aideLiens": {
+      "centreAide": "Centre d’aide",
+      "contact": "Nous contacter",
+      "mediation": "Médiation de la consommation"
+    },
+    "encart": {
+      "titre": "Estimez vos revenus",
+      "texte": "Fixez votre tarif et vos disponibilités. Publier est gratuit.",
+      "action": "Publier une annonce"
+    },
+    "assurance": {
+      "titre": "Chaque location est assurée",
+      "texte": "Couverture du matériel, caution non prélevée, états des lieux signés.",
+      "action": "Comment ça fonctionne"
+    }
   }
 }

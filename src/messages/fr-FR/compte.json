@@ -1,0 +1,45 @@
+{
+  "compte": {
+    "ou": "ou",
+    "nonBranche": "L’authentification sera active dès la connexion de la base. Les écrans sont en place, le service ne l’est pas encore.",
+    "mentionLegale": "Vos données sont hébergées dans l’Union européenne. Les pièces d’identité sont chiffrées et purgées à échéance.",
+    "fournisseurs": {
+      "google": "Continuer avec Google",
+      "apple": "Continuer avec Apple"
+    },
+    "reassurance": {
+      "surtitre": "Pourquoi un compte",
+      "titre": "Réserver, suivre et prouver — au même endroit.",
+      "assurance": "Attestation d’assurance téléchargeable avant chaque départ.",
+      "caution": "Caution non prélevée : une empreinte bancaire, rien de plus.",
+      "gratuit": "Créer un compte et publier une annonce est gratuit."
+    },
+    "connexion": {
+      "metaTitre": "Connexion",
+      "metaDescription": "Connectez-vous pour suivre vos réservations, vos états des lieux et vos documents.",
+      "titre": "Content de vous revoir",
+      "sousTitre": "Retrouvez vos réservations, vos contrats et vos états des lieux.",
+      "illustration": "Véhicule tractant une remorque plateau sur une route de campagne au coucher du soleil",
+      "courriel": "Adresse électronique",
+      "courrielExemple": "vous@exemple.fr",
+      "motDePasse": "Mot de passe",
+      "motDePasseOublie": "Oublié ?",
+      "action": "Se connecter",
+      "pasDeCompte": "Pas encore de compte ? <lien>Créer un compte</lien>"
+    },
+    "inscription": {
+      "metaTitre": "Créer un compte",
+      "metaDescription": "Créez votre compte pour réserver une remorque ou mettre la vôtre en location. Gratuit.",
+      "titre": "Créez votre compte",
+      "sousTitre": "Un seul compte pour louer et pour mettre en location.",
+      "illustration": "Deux personnes réalisant l’état des lieux d’une remorque, l’une la photographiant avec son téléphone",
+      "courriel": "Adresse électronique",
+      "courrielExemple": "vous@exemple.fr",
+      "motDePasse": "Mot de passe",
+      "motDePasseAide": "{longueur} caractères minimum.",
+      "conditions": "J’accepte les <cgu>conditions générales</cgu> et la <confidentialite>politique de confidentialité</confidentialite>.",
+      "action": "Créer mon compte",
+      "dejaInscrit": "Vous avez déjà un compte ? <lien>Se connecter</lien>"
+    }
+  }
+}

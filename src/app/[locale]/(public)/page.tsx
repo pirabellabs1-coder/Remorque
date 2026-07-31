@@ -54,10 +54,8 @@ export default async function PageAccueil({ params }: Props) {
 
   return (
     <main>
-      {/* ================= Première vue =================
-          `-mt-16` remonte la section sous l'en-tête, qui est transparent sur
-          l'accueil : la photographie occupe alors tout le cadre. */}
-      <section className="relative -mt-16 bg-encre text-encre-texte">
+      {/* ================= Première vue ================= */}
+      <section className="relative bg-encre text-encre-texte">
         <div className="absolute inset-0">
           <Illustration
             src="/images/hero.webp"
@@ -78,7 +76,7 @@ export default async function PageAccueil({ params }: Props) {
           className="absolute inset-0 bg-linear-to-r from-marque-950/85 via-marque-950/40 to-transparent"
         />
 
-        <div className="relative mx-auto w-full max-w-6xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 sm:pb-24">
+        <div className="relative mx-auto w-full max-w-6xl px-4 pt-16 pb-16 sm:px-6 sm:pt-24 sm:pb-24">
           <Surtitre clair>{t("hero.surtitre")}</Surtitre>
           <h1 className={cn(TITRE.page, "mt-5 max-w-3xl text-balance")}>
             {t("titre")}
