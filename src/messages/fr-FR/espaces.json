@@ -30,11 +30,198 @@
           "titre": "Aucune location pour l’instant",
           "texte": "Vos réservations apparaîtront ici, avec le contrat, l’itinéraire et les états des lieux.",
           "action": "Chercher une remorque"
-        }
+        },
+        "totalDepense": "Total dépensé",
+        "totalDepensePrecision": "Locations encaissées, cautions non comprises",
+        "enCours": "Location en cours",
+        "aEcrire": "Avis à écrire",
+        "aEcrireTexte": "{nombre, plural, =1 {Une location attend votre avis.} other {# locations attendent votre avis.}}",
+        "aEcrireAction": "Écrire mon avis",
+        "voirTout": "Tout voir",
+        "retrait": "Retrait",
+        "restitution": "Restitution",
+        "chez": "Chez {prenom}",
+        "joursAvant": "{nombre, plural, =0 {Aujourd’hui} =1 {Demain} other {Dans # jours}}"
       },
       "groupe": {
         "suivi": "Suivi",
         "compte": "Compte"
+      },
+      "reservations": {
+        "titre": "Mes réservations",
+        "chapo": "{nombre, plural, =0 {Aucune réservation.} =1 {Une réservation.} other {# réservations.}}",
+        "toutes": "Toutes",
+        "aVenir": "À venir",
+        "enCours": "En cours",
+        "passees": "Passées",
+        "reference": "Référence",
+        "materiel": "Matériel",
+        "proprietaire": "Loueur",
+        "dates": "Dates",
+        "montant": "Montant",
+        "caution": "Caution",
+        "statut": "Statut",
+        "duree": "{nombre, plural, =1 {1 jour} other {# jours}}",
+        "voirAnnonce": "Voir l’annonce",
+        "vide": {
+          "titre": "Aucune réservation dans ce filtre",
+          "texte": "Changez de filtre, ou cherchez une remorque près de chez vous pour votre prochain trajet.",
+          "action": "Chercher une remorque"
+        }
+      },
+      "favoris": {
+        "titre": "Favoris",
+        "chapo": "Les annonces que vous avez mises de côté.",
+        "ajouteLe": "Ajouté le {date}",
+        "parJour": "par jour",
+        "baisse": "Le prix a baissé de {montant}",
+        "hausse": "Le prix a augmenté de {montant}",
+        "avis": "{nombre, plural, =0 {Aucun avis} =1 {1 avis} other {# avis}}",
+        "nonNotee": "Pas encore d’avis",
+        "retirer": "Retirer des favoris",
+        "vide": {
+          "titre": "Aucun favori",
+          "texte": "Le cœur sur une annonce la range ici. Pratique pour comparer avant de réserver, ou pour retrouver un loueur qui vous a convenu.",
+          "action": "Explorer les annonces"
+        }
+      },
+      "messages": {
+        "titre": "Messages",
+        "chapo": "Vos échanges avec les loueurs, rattachés à chaque réservation.",
+        "nonLus": "{nombre, plural, =1 {1 message non lu} other {# messages non lus}}",
+        "vous": "Vous :",
+        "vide": {
+          "titre": "Aucun message",
+          "texte": "Vos échanges avec les loueurs apparaîtront ici. Chaque conversation reste rattachée à sa réservation."
+        }
+      },
+      "paiements": {
+        "titre": "Paiements et cautions",
+        "chapo": "Vos mouvements, et l’état de chaque caution.",
+        "explication": "La caution n’est pas un paiement : c’est une empreinte bancaire. Le montant est gelé sur votre carte, jamais débité, et libéré après la restitution.",
+        "cautionsGelees": "Cautions immobilisées",
+        "cautionsGeleesPrecision": "{nombre, plural, =0 {Aucune caution en cours} =1 {Sur une location} other {Sur # locations}}",
+        "totalDepense": "Total dépensé",
+        "totalDepensePrecision": "Cautions non comprises",
+        "moyen": "Moyen de paiement",
+        "date": "Date",
+        "operation": "Opération",
+        "montant": "Montant",
+        "etat": "État",
+        "natures": {
+          "location": "Location",
+          "caution": "Caution",
+          "remboursement": "Remboursement"
+        },
+        "cautions": {
+          "empreinte": "Gelée",
+          "en_liberation": "Libération en cours",
+          "liberee": "Libérée",
+          "gelee": "Suspendue",
+          "retenue": "Retenue"
+        },
+        "aides": {
+          "empreinte": "Montant gelé sur votre carte, rien n’est débité.",
+          "en_liberation": "Libération sous sept jours après la restitution.",
+          "liberee": "Les fonds sont de nouveau disponibles.",
+          "gelee": "Un litige est ouvert : la libération est suspendue.",
+          "retenue": "Une retenue a été appliquée après accord ou arbitrage."
+        },
+        "retenue": "dont {montant} retenus",
+        "vide": {
+          "titre": "Aucun mouvement",
+          "texte": "Vos paiements et vos cautions apparaîtront ici après votre première location."
+        }
+      },
+      "avis": {
+        "titre": "Avis",
+        "chapo": "Ceux que vous avez écrits, et ceux qui vous attendent.",
+        "aEcrire": "À écrire",
+        "aEcrireChapo": "Un avis n’est possible qu’après une location terminée, et pendant quatorze jours.",
+        "joursRestants": "{nombre, plural, =1 {Il vous reste 1 jour} other {Il vous reste # jours}}",
+        "ecrire": "Écrire un avis",
+        "publies": "Vos avis publiés",
+        "chez": "Chez {prenom}",
+        "reponse": "Réponse du loueur",
+        "note": "{note} sur 5",
+        "vide": {
+          "titre": "Aucun avis publié",
+          "texte": "Après chaque location terminée, vous pourrez noter le matériel et l’accueil. Vos avis aident les locataires suivants."
+        }
+      },
+      "profil": {
+        "titre": "Profil et véhicule",
+        "chapo": "Votre identité, votre permis, et le véhicule avec lequel vous tractez.",
+        "identite": "Identité",
+        "prenom": "Prénom",
+        "nom": "Nom",
+        "courriel": "Adresse électronique",
+        "telephone": "Téléphone",
+        "verification": "Vérification d’identité",
+        "verifie": "Identité vérifiée",
+        "verifieLe": "Vérifiée le {date}",
+        "verifieTexte": "La vérification est exigée avant la première location. Elle protège les loueurs, et vous ouvre la réservation instantanée.",
+        "permis": "Permis de conduire",
+        "permisAide": "La catégorie de votre permis détermine le poids que vous pouvez tracter. Nous la vérifions à chaque réservation : une annonce trop lourde pour votre permis ne vous sera pas proposée.",
+        "permisCategorie": "Catégorie",
+        "permisNumero": "Numéro de permis",
+        "permisObtenu": "Obtenu le",
+        "categories": {
+          "B": "B — ensemble jusqu’à 3 500 kg",
+          "B96": "B96 — ensemble jusqu’à 4 250 kg",
+          "BE": "BE — ensemble jusqu’à 7 000 kg"
+        },
+        "vehicule": "Véhicule tracteur",
+        "vehiculeAide": "Renseigner votre véhicule évite de ressaisir ses masses à chaque recherche, et écarte d’emblée les remorques qu’il ne peut pas tirer.",
+        "marque": "Marque",
+        "modele": "Modèle",
+        "immatriculation": "Immatriculation",
+        "ptacVehicule": "PTAC du véhicule (kg)",
+        "ptacVehiculeAide": "Case F.2 de la carte grise.",
+        "tractableFreine": "Masse tractable freinée (kg)",
+        "tractableFreineAide": "Case O.1 de la carte grise.",
+        "tractableNonFreine": "Masse tractable non freinée (kg)",
+        "tractableNonFreineAide": "Case O.2 de la carte grise.",
+        "attelage": "Attelage",
+        "faisceau": "Faisceau",
+        "faisceau7": "7 broches",
+        "faisceau13": "13 broches",
+        "attelageCol": "Col de cygne",
+        "attelageRotule": "Rotule démontable",
+        "capacite": "Ce que vous pouvez tracter",
+        "capaciteLegale": "Limite de votre permis",
+        "capaciteLegaleTexte": "PTAC de remorque maximal, une fois retiré le PTAC de votre véhicule.",
+        "capacitePhysique": "Limite de votre véhicule",
+        "capacitePhysiqueTexte": "Masse tractable freinée annoncée par le constructeur.",
+        "capaciteRetenue": "Vous pouvez louer une remorque jusqu’à {poids} kg de PTAC",
+        "capaciteRetenueTexte": "C’est la plus basse des deux limites qui s’applique : la loi et la mécanique doivent être satisfaites toutes les deux.",
+        "calculateur": "Vérifier un cas précis avec le calculateur de charge",
+        "enregistrer": "Enregistrer"
+      },
+      "parametres": {
+        "titre": "Paramètres",
+        "chapo": "Notifications, langue et confidentialité.",
+        "notifications": "Notifications",
+        "notificationsAide": "Les messages relatifs à une réservation en cours vous parviennent toujours, quels que soient ces réglages : les couper ferait manquer un retrait.",
+        "parCourriel": "Par courriel",
+        "parSms": "Par SMS",
+        "reservations": "Confirmations et rappels de réservation",
+        "messagesNotif": "Nouveaux messages d’un loueur",
+        "cautions": "Libération d’une caution",
+        "promotions": "Offres et nouveautés",
+        "langue": "Langue et région",
+        "langueLibelle": "Langue de l’interface",
+        "devise": "Devise d’affichage",
+        "deviseAide": "Les paiements restent facturés dans la devise du pays où se trouve la remorque.",
+        "confidentialite": "Confidentialité",
+        "telecharger": "Télécharger mes données",
+        "telechargerTexte": "Vous recevez sous trente jours l’ensemble de vos données : réservations, messages, avis et paiements.",
+        "telechargerAction": "Demander mes données",
+        "supprimer": "Supprimer mon compte",
+        "supprimerTexte": "La suppression est définitive. Elle est refusée tant qu’une location est en cours ou qu’une caution reste immobilisée.",
+        "supprimerAction": "Supprimer mon compte",
+        "enregistrer": "Enregistrer",
+        "marchesAvenir": "{nombre, plural, =1 {Un autre marché ouvrira lors des prochaines vagues.} other {# autres marchés ouvriront lors des prochaines vagues.}}"
       }
     },
     "loueur": {
