@@ -2,6 +2,20 @@ import "server-only";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
 import { listerAnnonces } from "@/server/annonces/depot";
+import {
+  AVIS_LOCATAIRES,
+  FENETRE_AVIS_JOURS,
+  generateur,
+  GRAINES,
+  joursEntre,
+  MESSAGES_FIL,
+  REPARTITION_LOCATAIRE,
+  REPONSES_LOUEURS,
+  STATUTS_ENCAISSES,
+  tirer,
+  tirerPondere,
+  VOLUMES,
+} from "@/server/donnees-demo";
 
 /**
  * Dépôt d'activité du locataire.
@@ -150,77 +164,17 @@ export type SyntheseLocataire = {
   devise: string;
 };
 
-/* -------------------------------------------------------------------------- */
-/*  Générateur déterministe                                                   */
-/* -------------------------------------------------------------------------- */
-
-/** Mulberry32 — même générateur que le dépôt du loueur, graine différente. */
-function generateur(graine: number) {
-  let etat = graine;
-  return () => {
-    etat |= 0;
-    etat = (etat + 0x6d2b79f5) | 0;
-    let resultat = Math.imul(etat ^ (etat >>> 15), 1 | etat);
-    resultat =
-      (resultat + Math.imul(resultat ^ (resultat >>> 7), 61 | resultat)) ^ resultat;
-    return ((resultat ^ (resultat >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** Délai de libération de la caution, en jours. Valeur France du cadrage. */
 const DELAI_LIBERATION_JOURS = 7;
 
-/** Fenêtre de dépôt d'un avis après la fin de la location, en jours. */
-const FENETRE_AVIS_JOURS = 14;
-
-const MOYENS = ["Visa ••4218", "Mastercard ••7731", "Visa ••4218", "Visa ••4218"];
-
-const AMORCES: { texte: string; deMoi: boolean }[] = [
-  { texte: "Bonjour, la remorque est-elle disponible dès vendredi soir ?", deMoi: true },
-  { texte: "Oui, sans problème. Je peux vous la remettre à partir de 18 h.", deMoi: false },
-  { texte: "Le faisceau est en 13 broches, j'ai un adaptateur si besoin.", deMoi: false },
-  { texte: "Merci, je serai là vers 9 h samedi matin.", deMoi: true },
-  { texte: "Bien reçu, la caution a été libérée hier. Bonne route !", deMoi: false },
-];
-
-const COMMENTAIRES = [
-  "Remorque conforme à l'annonce, attelage rapide. Rien à redire.",
-  "Propriétaire très arrangeant sur l'horaire de retour. Je recommande.",
-  "Matériel propre et bien entretenu, feux vérifiés devant moi au départ.",
-  "Tout s'est bien passé, sangles fournies en plus. Parfait pour un déménagement.",
-  "Bon rapport qualité-prix. La bâche était un peu usée, mais rien de gênant.",
-  "Échange simple, état des lieux fait en deux minutes de part et d'autre.",
-];
-
 /**
- * Répartition des statuts, du point de vue d'un locataire ordinaire.
+ * Moyens de paiement du jeu d'essai.
  *
- * Elle diffère de celle du loueur : un locataire n'a que rarement des demandes
- * refusées — il en fait peu, et les accepte quand elles aboutissent. La part de
- * locations closes est en revanche la même, parce que c'est ce qui compose
- * l'essentiel d'un historique.
+ * Volontairement peu variés : un particulier paie presque toujours avec la
+ * même carte. Une liste où chaque location porterait un moyen différent
+ * donnerait un relevé que personne ne reconnaîtrait comme le sien.
  */
-const REPARTITION: { statut: StatutReservation; poids: number }[] = [
-  { statut: "cloturee", poids: 52 },
-  { statut: "confirmee", poids: 15 },
-  { statut: "en_cours", poids: 4 },
-  { statut: "payee", poids: 8 },
-  { statut: "demandee", poids: 8 },
-  { statut: "acceptee", poids: 4 },
-  { statut: "restituee", poids: 4 },
-  { statut: "annulee", poids: 3 },
-  { statut: "refusee", poids: 2 },
-];
-
-function tirerStatut(hasard: number): StatutReservation {
-  const total = REPARTITION.reduce((somme, entree) => somme + entree.poids, 0);
-  let seuil = hasard * total;
-  for (const entree of REPARTITION) {
-    seuil -= entree.poids;
-    if (seuil <= 0) return entree.statut;
-  }
-  return "cloturee";
-}
+const MOYENS = ["Visa ••4218", "Mastercard ••7731", "Visa ••4218", "Visa ••4218"];
 
 const global_ = globalThis as unknown as {
   __flexitrailerLocataire?: {
@@ -230,13 +184,9 @@ const global_ = globalThis as unknown as {
   };
 };
 
-function jours(de: Date, a: Date): number {
-  return Math.round((a.getTime() - de.getTime()) / 86_400_000);
-}
-
 function construire() {
   const annonces = listerAnnonces();
-  const hasard = generateur(20260802);
+  const hasard = generateur(GRAINES.locataire);
 
   const aujourdhui = new Date();
   aujourdhui.setHours(12, 0, 0, 0);
@@ -248,7 +198,7 @@ function construire() {
   // qui déménage, bricole et part en vacances. Cent quarante, comme pour le
   // loueur, n'aurait aucun sens ici — personne ne loue une remorque par
   // semaine.
-  for (let index = 0; index < 18; index += 1) {
+  for (let index = 0; index < VOLUMES.reservationsLocataire; index += 1) {
     const annonce = annonces[Math.floor(hasard() * annonces.length)];
     if (!annonce) break;
 
@@ -262,7 +212,7 @@ function construire() {
 
     // Même règle de cohérence que chez le loueur : le statut ne peut pas
     // contredire les dates. Une location terminée n'est jamais « confirmée ».
-    let statut = tirerStatut(hasard());
+    let statut = tirerPondere(hasard, REPARTITION_LOCATAIRE);
     const passee = fin < aujourdhui;
     const future = debut > aujourdhui;
 
@@ -284,7 +234,7 @@ function construire() {
       // Sans location, aucune empreinte n'a été prise.
       cautionEtat = "liberee";
     } else if (statut === "cloturee") {
-      const depuisLaFin = jours(fin, aujourdhui);
+      const depuisLaFin = joursEntre(fin, aujourdhui);
       if (depuisLaFin < DELAI_LIBERATION_JOURS) {
         cautionEtat = "en_liberation";
       } else if (hasard() < 0.06) {
@@ -331,8 +281,8 @@ function construire() {
   // la fenêtre autorisée. Un avis écrit deux ans après la location n'existe pas.
   for (const reservation of reservations) {
     if (reservation.statut !== "cloturee") continue;
-    if (jours(reservation.fin, aujourdhui) > FENETRE_AVIS_JOURS && hasard() > 0.66) continue;
-    if (jours(reservation.fin, aujourdhui) <= FENETRE_AVIS_JOURS && hasard() > 0.4) continue;
+    if (joursEntre(reservation.fin, aujourdhui) > FENETRE_AVIS_JOURS && hasard() > 0.66) continue;
+    if (joursEntre(reservation.fin, aujourdhui) <= FENETRE_AVIS_JOURS && hasard() > 0.4) continue;
 
     const note = hasard() < 0.7 ? 5 : hasard() < 0.88 ? 4 : 3;
     const date = new Date(reservation.fin);
@@ -347,9 +297,9 @@ function construire() {
       villeSlug: reservation.villeSlug,
       proprietaire: reservation.proprietaire,
       note,
-      texte: COMMENTAIRES[Math.floor(hasard() * COMMENTAIRES.length)],
+      texte: tirer(hasard, AVIS_LOCATAIRES),
       date,
-      reponse: hasard() < 0.35 ? "Merci beaucoup, au plaisir de vous revoir !" : null,
+      reponse: hasard() < 0.35 ? tirer(hasard, REPONSES_LOUEURS) : null,
     });
 
     reservation.avisDepose = true;
@@ -460,7 +410,7 @@ export function prochaineLocation(): {
   const debut = new Date(reservation.debut);
   debut.setHours(0, 0, 0, 0);
 
-  return { reservation, joursAvant: Math.max(0, jours(aujourdhui, debut)) };
+  return { reservation, joursAvant: Math.max(0, joursEntre(aujourdhui, debut)) };
 }
 
 export function reservationsPassees(): MaReservation[] {
@@ -505,7 +455,7 @@ export function avisAecrire(): AvisAecrire[] {
       villeSlug: reservation.villeSlug,
       proprietaire: reservation.proprietaire,
       finLe: reservation.fin,
-      joursRestants: FENETRE_AVIS_JOURS - jours(reservation.fin, aujourdhui),
+      joursRestants: FENETRE_AVIS_JOURS - joursEntre(reservation.fin, aujourdhui),
     }))
     .filter((entree) => entree.joursRestants > 0)
     .sort((a, b) => a.joursRestants - b.joursRestants);
@@ -581,7 +531,7 @@ export function mesFils(): FilLocataire[] {
     .filter((reservation) => reservation.statut !== "expiree")
     .slice(0, 10)
     .map((reservation, index) => {
-      const amorce = AMORCES[index % AMORCES.length];
+      const amorce = MESSAGES_FIL[index % MESSAGES_FIL.length];
       return {
         id: `fl${index}`,
         proprietaire: reservation.proprietaire,
@@ -603,9 +553,7 @@ export function syntheseLocataire(): SyntheseLocataire {
   const cautions = cautionsEnCours();
 
   const depensees = reservations.filter((reservation) =>
-    ["payee", "confirmee", "en_cours", "restituee", "cloturee"].includes(
-      reservation.statut,
-    ),
+    STATUTS_ENCAISSES.includes(reservation.statut),
   );
 
   return {

@@ -2,6 +2,19 @@ import "server-only";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
 import { listerAnnonces } from "@/server/annonces/depot";
+import {
+  AVIS_LOCATAIRES,
+  generateur,
+  GRAINES,
+  MESSAGES_FIL,
+  REPARTITION_LOUEUR,
+  REPONSES_LOUEURS,
+  STATUTS_ENCAISSES,
+  tirer,
+  tirerPersonne,
+  tirerPondere,
+  VOLUMES,
+} from "@/server/donnees-demo";
 
 /**
  * Dépôt d'activité des espaces : réservations, avis, messages, revenus.
@@ -57,62 +70,6 @@ export type Fil = {
   nonLus: number;
 };
 
-/* -------------------------------------------------------------------------- */
-/*  Générateur déterministe                                                   */
-/* -------------------------------------------------------------------------- */
-
-/** Mulberry32 — court, sans dépendance, suffisamment uniforme pour un jeu d'essai. */
-function generateur(graine: number) {
-  let etat = graine;
-  return () => {
-    etat |= 0;
-    etat = (etat + 0x6d2b79f5) | 0;
-    let resultat = Math.imul(etat ^ (etat >>> 15), 1 | etat);
-    resultat = (resultat + Math.imul(resultat ^ (resultat >>> 7), 61 | resultat)) ^ resultat;
-    return ((resultat ^ (resultat >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-const PRENOMS = [
-  "Camille", "Julien", "Fatima", "Marc", "Élodie", "Youssef", "Anne-Sophie",
-  "Thomas", "Leïla", "Pieter", "Sofie", "Grégoire", "Nadia", "Bastien",
-  "Margot", "Hicham", "Lucie", "Olivier", "Inès", "Damien",
-];
-
-const NOMS = [
-  "D.", "M.", "B.", "L.", "V.", "R.", "T.", "C.", "H.", "P.",
-];
-
-/**
- * Répartition des statuts.
- *
- * Volontairement réaliste : une place de marché saine a une écrasante majorité
- * de locations closes, une poignée en cours, et quelques refus. Un jeu d'essai
- * où tout est « clôturé » ne permet de dessiner aucun des écrans qui comptent.
- */
-const REPARTITION: { statut: StatutReservation; poids: number }[] = [
-  { statut: "cloturee", poids: 46 },
-  { statut: "confirmee", poids: 14 },
-  { statut: "en_cours", poids: 5 },
-  { statut: "payee", poids: 8 },
-  { statut: "demandee", poids: 9 },
-  { statut: "acceptee", poids: 5 },
-  { statut: "restituee", poids: 4 },
-  { statut: "annulee", poids: 5 },
-  { statut: "refusee", poids: 3 },
-  { statut: "expiree", poids: 1 },
-];
-
-function tirerStatut(hasard: number): StatutReservation {
-  const total = REPARTITION.reduce((somme, entree) => somme + entree.poids, 0);
-  let seuil = hasard * total;
-  for (const entree of REPARTITION) {
-    seuil -= entree.poids;
-    if (seuil <= 0) return entree.statut;
-  }
-  return "cloturee";
-}
-
 /** Commission de la plateforme, en points de base — 15 %. */
 const COMMISSION_PDB = 1500;
 
@@ -122,7 +79,7 @@ const global_ = globalThis as unknown as {
 
 function construire(): { reservations: Reservation[]; avis: Avis[] } {
   const annonces = listerAnnonces();
-  const hasard = generateur(20260731);
+  const hasard = generateur(GRAINES.activiteLoueur);
 
   const reservations: Reservation[] = [];
   const avis: Avis[] = [];
@@ -130,9 +87,10 @@ function construire(): { reservations: Reservation[]; avis: Avis[] } {
   const aujourdhui = new Date();
   aujourdhui.setHours(12, 0, 0, 0);
 
-  // 140 réservations réparties sur les quatorze derniers mois : de quoi
-  // dessiner une courbe annuelle et une saisonnalité crédible.
-  for (let index = 0; index < 140; index += 1) {
+  // Réparties sur les quatorze derniers mois : de quoi dessiner une courbe
+  // annuelle et une saisonnalité crédible. Le volume se règle dans
+  // `donnees-demo/volumes.ts`.
+  for (let index = 0; index < VOLUMES.reservationsLoueur; index += 1) {
     const annonce = annonces[Math.floor(hasard() * annonces.length)];
     if (!annonce) break;
 
@@ -148,7 +106,7 @@ function construire(): { reservations: Reservation[]; avis: Avis[] } {
     // passée ne peut pas être « confirmée », et une location future ne peut
     // pas être « clôturée ». Sans cette règle, les écrans afficheraient des
     // absurdités que l'on prendrait pour des bogues.
-    let statut = tirerStatut(hasard());
+    let statut = tirerPondere(hasard, REPARTITION_LOUEUR);
     const passee = fin < aujourdhui;
     const future = debut > aujourdhui;
 
@@ -163,8 +121,10 @@ function construire(): { reservations: Reservation[]; avis: Avis[] } {
     const montantTotal = annonce.prixJour * duree;
     const commission = Math.round((montantTotal * COMMISSION_PDB) / 10000);
 
-    const prenom = PRENOMS[Math.floor(hasard() * PRENOMS.length)];
-    const nom = NOMS[Math.floor(hasard() * NOMS.length)];
+    // Le locataire vient de l'annuaire commun, et s'affiche en prénom et
+    // initiale : un loueur n'a pas à connaître le patronyme de son locataire.
+    // L'administration, elle, lit le même annuaire en nom complet.
+    const locataire = tirerPersonne(hasard);
 
     reservations.push({
       id: `r${index.toString().padStart(3, "0")}`,
@@ -172,7 +132,7 @@ function construire(): { reservations: Reservation[]; avis: Avis[] } {
       annonceId: annonce.id,
       annonceTitre: annonce.titre,
       ville: annonce.ville,
-      locataire: `${prenom} ${nom}`,
+      locataire: locataire.nomAffiche,
       debut,
       fin,
       statut,
@@ -189,16 +149,6 @@ function construire(): { reservations: Reservation[]; avis: Avis[] } {
 
   // Un avis pour environ une location close sur deux — un taux de dépôt
   // d'avis de 100 % n'existe nulle part.
-  const COMMENTAIRES = [
-    "Remorque conforme à l'annonce, attelage rapide. Rien à redire.",
-    "Propriétaire très arrangeant sur l'horaire de retour. Je recommande.",
-    "Matériel propre et bien entretenu. Feux vérifiés devant moi au départ.",
-    "Tout s'est bien passé, sangles fournies en plus. Parfait pour un déménagement.",
-    "Bon rapport qualité-prix. La bâche était un peu usée mais rien de gênant.",
-    "Échange simple et efficace, état des lieux fait en deux minutes.",
-    "Remorque récente, freinage impeccable sur autoroute.",
-  ];
-
   for (const reservation of reservations) {
     if (reservation.statut !== "cloturee") continue;
     if (hasard() > 0.55) continue;
@@ -213,9 +163,9 @@ function construire(): { reservations: Reservation[]; avis: Avis[] } {
       annonceTitre: reservation.annonceTitre,
       auteur: reservation.locataire,
       note,
-      texte: COMMENTAIRES[Math.floor(hasard() * COMMENTAIRES.length)],
+      texte: tirer(hasard, AVIS_LOCATAIRES),
       date,
-      reponse: hasard() < 0.3 ? "Merci beaucoup, au plaisir de vous revoir !" : null,
+      reponse: hasard() < 0.3 ? tirer(hasard, REPONSES_LOUEURS) : null,
     });
   }
 
@@ -264,15 +214,6 @@ export function reservationsEnCours(): Reservation[] {
     (reservation) => reservation.statut === "en_cours",
   );
 }
-
-/** Réservations retenues pour le chiffre d'affaires : encaissées, non annulées. */
-const STATUTS_ENCAISSES: StatutReservation[] = [
-  "payee",
-  "confirmee",
-  "en_cours",
-  "restituee",
-  "cloturee",
-];
 
 export type MoisRevenu = {
   cle: string;
@@ -397,24 +338,28 @@ export function syntheseLoueur(): SyntheseLoueur {
   };
 }
 
-/** Fils de discussion, dérivés des réservations les plus récentes. */
+/**
+ * Fils de discussion, dérivés des réservations les plus récentes.
+ *
+ * Les messages viennent du jeu commun, dont le point de vue de référence est
+ * celui du **locataire** : `deMoi` y signifie « écrit par le locataire ». Vu du
+ * loueur, ce sont donc exactement ces messages-là qui peuvent être non lus, et
+ * jamais les siens. Compter ses propres messages comme non lus est le bogue
+ * classique de cet écran, et il se voit tout de suite.
+ */
 export function listerFils(): Fil[] {
-  const AMORCES = [
-    "Bonjour, la remorque est-elle disponible ce week-end ?",
-    "Merci, tout est en ordre pour samedi matin.",
-    "Est-ce que le faisceau 13 broches est fourni ?",
-    "Je serai un peu en retard, vers 18 h 30, cela vous convient ?",
-    "Parfait, à demain 9 h devant le garage.",
-  ];
-
   return listerReservations()
     .slice(0, 12)
-    .map((reservation, index) => ({
-      id: `f${index}`,
-      interlocuteur: reservation.locataire,
-      annonceTitre: reservation.annonceTitre,
-      dernierMessage: AMORCES[index % AMORCES.length],
-      date: reservation.debut,
-      nonLus: index < 3 ? (index % 2) + 1 : 0,
-    }));
+    .map((reservation, index) => {
+      const message = MESSAGES_FIL[index % MESSAGES_FIL.length];
+
+      return {
+        id: `f${index}`,
+        interlocuteur: reservation.locataire,
+        annonceTitre: reservation.annonceTitre,
+        dernierMessage: message.texte,
+        date: reservation.debut,
+        nonLus: message.deMoi && index < 4 ? (index % 2) + 1 : 0,
+      };
+    });
 }

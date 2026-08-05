@@ -1,5 +1,17 @@
 import "server-only";
 
+import {
+  ANNUAIRE,
+  generateur,
+  GRAINES,
+  ACTIONS_AUDIT,
+  AUTEURS_ADMIN,
+  STATUTS_ENCAISSES,
+  SUJETS_SUPPORT,
+  tirer,
+  VOLUMES,
+} from "@/server/donnees-demo";
+
 import { PAYS, VILLES } from "@/config/villes";
 import { listerAnnonces } from "@/server/annonces/depot";
 
@@ -172,28 +184,6 @@ export type TicketSupport = {
 /*  Construction déterministe                                                 */
 /* -------------------------------------------------------------------------- */
 
-function generateur(graine: number) {
-  let etat = graine;
-  return () => {
-    etat |= 0;
-    etat = (etat + 0x6d2b79f5) | 0;
-    let resultat = Math.imul(etat ^ (etat >>> 15), 1 | etat);
-    resultat =
-      (resultat + Math.imul(resultat ^ (resultat >>> 7), 61 | resultat)) ^ resultat;
-    return ((resultat ^ (resultat >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-const PRENOMS = [
-  "Camille", "Julien", "Fatima", "Marc", "Élodie", "Youssef", "Anne-Sophie",
-  "Thomas", "Leïla", "Pieter", "Sofie", "Grégoire", "Nadia", "Bastien",
-  "Margot", "Hicham", "Lucie", "Olivier", "Inès", "Damien", "Karim", "Manon",
-];
-
-const NOMS = [
-  "Deprez", "Martin", "Bakker", "Lemaire", "Vandamme", "Rousseau", "Thys",
-  "Claes", "Hendrickx", "Peeters", "Dubois", "Janssens",
-];
 
 const global_ = globalThis as unknown as {
   __flexitrailerAdmin?: {
@@ -206,16 +196,18 @@ const global_ = globalThis as unknown as {
 };
 
 function construire() {
-  const hasard = generateur(31072026);
+  const hasard = generateur(GRAINES.administration);
   const aujourdhui = new Date();
   const reservations = listerReservations();
 
   /* ---- Utilisateurs ---- */
   const utilisateurs: Utilisateur[] = [];
-  for (let index = 0; index < 220; index += 1) {
+  for (let index = 0; index < VOLUMES.utilisateurs; index += 1) {
     const ville = VILLES[Math.floor(hasard() * VILLES.length)];
-    const prenom = PRENOMS[Math.floor(hasard() * PRENOMS.length)];
-    const nom = NOMS[Math.floor(hasard() * NOMS.length)];
+    // L'annuaire commun, lu ici en **nom complet** : l'administration instruit
+    // des litiges et doit désigner quelqu'un sans ambiguïté, là où les espaces
+    // usagers s'en tiennent au prénom et à l'initiale.
+    const personne = tirer(hasard, ANNUAIRE);
 
     const tirage = hasard();
     const role: RoleUtilisateur =
@@ -238,8 +230,8 @@ function construire() {
 
     utilisateurs.push({
       id: `u${index.toString().padStart(3, "0")}`,
-      nom: `${prenom} ${nom}`,
-      courriel: `${prenom.toLowerCase().replace(/[^a-z]/g, "")}.${nom.toLowerCase()}@exemple.be`,
+      nom: personne.nomComplet,
+      courriel: personne.courriel,
       ville: ville.nom,
       pays: ville.pays,
       role,
@@ -264,7 +256,7 @@ function construire() {
     ["cloturee", "restituee", "en_cours"].includes(r.statut),
   );
 
-  for (let index = 0; index < 14; index += 1) {
+  for (let index = 0; index < VOLUMES.litiges; index += 1) {
     const reservation = closes[Math.floor(hasard() * closes.length)];
     if (!reservation) break;
 
@@ -297,7 +289,7 @@ function construire() {
   const NATURES: Sinistre["nature"][] = ["collision", "vol", "bris", "incendie"];
   const sinistres: Sinistre[] = [];
 
-  for (let index = 0; index < 6; index += 1) {
+  for (let index = 0; index < VOLUMES.sinistres; index += 1) {
     const reservation = closes[Math.floor(hasard() * closes.length)];
     if (!reservation) break;
 
@@ -326,19 +318,9 @@ function construire() {
   sinistres.sort((a, b) => b.declareLe.getTime() - a.declareLe.getTime());
 
   /* ---- Support ---- */
-  const SUJETS = [
-    "Caution non libérée après restitution",
-    "Impossible de téléverser la pièce d'identité",
-    "Annonce refusée à la modération, motif incompris",
-    "Demande de facture pour une location professionnelle",
-    "Le locataire ne répond plus, matériel non restitué",
-    "Erreur de calcul sur la commission du mois",
-    "Modification d'IBAN refusée",
-    "Suppression de compte et données personnelles",
-  ];
 
   const tickets: TicketSupport[] = [];
-  for (let index = 0; index < 18; index += 1) {
+  for (let index = 0; index < VOLUMES.tickets; index += 1) {
     const ouvertLe = new Date(aujourdhui);
     ouvertLe.setDate(ouvertLe.getDate() - Math.floor(hasard() * 21));
     const tirage = hasard();
@@ -348,7 +330,7 @@ function construire() {
       reference: `SUP-${(index + 1).toString().padStart(4, "0")}`,
       ouvertLe,
       demandeur: utilisateurs[Math.floor(hasard() * utilisateurs.length)].nom,
-      sujet: SUJETS[Math.floor(hasard() * SUJETS.length)],
+      sujet: tirer(hasard, SUJETS_SUPPORT),
       canal: hasard() < 0.6 ? "formulaire" : hasard() < 0.9 ? "courriel" : "telephone",
       priorite: tirage < 0.15 ? "haute" : tirage < 0.7 ? "normale" : "basse",
       statut: tirage < 0.3 ? "ouvert" : tirage < 0.55 ? "en_cours" : "resolu",
@@ -357,30 +339,17 @@ function construire() {
   tickets.sort((a, b) => b.ouvertLe.getTime() - a.ouvertLe.getTime());
 
   /* ---- Journal d'audit ---- */
-  const ACTIONS = [
-    { action: "Annonce approuvée", cible: "annonce", motif: "Conforme après vérification des photographies" },
-    { action: "Annonce refusée", cible: "annonce", motif: "Photographies ne correspondant pas au matériel décrit" },
-    { action: "Utilisateur suspendu", cible: "utilisateur", motif: "Trois signalements concordants" },
-    { action: "Identité validée", cible: "utilisateur", motif: "Pièce lisible et concordante" },
-    { action: "Litige tranché en faveur du locataire", cible: "litige", motif: "État des lieux de départ défavorable au propriétaire" },
-    { action: "Caution libérée manuellement", cible: "reservation", motif: "Retard technique du prestataire de paiement" },
-    { action: "Commission modifiée", cible: "pays", motif: "Alignement tarifaire sur le marché néerlandais", avant: "15,00 %", apres: "14,00 %" },
-    { action: "Remboursement exceptionnel", cible: "reservation", motif: "Panne du matériel constatée au départ" },
-    { action: "Sinistre transmis à l'assureur", cible: "sinistre", motif: "Dossier complet" },
-  ];
-
-  const AUTEURS = ["marie.admin", "karim.support", "sophie.direction"];
   const audit: EntreeAudit[] = [];
 
-  for (let index = 0; index < 60; index += 1) {
-    const modele = ACTIONS[Math.floor(hasard() * ACTIONS.length)];
+  for (let index = 0; index < VOLUMES.entreesAudit; index += 1) {
+    const modele = tirer(hasard, ACTIONS_AUDIT);
     const horodatage = new Date(aujourdhui);
     horodatage.setMinutes(horodatage.getMinutes() - Math.floor(hasard() * 60 * 24 * 45));
 
     audit.push({
       id: `j${index.toString().padStart(3, "0")}`,
       horodatage,
-      auteur: AUTEURS[Math.floor(hasard() * AUTEURS.length)],
+      auteur: tirer(hasard, AUTEURS_ADMIN),
       action: modele.action,
       cible: `${modele.cible} #${Math.floor(hasard() * 900) + 100}`,
       motif: modele.motif,
@@ -457,11 +426,10 @@ export type SyntheseAdmin = {
   devise: string;
 };
 
-const ENCAISSES = ["payee", "confirmee", "en_cours", "restituee", "cloturee"];
 
 export function syntheseAdmin(): SyntheseAdmin {
   const reservations = listerReservations().filter((reservation) =>
-    ENCAISSES.includes(reservation.statut),
+    STATUTS_ENCAISSES.includes(reservation.statut),
   );
   const utilisateurs = listerUtilisateurs();
   const avis = listerAvis();
@@ -522,7 +490,7 @@ export type LignePays = {
 export function comparaisonPays(): LignePays[] {
   const annonces = listerAnnonces();
   const reservations = listerReservations().filter((reservation) =>
-    ENCAISSES.includes(reservation.statut),
+    STATUTS_ENCAISSES.includes(reservation.statut),
   );
   const utilisateurs = listerUtilisateurs();
 
