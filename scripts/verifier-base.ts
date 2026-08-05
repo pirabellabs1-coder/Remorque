@@ -86,8 +86,15 @@ function verifierAdresse(nom: string, url: string | undefined, portAttendu: numb
     );
   }
 
+  // La région ne se lit que sur l'hôte du gestionnaire de connexions
+  // (`aws-0-eu-central-1.pooler.supabase.com`). L'hôte de la connexion directe
+  // (`db.<référence>.supabase.co`) ne la porte pas : l'absence de région n'y
+  // est donc pas un défaut, et la signaler comme tel serait un faux positif
+  // qui bloquerait un projet parfaitement conforme.
+  const estPooler = analysee.hostname.includes("pooler.supabase.com");
   const region = REGIONS_UE.find((candidate) => analysee.hostname.includes(candidate));
-  if (analysee.hostname.includes("supabase") && !region) {
+
+  if (estPooler && !region) {
     noter(
       "echec",
       `${nom} — région`,
@@ -98,7 +105,18 @@ function verifierAdresse(nom: string, url: string | undefined, portAttendu: numb
     return null;
   }
 
-  if (region) noter("ok", `${nom} — région`, `${region}, dans l'Union européenne.`);
+  if (region) {
+    noter("ok", `${nom} — région`, `${region}, dans l'Union européenne.`);
+  } else if (analysee.hostname.includes("supabase")) {
+    noter(
+      "avertissement",
+      `${nom} — région`,
+      "Indéterminable depuis une connexion directe : l'hôte ne porte pas la " +
+        "région, contrairement à celui du gestionnaire de connexions. " +
+        "À confirmer dans le tableau de bord Supabase, sous « Settings » → " +
+        "« General » → « Region ».",
+    );
+  }
 
   return analysee;
 }
