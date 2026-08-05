@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "db:demo": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/amorcer-demonstration.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:prepare": "tsx --env-file-if-exists=.env.local scripts/preparer-base.ts",
     "db:push": "drizzle-kit push",
-    "db:seed": "tsx --env-file-if-exists=.env.local src/server/db/seed.ts",
+    "db:seed": "tsx --conditions=react-server --env-file-if-exists=.env.local src/server/db/seed.ts",
     "db:setup": "npm run db:prepare && npm run db:migrate && npm run db:seed",
     "db:studio": "drizzle-kit studio",
     "db:verifier": "tsx --env-file-if-exists=.env.local scripts/verifier-base.ts",
