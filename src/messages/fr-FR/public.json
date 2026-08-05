@@ -142,7 +142,22 @@
       "titre": "Je veux mettre ma remorque en location",
       "texte": "Publiez votre matériel en moins de dix minutes, choisissez vos disponibilités et vos tarifs, encaissez automatiquement après chaque location.",
       "action": "Voir le parcours propriétaire"
-    }
+    },
+    "choisir": "Les deux parcours",
+    "garanties": "Ce qui vaut dans les deux sens",
+    "garantiesChapo": "Que vous louiez ou que vous mettiez en location, ces règles ne changent pas.",
+    "g1Titre": "Assurance comprise",
+    "g1Texte": "Chaque location est couverte pendant toute sa durée, sans démarche ni supplément à cocher.",
+    "g2Titre": "Caution jamais débitée sans motif",
+    "g2Texte": "C'est une empreinte bancaire : le montant est gelé sur la carte, puis libéré après la restitution.",
+    "g3Titre": "État des lieux photographié",
+    "g3Texte": "Au départ et au retour, à deux. C'est lui qui tranche en cas de désaccord, pas la parole de l'un contre l'autre.",
+    "g4Titre": "Paiement par la plateforme",
+    "g4Texte": "Aucun règlement de la main à la main. Le loueur est payé après la location, le locataire est remboursé si elle n'a pas lieu.",
+    "actionTitre": "Prêt à commencer ?",
+    "actionTexte": "Cherchez une remorque près de chez vous, ou estimez ce que la vôtre pourrait rapporter.",
+    "actionLouer": "Chercher une remorque",
+    "actionPublier": "Mettre en location"
   },
   "parcoursLocataire": {
     "metaTitre": "Louer une remorque en 4 étapes",
@@ -173,9 +188,16 @@
       "assurance": "Une assurance couvre le matériel pendant toute la durée de la location. L'attestation est téléchargeable avant le départ.",
       "caution": "La caution est une empreinte bancaire : l'argent n'est pas prélevé, il reste sur votre compte. Un débit n'a lieu qu'en cas de dommage constaté et justifié.",
       "etatDesLieux": "Les états des lieux de départ et de retour sont horodatés, photographiés et signés par les deux parties. Ils font foi.",
-      "litige": "En cas de désaccord, vous pouvez ouvrir un litige dans les quarante-huit heures suivant la restitution. Le transfert des fonds est alors gelé jusqu'à la décision."
+      "litige": "En cas de désaccord, vous pouvez ouvrir un litige dans les quarante-huit heures suivant la restitution. Le transfert des fonds est alors gelé jusqu'à la décision.",
+      "assuranceTitre": "Assurance comprise",
+      "cautionTitre": "Caution non débitée",
+      "etatDesLieuxTitre": "État des lieux contradictoire",
+      "litigeTitre": "Litige et gel des fonds",
+      "chapo": "Ce qui vous protège à chaque étape, et qui ne dépend pas du loueur en face."
     },
-    "action": "Chercher une remorque"
+    "action": "Chercher une remorque",
+    "etapesTitre": "Le parcours, étape par étape",
+    "actionSecondaire": "Voir le parcours propriétaire"
   },
   "parcoursProprietaire": {
     "metaTitre": "Mettre sa remorque en location en 4 étapes",
@@ -206,9 +228,16 @@
       "assurance": "Chaque location confirmée déclenche une couverture d'assurance sur votre matériel.",
       "paiement": "Le locataire paie avant le retrait. Vous n'avez jamais à réclamer un règlement.",
       "selection": "Identité et permis de chaque locataire sont vérifiés avant qu'il puisse réserver.",
-      "calendrier": "Vous bloquez vos dates quand vous voulez, et un délai de préparation s'intercale automatiquement entre deux locations."
+      "calendrier": "Vous bloquez vos dates quand vous voulez, et un délai de préparation s'intercale automatiquement entre deux locations.",
+      "assuranceTitre": "Matériel assuré",
+      "paiementTitre": "Paiement garanti",
+      "selectionTitre": "Locataires vérifiés",
+      "calendrierTitre": "Calendrier maîtrisé"
     },
-    "action": "Publier une annonce"
+    "action": "Publier une annonce",
+    "etapesTitre": "Le parcours, étape par étape",
+    "garantiesChapo": "Ce qui protège votre matériel, et qui ne dépend pas du locataire en face.",
+    "actionSecondaire": "Voir le parcours locataire"
   },
   "tarifs": {
     "metaTitre": "Tarifs et frais de service",

@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { OutilCharge } from "@/components/outils/outil-charge";
-import { EnTetePage } from "@/components/ui/carte";
+import { PageEditoriale } from "@/components/ui/mise-en-page";
 import type { Market } from "@/config/markets";
 import { Link } from "@/i18n/navigation";
 import { metadonneesPage } from "@/lib/metadonnees";
@@ -27,14 +27,12 @@ export default async function PageCharge({ params }: Props) {
   const t = await getTranslations("outilCharge");
 
   return (
-    <main>
-      <EnTetePage
-        surtitre={t("surtitre")}
-        titre={t("titre")}
-        chapo={t("chapo")}
-      />
-
-      <div className="mx-auto w-full max-w-5xl px-4 pb-20 sm:px-6">
+    <PageEditoriale
+      surtitre={t("surtitre")}
+      titre={t("titre")}
+      chapo={t("chapo")}
+      densite="large"
+    >
         <OutilCharge />
 
         <section className="mt-16 max-w-2xl">
@@ -53,7 +51,6 @@ export default async function PageCharge({ params }: Props) {
             })}
           </p>
         </section>
-      </div>
-    </main>
+    </PageEditoriale>
   );
 }

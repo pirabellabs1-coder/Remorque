@@ -3,7 +3,8 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { Etapes } from "@/components/marketing/etapes";
 import { Faq } from "@/components/ui/faq";
 import { Bouton } from "@/components/ui/bouton";
-import { Carte, DonneesStructurees, EnTetePage } from "@/components/ui/carte";
+import { Carte, DonneesStructurees } from "@/components/ui/carte";
+import { PageEditoriale } from "@/components/ui/mise-en-page";
 import { GARANTIES, PARTENAIRE_CONFIRME } from "@/config/assurance";
 import { MARKETS, type Market } from "@/config/markets";
 import { Link } from "@/i18n/navigation";
@@ -51,14 +52,12 @@ export default async function PageAssurance({ params }: Props) {
   ];
 
   return (
-    <main>
-      <EnTetePage
-        surtitre={t("surtitre")}
-        titre={t("titre")}
-        chapo={t("chapo")}
-      />
-
-      <div className="mx-auto w-full max-w-4xl px-4 pb-20 sm:px-6">
+    <PageEditoriale
+      surtitre={t("surtitre")}
+      titre={t("titre")}
+      chapo={t("chapo")}
+      densite="mixte"
+    >
         {/* --- Le mécanisme ---------------------------------------------- */}
         <section>
           <h2 className="text-2xl font-semibold tracking-tight">
@@ -193,7 +192,6 @@ export default async function PageAssurance({ params }: Props) {
             {t("actionAide")}
           </Bouton>
         </div>
-      </div>
 
       <DonneesStructurees
         donnees={{
@@ -206,6 +204,6 @@ export default async function PageAssurance({ params }: Props) {
           })),
         }}
       />
-    </main>
+    </PageEditoriale>
   );
 }

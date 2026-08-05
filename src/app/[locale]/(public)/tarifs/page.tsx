@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
-import { Carte, EnTetePage } from "@/components/ui/carte";
+import { Carte } from "@/components/ui/carte";
+import { PageEditoriale } from "@/components/ui/mise-en-page";
 import { BAREME_PAR_DEFAUT, EXEMPLE_TARIFS } from "@/config/baremes";
 import { MARKETS, type Market } from "@/config/markets";
 import { calculerDevis } from "@/domain/tarification/devis";
@@ -68,14 +69,12 @@ export default async function PageTarifs({ params }: Props) {
   ];
 
   return (
-    <main>
-      <EnTetePage
-        surtitre={t("surtitre")}
-        titre={t("titre")}
-        chapo={t("chapo")}
-      />
-
-      <div className="mx-auto w-full max-w-3xl px-4 pb-20 sm:px-6">
+    <PageEditoriale
+      surtitre={t("surtitre")}
+      titre={t("titre")}
+      chapo={t("chapo")}
+      densite="texte"
+    >
         <Carte>
           <h2 className="text-lg font-semibold">{t("exemple.titre")}</h2>
           <p className="mt-2 text-sm text-texte-attenue">
@@ -174,7 +173,6 @@ export default async function PageTarifs({ params }: Props) {
         </section>
 
         <p className="mt-12 text-sm text-texte-attenue">{t("mentionBareme")}</p>
-      </div>
-    </main>
+    </PageEditoriale>
   );
 }

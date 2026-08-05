@@ -2,7 +2,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Faq } from "@/components/ui/faq";
 import { Bouton } from "@/components/ui/bouton";
-import { Carte, DonneesStructurees, EnTetePage } from "@/components/ui/carte";
+import { Carte, DonneesStructurees } from "@/components/ui/carte";
+import { PageEditoriale } from "@/components/ui/mise-en-page";
 import type { Market } from "@/config/markets";
 import { Link } from "@/i18n/navigation";
 import { metadonneesPage } from "@/lib/metadonnees";
@@ -37,14 +38,12 @@ export default async function PagePro({ params }: Props) {
   ];
 
   return (
-    <main>
-      <EnTetePage
-        surtitre={t("surtitre")}
-        titre={t("titre")}
-        chapo={t("chapo")}
-      />
-
-      <div className="mx-auto w-full max-w-5xl px-4 pb-20 sm:px-6">
+    <PageEditoriale
+      surtitre={t("surtitre")}
+      titre={t("titre")}
+      chapo={t("chapo")}
+      densite="large"
+    >
         <div className="flex flex-wrap gap-3">
           <Bouton as={Link} href="/contact" taille="grand">
             {t("action")}
@@ -162,7 +161,6 @@ export default async function PagePro({ params }: Props) {
           </h2>
           <Faq questions={questions} className="mt-10" />
         </section>
-      </div>
 
       <DonneesStructurees
         donnees={{
@@ -175,6 +173,6 @@ export default async function PagePro({ params }: Props) {
           })),
         }}
       />
-    </main>
+    </PageEditoriale>
   );
 }
