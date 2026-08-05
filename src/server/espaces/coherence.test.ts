@@ -34,16 +34,16 @@ import {
  */
 
 describe("tableau de bord du loueur", () => {
-  const synthese = () => syntheseLoueur();
+  const synthese = syntheseLoueur;
 
   it("compte exactement les réservations que la liste affiche", async () => {
     expect((await synthese()).aTraiter).toBe((await reservationsAtraiter()).length);
-    expect((await synthese()).aVenir).toBe((await reservationsAvenir()).length);
-    expect((await synthese()).enCours).toBe((await reservationsEnCours()).length);
+    expect((await synthese()).aVenir).toBe((await (await reservationsAvenir())).length);
+    expect((await synthese()).enCours).toBe((await (await reservationsEnCours())).length);
   });
 
   it("dérive le net total des seules réservations encaissées", async () => {
-    const attendu = (await listerReservations())
+    const attendu = (await (await listerReservations()))
       .filter((reservation) => STATUTS_ENCAISSES.includes(reservation.statut))
       .reduce((somme, reservation) => somme + reservation.netProprietaire, 0);
 
@@ -51,7 +51,7 @@ describe("tableau de bord du loueur", () => {
   });
 
   it("fait concorder la répartition par annonce avec le net total", async () => {
-    const parAnnonce = (await revenusParAnnonce()).reduce(
+    const parAnnonce = (await (await revenusParAnnonce())).reduce(
       (somme, ligne) => somme + ligne.net,
       0,
     );
@@ -59,7 +59,7 @@ describe("tableau de bord du loueur", () => {
   });
 
   it("accorde la note moyenne avec les avis effectivement déposés", async () => {
-    const avis = (await listerAvis());
+    const avis = (await (await listerAvis()));
     expect((await synthese()).nombreAvis).toBe(avis.length);
 
     if (avis.length === 0) {
@@ -75,13 +75,13 @@ describe("tableau de bord du loueur", () => {
   it("n'omet aucun mois dans la courbe annuelle", async () => {
     // Une courbe qui saute les mois creux ment sur la saisonnalité, laquelle
     // est précisément ce que le loueur vient regarder.
-    const mois = (await revenusParMois(12));
+    const mois = (await (await revenusParMois(12)));
     expect(mois).toHaveLength(12);
     expect(new Set(mois.map((entree) => entree.cle)).size).toBe(12);
   });
 
   it("ne fait jamais dépasser le net du brut, mois par mois", async () => {
-    for (const mois of (await revenusParMois(12))) {
+    for (const mois of (await (await revenusParMois(12)))) {
       expect(mois.net).toBeLessThanOrEqual(mois.brut);
       expect(mois.net + mois.commission).toBe(mois.brut);
     }
@@ -89,10 +89,10 @@ describe("tableau de bord du loueur", () => {
 });
 
 describe("tableau de bord du locataire", () => {
-  const synthese = () => syntheseLocataire();
+  const synthese = syntheseLocataire;
 
   it("compte exactement les cautions que la liste affiche", async () => {
-    const cautions = cautionsEnCours();
+    const cautions = (await cautionsEnCours());
     expect((await synthese()).cautionsNombre).toBe(cautions.length);
     expect((await synthese()).cautionsGelees).toBe(
       cautions.reduce((somme, reservation) => somme + reservation.caution, 0),
@@ -100,14 +100,14 @@ describe("tableau de bord du locataire", () => {
   });
 
   it("ne compte comme immobilisée aucune caution déjà libérée", async () => {
-    for (const reservation of cautionsEnCours()) {
+    for (const reservation of (await cautionsEnCours())) {
       expect(reservation.cautionEtat).not.toBe("liberee");
       expect(reservation.cautionEtat).not.toBe("retenue");
     }
   });
 
   it("dérive le total dépensé des seules locations encaissées", async () => {
-    const attendu = (await mesReservations())
+    const attendu = (await (await mesReservations()))
       .filter((reservation) => STATUTS_ENCAISSES.includes(reservation.statut))
       .reduce((somme, reservation) => somme + reservation.montantTotal, 0);
 
@@ -116,10 +116,10 @@ describe("tableau de bord du locataire", () => {
 });
 
 describe("administration", () => {
-  const synthese = () => syntheseAdmin();
+  const synthese = syntheseAdmin;
 
   it("ne répartit entre pays ni plus ni moins que le volume total", async () => {
-    const parPays = (await comparaisonPays()).reduce(
+    const parPays = (await (await comparaisonPays())).reduce(
       (somme, ligne) => somme + ligne.volume,
       0,
     );
@@ -131,7 +131,7 @@ describe("administration", () => {
   it("lit le même volume d'affaires que l'espace loueur", async () => {
     // Les deux écrans résument le même jeu de réservations. S'ils divergent,
     // c'est qu'un filtre a été dupliqué au lieu d'être partagé.
-    const brut = (await listerReservations())
+    const brut = (await (await listerReservations()))
       .filter((reservation) => STATUTS_ENCAISSES.includes(reservation.statut))
       .reduce((somme, reservation) => somme + reservation.montantTotal, 0);
 

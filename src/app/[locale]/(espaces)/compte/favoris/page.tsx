@@ -20,7 +20,7 @@ export default async function PageFavoris({ params }: Props) {
   const t = await getTranslations("espaces.locataire.favoris");
   const format = await getFormatter();
 
-  const favoris = mesFavoris();
+  const favoris = await mesFavoris();
 
   const montant = (centimes: number, devise: string) =>
     format.number(centimes / 100, { ...PRIX_AFFICHE, currency: devise });

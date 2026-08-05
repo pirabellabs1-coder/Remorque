@@ -1,51 +1,46 @@
 import "server-only";
 
+import { desc, eq, sql } from "drizzle-orm";
+
 import type { StatutReservation } from "@/domain/reservation/machine";
-import { JEU_DE_DEMONSTRATION } from "@/server/annonces/catalogue";
+import { db } from "@/server/db";
 import {
-  AVIS_LOCATAIRES,
+  annonce,
+  avis as tableAvis,
+  reservation,
+  tarif,
+  utilisateur,
+} from "@/server/db/schema";
+import {
+  aujourdhui,
+  decalerJours,
   FENETRE_AVIS_JOURS,
   generateur,
   GRAINES,
   joursEntre,
   MESSAGES_FIL,
-  REPARTITION_LOCATAIRE,
-  REPONSES_LOUEURS,
-  STATUTS_ENCAISSES,
-  tirer,
-  tirerPondere,
+  tirerEntier,
   VOLUMES,
 } from "@/server/donnees-demo";
 
 /**
- * Dépôt d'activité du locataire.
+ * Activité du locataire, lue en base.
  *
  * C'est le même monde que `activite.ts`, vu depuis l'autre bout : là où le
  * loueur voit « qui m'a loué », le locataire voit « chez qui j'ai loué ». Les
  * deux dépôts restent séparés parce que les questions ne sont pas les mêmes —
  * le loueur veut son chiffre d'affaires, le locataire veut savoir où retirer
- * sa remorque samedi et quand sa caution sera rendue.
+ * sa remorque samedi et quand sa caution lui sera rendue.
  *
- * Comme pour le dépôt du loueur, le jeu d'essai est **déterministe** : même
- * graine, mêmes chiffres à chaque rendu. Un `Math.random()` nu ferait diverger
- * le rendu serveur et l'hydratation client, et rendrait toute capture d'écran
- * incomparable d'un jour à l'autre.
+ * Les réservations et les avis viennent désormais de PostgreSQL, ceux-là mêmes
+ * que lit l'espace loueur. Une location vue des deux côtés est la même ligne :
+ * si le loueur la dit close, le locataire ne peut pas la voir en cours.
+ *
+ * Ce qui reste engendré ici, faute de table alimentée : l'état des cautions,
+ * les favoris et les fils de discussion. Chacun est dérivé de données réelles
+ * et le dit à l'endroit où il est construit.
  */
 
-/* -------------------------------------------------------------------------- */
-/*  Types                                                                     */
-/* -------------------------------------------------------------------------- */
-
-/**
- * Cycle de vie de la caution.
- *
- * La caution n'est pas un paiement : c'est une **empreinte bancaire**, une
- * autorisation gelée sur la carte, jamais encaissée tant que rien ne le
- * justifie. La confondre avec un débit est l'incompréhension la plus coûteuse
- * du parcours — c'est elle qui fait écrire aux locataires « on m'a prélevé
- * 800 € ». Chaque état porte donc un libellé qui dit ce qui se passe sur le
- * compte, pas seulement où en est le dossier.
- */
 export type EtatCaution =
   /** Empreinte prise, fonds gelés chez la banque, rien n'est débité. */
   | "empreinte"
@@ -164,6 +159,7 @@ export type SyntheseLocataire = {
   devise: string;
 };
 
+
 /** Délai de libération de la caution, en jours. Valeur France du cadrage. */
 const DELAI_LIBERATION_JOURS = 7;
 
@@ -171,253 +167,194 @@ const DELAI_LIBERATION_JOURS = 7;
  * Moyens de paiement du jeu d'essai.
  *
  * Volontairement peu variés : un particulier paie presque toujours avec la
- * même carte. Une liste où chaque location porterait un moyen différent
- * donnerait un relevé que personne ne reconnaîtrait comme le sien.
+ * même carte. Un relevé où chaque location porterait un moyen différent ne
+ * serait reconnu comme le sien par personne.
  */
 const MOYENS = ["Visa ••4218", "Mastercard ••7731", "Visa ••4218", "Visa ••4218"];
 
-const global_ = globalThis as unknown as {
-  __flexitrailerLocataire?: {
-    reservations: MaReservation[];
-    favoris: Favori[];
-    avis: MonAvis[];
-  };
-};
+/**
+ * Le compte dont on montre l'espace.
+ *
+ * Tant que l'authentification n'est pas branchée, l'espace locataire affiche
+ * celui d'un compte désigné, créé par `npm run db:demo` avec un historique
+ * complet. Le jour où la session existe, c'est cette fonction qui la lira —
+ * une ligne, à un seul endroit, plutôt qu'un identifiant recopié dans chaque
+ * requête.
+ */
+const COURRIEL_DEMO = "moi@demonstration.flexitrailer.eu";
 
-function construire() {
-  const annonces = JEU_DE_DEMONSTRATION;
-  const hasard = generateur(GRAINES.locataire);
+async function compteCourant(): Promise<string | null> {
+  const [ligne] = await db
+    .select({ id: utilisateur.id })
+    .from(utilisateur)
+    .where(eq(utilisateur.email, COURRIEL_DEMO))
+    .limit(1);
 
-  const aujourdhui = new Date();
-  aujourdhui.setHours(12, 0, 0, 0);
-
-  const reservations: MaReservation[] = [];
-  const avis: MonAvis[] = [];
-
-  // Dix-huit locations sur deux ans : l'historique plausible d'un particulier
-  // qui déménage, bricole et part en vacances. Cent quarante, comme pour le
-  // loueur, n'aurait aucun sens ici — personne ne loue une remorque par
-  // semaine.
-  for (let index = 0; index < VOLUMES.reservationsLocataire; index += 1) {
-    const annonce = annonces[Math.floor(hasard() * annonces.length)];
-    if (!annonce) break;
-
-    const joursEnArriere = Math.floor(hasard() * 700);
-    const debut = new Date(aujourdhui);
-    debut.setDate(debut.getDate() - joursEnArriere + 45);
-
-    const duree = 1 + Math.floor(hasard() * 4);
-    const fin = new Date(debut);
-    fin.setDate(fin.getDate() + duree);
-
-    // Même règle de cohérence que chez le loueur : le statut ne peut pas
-    // contredire les dates. Une location terminée n'est jamais « confirmée ».
-    let statut = tirerPondere(hasard, REPARTITION_LOCATAIRE);
-    const passee = fin < aujourdhui;
-    const future = debut > aujourdhui;
-
-    if (passee && ["confirmee", "payee", "acceptee", "demandee", "en_cours"].includes(statut)) {
-      statut = hasard() < 0.92 ? "cloturee" : "annulee";
-    }
-    if (future && ["cloturee", "restituee", "en_cours"].includes(statut)) {
-      statut = hasard() < 0.75 ? "confirmee" : "demandee";
-    }
-    if (!passee && !future) statut = "en_cours";
-
-    // État de la caution, déduit du statut et du calendrier — jamais tiré au
-    // sort indépendamment, sans quoi l'écran des paiements contredirait celui
-    // des réservations.
-    let cautionEtat: EtatCaution;
-    let cautionRetenue = 0;
-
-    if (["demandee", "refusee", "annulee", "expiree"].includes(statut)) {
-      // Sans location, aucune empreinte n'a été prise.
-      cautionEtat = "liberee";
-    } else if (statut === "cloturee") {
-      const depuisLaFin = joursEntre(fin, aujourdhui);
-      if (depuisLaFin < DELAI_LIBERATION_JOURS) {
-        cautionEtat = "en_liberation";
-      } else if (hasard() < 0.06) {
-        // Une retenue reste rare : la plupart des locations se passent bien.
-        cautionEtat = "retenue";
-        cautionRetenue = Math.round(annonce.caution * (0.1 + hasard() * 0.3));
-      } else {
-        cautionEtat = "liberee";
-      }
-    } else if (statut === "restituee") {
-      cautionEtat = hasard() < 0.15 ? "gelee" : "en_liberation";
-    } else {
-      cautionEtat = "empreinte";
-    }
-
-    const montantTotal = annonce.prixJour * duree;
-
-    reservations.push({
-      id: `l${index.toString().padStart(3, "0")}`,
-      reference: `FT-${debut.getFullYear()}-${(9000 + index).toString()}`,
-      annonceId: annonce.id,
-      annonceTitre: annonce.titre,
-      slug: annonce.slug,
-      villeSlug: annonce.villeSlug,
-      ville: annonce.ville,
-      proprietaire: annonce.proprietaire.prenom,
-      proprietaireProfessionnel: annonce.proprietaire.professionnel,
-      debut,
-      fin,
-      statut,
-      montantTotal,
-      caution: annonce.caution,
-      cautionEtat,
-      cautionRetenue,
-      devise: annonce.devise,
-      avisDepose: false,
-      photo: annonce.photo,
-    });
-  }
-
-  reservations.sort((a, b) => b.debut.getTime() - a.debut.getTime());
-
-  // Avis déposés : environ deux locations closes sur trois, et seulement dans
-  // la fenêtre autorisée. Un avis écrit deux ans après la location n'existe pas.
-  for (const reservation of reservations) {
-    if (reservation.statut !== "cloturee") continue;
-    if (joursEntre(reservation.fin, aujourdhui) > FENETRE_AVIS_JOURS && hasard() > 0.66) continue;
-    if (joursEntre(reservation.fin, aujourdhui) <= FENETRE_AVIS_JOURS && hasard() > 0.4) continue;
-
-    const note = hasard() < 0.7 ? 5 : hasard() < 0.88 ? 4 : 3;
-    const date = new Date(reservation.fin);
-    date.setDate(date.getDate() + 1 + Math.floor(hasard() * 4));
-
-    avis.push({
-      id: `mav${avis.length.toString().padStart(3, "0")}`,
-      reservationId: reservation.id,
-      annonceId: reservation.annonceId,
-      annonceTitre: reservation.annonceTitre,
-      slug: reservation.slug,
-      villeSlug: reservation.villeSlug,
-      proprietaire: reservation.proprietaire,
-      note,
-      texte: tirer(hasard, AVIS_LOCATAIRES),
-      date,
-      reponse: hasard() < 0.35 ? tirer(hasard, REPONSES_LOUEURS) : null,
-    });
-
-    reservation.avisDepose = true;
-  }
-
-  avis.sort((a, b) => b.date.getTime() - a.date.getTime());
-
-  // Favoris : des annonces jamais louées, sinon ce serait un historique.
-  const louees = new Set(reservations.map((reservation) => reservation.annonceId));
-  const favoris: Favori[] = [];
-
-  for (const annonce of annonces) {
-    if (louees.has(annonce.id)) continue;
-    if (favoris.length >= 7) break;
-    if (hasard() > 0.25) continue;
-
-    const ajouteLe = new Date(aujourdhui);
-    ajouteLe.setDate(ajouteLe.getDate() - Math.floor(hasard() * 180));
-
-    // Une variation de prix depuis la mise en favori : c'est la seule raison
-    // de revenir voir sa liste, et donc ce que l'écran doit signaler.
-    const tirage = hasard();
-    const variationPrix =
-      tirage < 0.2
-        ? -Math.round(annonce.prixJour * (0.05 + hasard() * 0.15))
-        : tirage < 0.35
-          ? Math.round(annonce.prixJour * (0.05 + hasard() * 0.12))
-          : 0;
-
-    favoris.push({
-      annonceId: annonce.id,
-      titre: annonce.titre,
-      slug: annonce.slug,
-      villeSlug: annonce.villeSlug,
-      ville: annonce.ville,
-      prixJour: annonce.prixJour,
-      devise: annonce.devise,
-      photo: annonce.photo,
-      note: annonce.note,
-      nombreAvis: annonce.nombreAvis,
-      ajouteLe,
-      variationPrix,
-    });
-  }
-
-  favoris.sort((a, b) => b.ajouteLe.getTime() - a.ajouteLe.getTime());
-
-  return { reservations, favoris, avis };
+  return ligne?.id ?? null;
 }
 
-function donnees() {
-  global_.__flexitrailerLocataire ??= construire();
-  return global_.__flexitrailerLocataire;
+/**
+ * État de la caution, déduit du statut et du calendrier.
+ *
+ * La table `caution` existe mais n'est pas alimentée : l'état est donc dérivé
+ * plutôt qu'inventé, et toujours des mêmes faits — le statut de la réservation
+ * et la date de restitution. Le déduire garantit qu'il ne peut pas contredire
+ * la réservation qu'il accompagne, ce qu'une colonne indépendante permettrait.
+ */
+function etatCaution(
+  statut: StatutReservation,
+  fin: Date,
+  maintenant: Date,
+): EtatCaution {
+  // Sans location engagée, aucune empreinte n'a été prise.
+  if (["demandee", "refusee", "annulee", "expiree"].includes(statut)) return "liberee";
+  if (statut === "restituee") return "en_liberation";
+
+  if (statut === "cloturee") {
+    return joursEntre(fin, maintenant) < DELAI_LIBERATION_JOURS
+      ? "en_liberation"
+      : "liberee";
+  }
+
+  return "empreinte";
 }
 
 /* -------------------------------------------------------------------------- */
 /*  Lectures                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function mesReservations(): MaReservation[] {
-  return donnees().reservations;
+export async function mesReservations(): Promise<MaReservation[]> {
+  const moi = await compteCourant();
+  if (!moi) return [];
+
+  const maintenant = aujourdhui();
+
+  const lignes = await db
+    .select({
+      id: reservation.id,
+      reference: reservation.numero,
+      annonceId: reservation.annonceId,
+      annonceTitre: annonce.titre,
+      slug: annonce.slug,
+      villeSlug: annonce.villeSlug,
+      ville: annonce.ville,
+      proprietaire: utilisateur.prenom,
+      proprietaireProfessionnel: sql<boolean>`${utilisateur.typeCompte} = 'professionnel'`,
+      debut: reservation.debut,
+      fin: reservation.fin,
+      statut: reservation.statut,
+      montantTotal: reservation.totalLocataire,
+      caution: reservation.caution,
+      devise: reservation.devise,
+      photo: sql<string | null>`(
+        select p.url from annonce_photo p
+        where p.annonce_id = ${annonce.id}
+        order by p.ordre limit 1
+      )`,
+      // Un avis existe-t-il déjà pour cette location ? Compté en base plutôt
+      // que supposé : c'est ce qui décide si l'écran propose d'en écrire un.
+      avisDepose: sql<boolean>`exists (
+        select 1 from avis a where a.reservation_id = ${reservation.id}
+      )`,
+    })
+    .from(reservation)
+    .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
+    .innerJoin(utilisateur, eq(utilisateur.id, reservation.proprietaireId))
+    .where(eq(reservation.locataireId, moi))
+    .orderBy(desc(reservation.debut));
+
+  return lignes.map((ligne) => ({
+    ...ligne,
+    statut: ligne.statut as StatutReservation,
+    proprietaire: ligne.proprietaire ?? "",
+    photo: ligne.photo ?? "",
+    cautionEtat: etatCaution(ligne.statut as StatutReservation, ligne.fin, maintenant),
+    // Aucune retenue n'est simulée : la table `caution` n'est pas alimentée, et
+    // inventer une retenue ferait croire à un litige qui n'existe pas.
+    cautionRetenue: 0,
+  }));
 }
 
-export function mesFavoris(): Favori[] {
-  return donnees().favoris;
-}
+export async function mesAvis(): Promise<MonAvis[]> {
+  const moi = await compteCourant();
+  if (!moi) return [];
 
-export function mesAvis(): MonAvis[] {
-  return donnees().avis;
+  const lignes = await db
+    .select({
+      id: tableAvis.id,
+      reservationId: tableAvis.reservationId,
+      annonceId: tableAvis.annonceId,
+      annonceTitre: annonce.titre,
+      slug: annonce.slug,
+      villeSlug: annonce.villeSlug,
+      proprietaire: utilisateur.prenom,
+      note: tableAvis.note,
+      texte: tableAvis.commentaire,
+      date: tableAvis.publieLe,
+      reponse: tableAvis.reponse,
+    })
+    .from(tableAvis)
+    .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
+    .innerJoin(utilisateur, eq(utilisateur.id, tableAvis.destinataireId))
+    .where(eq(tableAvis.auteurId, moi))
+    .orderBy(desc(tableAvis.publieLe));
+
+  return lignes.map((ligne) => ({
+    id: ligne.id,
+    reservationId: ligne.reservationId,
+    annonceId: ligne.annonceId!,
+    annonceTitre: ligne.annonceTitre,
+    slug: ligne.slug,
+    villeSlug: ligne.villeSlug,
+    proprietaire: ligne.proprietaire ?? "",
+    note: ligne.note,
+    texte: ligne.texte ?? "",
+    date: ligne.date!,
+    reponse: ligne.reponse,
+  }));
 }
 
 /** Locations à venir, la plus proche d'abord — l'ordre dans lequel on les vit. */
-export function reservationsAvenir(): MaReservation[] {
+export async function reservationsAvenir(): Promise<MaReservation[]> {
   const maintenant = new Date();
-  return mesReservations()
+  return (await mesReservations())
     .filter(
-      (reservation) =>
-        reservation.debut >= maintenant &&
-        ["demandee", "acceptee", "payee", "confirmee"].includes(reservation.statut),
+      (entree) =>
+        entree.debut >= maintenant &&
+        ["demandee", "acceptee", "payee", "confirmee"].includes(entree.statut),
     )
     .sort((a, b) => a.debut.getTime() - b.debut.getTime());
 }
 
-export function reservationsEnCours(): MaReservation[] {
-  return mesReservations().filter(
-    (reservation) => reservation.statut === "en_cours",
-  );
+export async function reservationsEnCours(): Promise<MaReservation[]> {
+  return (await mesReservations()).filter((entree) => entree.statut === "en_cours");
 }
 
 /**
- * La location que le tableau de bord met en avant, et le nombre de jours qui
- * l'en sépare.
+ * La location à mettre en tête du tableau de bord.
  *
- * Le décompte est calculé ici et non dans la page : lire l'heure courante
- * pendant un rendu est impur, et le rendu serveur et l'hydratation client
- * pourraient tomber de part et d'autre de minuit. Une location en cours prime
- * sur une location à venir — on est dedans.
+ * Une location en cours prime sur une location à venir : on est dedans. Le
+ * nombre de jours restants est calculé ici plutôt qu'à l'affichage, pour que
+ * l'écran n'ait pas à refaire une soustraction de dates dont il se tromperait
+ * au changement d'heure.
  */
-export function prochaineLocation(): {
+export async function prochaineLocation(): Promise<{
   reservation: MaReservation;
   joursAvant: number;
-} | null {
-  const reservation = reservationsEnCours()[0] ?? reservationsAvenir()[0];
-  if (!reservation) return null;
+} | null> {
+  const enCours = await reservationsEnCours();
+  const choisie = enCours[0] ?? (await reservationsAvenir())[0];
+  if (!choisie) return null;
 
-  const aujourdhui = new Date();
-  aujourdhui.setHours(0, 0, 0, 0);
-  const debut = new Date(reservation.debut);
-  debut.setHours(0, 0, 0, 0);
-
-  return { reservation, joursAvant: Math.max(0, joursEntre(aujourdhui, debut)) };
+  return {
+    reservation: choisie,
+    joursAvant: Math.max(0, joursEntre(new Date(), choisie.debut)),
+  };
 }
 
-export function reservationsPassees(): MaReservation[] {
-  return mesReservations().filter((reservation) =>
-    ["cloturee", "restituee", "annulee", "refusee", "expiree"].includes(
-      reservation.statut,
-    ),
+export async function reservationsPassees(): Promise<MaReservation[]> {
+  return (await mesReservations()).filter((entree) =>
+    ["cloturee", "restituee", "annulee", "refusee", "expiree"].includes(entree.statut),
   );
 }
 
@@ -428,10 +365,10 @@ export function reservationsPassees(): MaReservation[] {
  * donc les seules qui l'intéressent. Une caution libérée n'a plus à figurer
  * dans un total.
  */
-export function cautionsEnCours(): MaReservation[] {
-  return mesReservations()
-    .filter((reservation) =>
-      ["empreinte", "en_liberation", "gelee"].includes(reservation.cautionEtat),
+export async function cautionsEnCours(): Promise<MaReservation[]> {
+  return (await mesReservations())
+    .filter((entree) =>
+      ["empreinte", "en_liberation", "gelee"].includes(entree.cautionEtat),
     )
     .sort((a, b) => a.fin.getTime() - b.fin.getTime());
 }
@@ -443,19 +380,19 @@ export function cautionsEnCours(): MaReservation[] {
  * « il vous reste 4 jours » se comprend d'un coup d'œil, « avant le 12/08 »
  * demande un calcul.
  */
-export function avisAecrire(): AvisAecrire[] {
-  const aujourdhui = new Date();
+export async function avisAecrire(): Promise<AvisAecrire[]> {
+  const maintenant = new Date();
 
-  return mesReservations()
-    .filter((reservation) => reservation.statut === "cloturee" && !reservation.avisDepose)
-    .map((reservation) => ({
-      reservationId: reservation.id,
-      annonceTitre: reservation.annonceTitre,
-      slug: reservation.slug,
-      villeSlug: reservation.villeSlug,
-      proprietaire: reservation.proprietaire,
-      finLe: reservation.fin,
-      joursRestants: FENETRE_AVIS_JOURS - joursEntre(reservation.fin, aujourdhui),
+  return (await mesReservations())
+    .filter((entree) => entree.statut === "cloturee" && !entree.avisDepose)
+    .map((entree) => ({
+      reservationId: entree.id,
+      annonceTitre: entree.annonceTitre,
+      slug: entree.slug,
+      villeSlug: entree.villeSlug,
+      proprietaire: entree.proprietaire,
+      finLe: entree.fin,
+      joursRestants: FENETRE_AVIS_JOURS - joursEntre(entree.fin, maintenant),
     }))
     .filter((entree) => entree.joursRestants > 0)
     .sort((a, b) => a.joursRestants - b.joursRestants);
@@ -466,43 +403,38 @@ export function avisAecrire(): AvisAecrire[] {
  *
  * La caution y figure comme une ligne distincte de la location, avec son état,
  * parce que c'est exactement la confusion qu'il faut lever : l'une est débitée,
- * l'autre seulement gelée. Les mettre sur la même ligne, ou n'en montrer que la
- * somme, produirait le malentendu que cet écran existe pour éviter.
+ * l'autre seulement gelée. Les mettre sur la même ligne, ou n'en montrer que
+ * la somme, produirait le malentendu que cet écran existe pour éviter.
  */
-export function mesPaiements(): LignePaiement[] {
+export async function mesPaiements(): Promise<LignePaiement[]> {
   const lignes: LignePaiement[] = [];
 
-  for (const reservation of mesReservations()) {
-    if (["demandee", "refusee", "expiree"].includes(reservation.statut)) continue;
+  for (const entree of await mesReservations()) {
+    if (["demandee", "refusee", "expiree"].includes(entree.statut)) continue;
 
-    // Le moyen varie d'une location à l'autre : toutes les références
-    // commencent par « FT-AAAA-9 », si bien qu'un index pris trop tôt dans la
-    // chaîne donnerait la même carte partout — ce qui se voit immédiatement à
-    // l'écran, et fait douter du reste du relevé.
-    const rang = Number.parseInt(reservation.id.slice(1), 10);
-    const moyen = MOYENS[rang % MOYENS.length];
+    const moyen = MOYENS[entree.reference.charCodeAt(8) % MOYENS.length];
 
     lignes.push({
-      id: `${reservation.id}-loc`,
-      reference: reservation.reference,
-      annonceTitre: reservation.annonceTitre,
-      date: reservation.debut,
+      id: `${entree.id}-loc`,
+      reference: entree.reference,
+      annonceTitre: entree.annonceTitre,
+      date: entree.debut,
       nature: "location",
-      montant: reservation.montantTotal,
-      devise: reservation.devise,
+      montant: entree.montantTotal,
+      devise: entree.devise,
       moyen,
       cautionEtat: null,
     });
 
-    if (reservation.statut === "annulee") {
+    if (entree.statut === "annulee") {
       lignes.push({
-        id: `${reservation.id}-remb`,
-        reference: reservation.reference,
-        annonceTitre: reservation.annonceTitre,
-        date: reservation.debut,
+        id: `${entree.id}-remb`,
+        reference: entree.reference,
+        annonceTitre: entree.annonceTitre,
+        date: entree.debut,
         nature: "remboursement",
-        montant: reservation.montantTotal,
-        devise: reservation.devise,
+        montant: entree.montantTotal,
+        devise: entree.devise,
         moyen,
         cautionEtat: null,
       });
@@ -510,36 +442,120 @@ export function mesPaiements(): LignePaiement[] {
     }
 
     lignes.push({
-      id: `${reservation.id}-cau`,
-      reference: reservation.reference,
-      annonceTitre: reservation.annonceTitre,
-      date: reservation.debut,
+      id: `${entree.id}-cau`,
+      reference: entree.reference,
+      annonceTitre: entree.annonceTitre,
+      date: entree.debut,
       nature: "caution",
-      montant: reservation.caution,
-      devise: reservation.devise,
+      montant: entree.caution,
+      devise: entree.devise,
       moyen,
-      cautionEtat: reservation.cautionEtat,
+      cautionEtat: entree.cautionEtat,
     });
   }
 
   return lignes.sort((a, b) => b.date.getTime() - a.date.getTime());
 }
 
-/** Fils de discussion, un par location engagée. */
-export function mesFils(): FilLocataire[] {
-  return mesReservations()
-    .filter((reservation) => reservation.statut !== "expiree")
+/**
+ * Favoris.
+ *
+ * La table n'existe pas encore : la liste est dérivée du catalogue réel, en
+ * écartant ce que le compte a déjà loué — mettre en favori une remorque qu'on
+ * vient de rendre n'aurait pas de sens. Le tirage est déterministe, donc stable
+ * d'un rechargement à l'autre.
+ */
+export async function mesFavoris(): Promise<Favori[]> {
+  const louees = new Set((await mesReservations()).map((entree) => entree.annonceId));
+  const hasard = generateur(GRAINES.locataire);
+  const maintenant = aujourdhui();
+
+  const lignes = await db
+    .select({
+      annonceId: annonce.id,
+      titre: annonce.titre,
+      slug: annonce.slug,
+      villeSlug: annonce.villeSlug,
+      ville: annonce.ville,
+      devise: annonce.devise,
+      prixJour: tarif.prixJour,
+      photo: sql<string | null>`(
+        select p.url from annonce_photo p
+        where p.annonce_id = ${annonce.id} order by p.ordre limit 1
+      )`,
+      moyenne: sql<string | null>`(
+        select avg(a.note) from avis a
+        where a.annonce_id = ${annonce.id} and a.publie_le is not null
+      )`,
+      nombreAvis: sql<number>`(
+        select count(*)::int from avis a
+        where a.annonce_id = ${annonce.id} and a.publie_le is not null
+      )`,
+    })
+    .from(annonce)
+    .leftJoin(tarif, eq(tarif.annonceId, annonce.id))
+    .where(eq(annonce.statut, "publiee"));
+
+  const favoris: Favori[] = [];
+
+  for (const ligne of lignes) {
+    if (louees.has(ligne.annonceId)) continue;
+    if (favoris.length >= VOLUMES.favoris) break;
+
+    const prixJour = ligne.prixJour ?? 0;
+    const tirage = hasard();
+
+    // Une variation de prix depuis la mise en favori : c'est la seule raison de
+    // revenir consulter sa liste, et donc ce que l'écran doit signaler.
+    const variationPrix =
+      tirage < 0.25
+        ? -Math.round(prixJour * (0.05 + hasard() * 0.15))
+        : tirage < 0.45
+          ? Math.round(prixJour * (0.05 + hasard() * 0.12))
+          : 0;
+
+    favoris.push({
+      annonceId: ligne.annonceId,
+      titre: ligne.titre,
+      slug: ligne.slug,
+      villeSlug: ligne.villeSlug,
+      ville: ligne.ville,
+      prixJour,
+      devise: ligne.devise,
+      photo: ligne.photo ?? "",
+      note: ligne.moyenne === null ? null : Number(ligne.moyenne),
+      nombreAvis: ligne.nombreAvis,
+      ajouteLe: decalerJours(maintenant, -tirerEntier(hasard, 1, 180)),
+      variationPrix,
+    });
+  }
+
+  return favoris.sort((a, b) => b.ajouteLe.getTime() - a.ajouteLe.getTime());
+}
+
+/**
+ * Fils de discussion, un par location engagée.
+ *
+ * La messagerie n'a pas de table alimentée : les interlocuteurs, les matériels
+ * et les références sont vrais, les textes sont des amorces. C'est l'écran qui
+ * est incomplet, non les données qui seraient fausses.
+ */
+export async function mesFils(): Promise<FilLocataire[]> {
+  const reservations = await mesReservations();
+
+  return reservations
+    .filter((entree) => entree.statut !== "expiree")
     .slice(0, 10)
-    .map((reservation, index) => {
+    .map((entree, index) => {
       const amorce = MESSAGES_FIL[index % MESSAGES_FIL.length];
       return {
         id: `fl${index}`,
-        proprietaire: reservation.proprietaire,
-        annonceTitre: reservation.annonceTitre,
-        reference: reservation.reference,
+        proprietaire: entree.proprietaire,
+        annonceTitre: entree.annonceTitre,
+        reference: entree.reference,
         dernierMessage: amorce.texte,
         deMoi: amorce.deMoi,
-        date: reservation.debut,
+        date: entree.debut,
         // Seuls les messages reçus peuvent être non lus : compter les siens
         // comme non lus est un bogue classique, et visible.
         nonLus: !amorce.deMoi && index < 4 ? (index % 2) + 1 : 0,
@@ -548,27 +564,33 @@ export function mesFils(): FilLocataire[] {
 }
 
 /** Chiffres de tête du tableau de bord. Aucun n'est inventé au rendu. */
-export function syntheseLocataire(): SyntheseLocataire {
-  const reservations = mesReservations();
-  const cautions = cautionsEnCours();
+export async function syntheseLocataire(): Promise<SyntheseLocataire> {
+  const [reservations, cautions, fils, aEcrire] = await Promise.all([
+    mesReservations(),
+    cautionsEnCours(),
+    mesFils(),
+    avisAecrire(),
+  ]);
 
-  const depensees = reservations.filter((reservation) =>
-    STATUTS_ENCAISSES.includes(reservation.statut),
+  const maintenant = new Date();
+
+  const depensees = reservations.filter((entree) =>
+    ["payee", "confirmee", "en_cours", "restituee", "cloturee"].includes(entree.statut),
   );
 
   return {
-    aVenir: reservationsAvenir().length,
-    enCours: reservationsEnCours().length,
-    terminees: reservations.filter((reservation) => reservation.statut === "cloturee")
-      .length,
-    cautionsGelees: cautions.reduce((somme, reservation) => somme + reservation.caution, 0),
+    aVenir: reservations.filter(
+      (entree) =>
+        entree.debut >= maintenant &&
+        ["demandee", "acceptee", "payee", "confirmee"].includes(entree.statut),
+    ).length,
+    enCours: reservations.filter((entree) => entree.statut === "en_cours").length,
+    terminees: reservations.filter((entree) => entree.statut === "cloturee").length,
+    cautionsGelees: cautions.reduce((somme, entree) => somme + entree.caution, 0),
     cautionsNombre: cautions.length,
-    messagesNonLus: mesFils().reduce((somme, fil) => somme + fil.nonLus, 0),
-    avisAecrire: avisAecrire().length,
-    totalDepense: depensees.reduce(
-      (somme, reservation) => somme + reservation.montantTotal,
-      0,
-    ),
-    devise: "EUR",
+    messagesNonLus: fils.reduce((somme, fil) => somme + fil.nonLus, 0),
+    avisAecrire: aEcrire.length,
+    totalDepense: depensees.reduce((somme, entree) => somme + entree.montantTotal, 0),
+    devise: reservations[0]?.devise ?? "EUR",
   };
 }

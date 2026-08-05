@@ -15,7 +15,7 @@ export default async function PageParametresLocataire({ params }: Props) {
   setRequestLocale(locale);
 
   const t = await getTranslations("espaces.locataire.parametres");
-  const synthese = syntheseLocataire();
+  const synthese = await syntheseLocataire();
 
   // La suppression est refusée tant qu'une caution est immobilisée ou qu'une
   // location court : effacer le compte laisserait des fonds gelés sans

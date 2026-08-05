@@ -19,8 +19,8 @@ export default async function PageAvisLocataire({ params }: Props) {
   const t = await getTranslations("espaces.locataire.avis");
   const format = await getFormatter();
 
-  const aEcrire = avisAecrire();
-  const publies = mesAvis();
+  const aEcrire = await avisAecrire();
+  const publies = await mesAvis();
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-10">

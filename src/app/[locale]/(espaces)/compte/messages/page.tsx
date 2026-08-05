@@ -16,7 +16,7 @@ export default async function PageMessagesLocataire({ params }: Props) {
   const t = await getTranslations("espaces.locataire.messages");
   const format = await getFormatter();
 
-  const fils = mesFils();
+  const fils = await mesFils();
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">

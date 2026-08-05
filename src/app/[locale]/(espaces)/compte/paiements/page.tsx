@@ -38,9 +38,9 @@ export default async function PagePaiements({ params }: Props) {
   const t = await getTranslations("espaces.locataire.paiements");
   const format = await getFormatter();
 
-  const lignes = mesPaiements();
-  const synthese = syntheseLocataire();
-  const reservations = mesReservations();
+  const lignes = await mesPaiements();
+  const synthese = await syntheseLocataire();
+  const reservations = await mesReservations();
 
   const montant = (centimes: number, devise: string) =>
     format.number(centimes / 100, { ...PRIX_AFFICHE, currency: devise });

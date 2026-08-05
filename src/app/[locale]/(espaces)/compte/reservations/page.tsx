@@ -46,7 +46,7 @@ export default async function PageMesReservations({ params, searchParams }: Prop
   const tCautions = await getTranslations("espaces.locataire.paiements.cautions");
   const format = await getFormatter();
 
-  const toutes = mesReservations();
+  const toutes = await mesReservations();
   const reservations = toutes.filter((reservation) =>
     FILTRES[actif](reservation.statut),
   );

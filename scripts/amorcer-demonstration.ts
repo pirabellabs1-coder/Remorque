@@ -439,6 +439,59 @@ async function amorcer() {
     });
   }
 
+  /**
+   * Compte de démonstration : celui qu'on ouvre pour montrer le produit.
+   *
+   * Les cent quarante réservations se répartissent sur deux cent vingt
+   * locataires, soit trois ou quatre chacun — un chiffre réaliste, et un
+   * espace locataire quasiment vide à la démonstration. Un compte porte donc
+   * un historique complet, celui d'un particulier qui déménage, bricole et
+   * part en vacances.
+   *
+   * Il porte les deux profils. La plateforme le prévoit — la navigation offre
+   * « Passer en loueur » — et c'est le même individu : rien ne justifie deux
+   * comptes pour une personne qui loue et met en location.
+   */
+  const [compteDemo] = await db
+    .insert(utilisateur)
+    .values({
+      email: `moi${DOMAINE_DEMO}`,
+      emailVerifie: true,
+      prenom: "Élodie",
+      nom: "Vasseur",
+      typeCompte: "particulier",
+      paysId: paysFrance.id,
+      langue: "fr",
+      profilLocataire: true,
+      profilProprietaire: true,
+      identiteStatut: "verifie",
+      identiteVerifieeLe: decalerJours(maintenant, -500),
+      creeLe: decalerJours(maintenant, -730),
+    })
+    .returning({ id: utilisateur.id });
+
+  // Les locations lui sont attribuées en nombre exact — `VOLUMES` fait
+  // autorité — et prises dans le lot général plutôt qu'ajoutées : les totaux
+  // de la plateforme restent justes et aucune ligne n'est comptée deux fois.
+  //
+  // Elles sont prélevées à intervalle régulier pour couvrir toute la période
+  // et toute la palette de statuts. Dix-huit consécutives tomberaient dans le
+  // même mois et donneraient un historique invraisemblable.
+  const pas = Math.floor(valeursReservations.length / VOLUMES.reservationsLocataire);
+  let attribuees = 0;
+
+  for (
+    let index = 0;
+    index < valeursReservations.length && attribuees < VOLUMES.reservationsLocataire;
+    index += pas
+  ) {
+    // Nul ne loue chez soi : si l'annonce lui appartenait, on passe.
+    if (contexte[index].proprietaireId === compteDemo.id) continue;
+    valeursReservations[index].locataireId = compteDemo.id;
+    contexte[index].locataireId = compteDemo.id;
+    attribuees += 1;
+  }
+
   const lignesReservations = await db
     .insert(reservation)
     .values(valeursReservations)

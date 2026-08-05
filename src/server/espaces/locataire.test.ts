@@ -23,8 +23,8 @@ import {
  */
 
 describe("cautions — ce qui pèse réellement sur la carte", () => {
-  it("ne retient que les cautions encore immobilisées", () => {
-    for (const reservation of cautionsEnCours()) {
+  it("ne retient que les cautions encore immobilisées", async () => {
+    for (const reservation of (await cautionsEnCours())) {
       expect(["empreinte", "en_liberation", "gelee"]).toContain(
         reservation.cautionEtat,
       );
@@ -33,36 +33,36 @@ describe("cautions — ce qui pèse réellement sur la carte", () => {
     // Et réciproquement : aucune caution libérée ou retenue ne doit s'y
     // trouver, sans quoi le total afficherait de l'argent que le locataire a
     // déjà récupéré.
-    const libereesRetenues = mesReservations().filter((reservation) =>
+    const libereesRetenues = (await mesReservations()).filter((reservation) =>
       ["liberee", "retenue"].includes(reservation.cautionEtat),
     );
-    const identifiants = new Set(cautionsEnCours().map((r) => r.id));
+    const identifiants = new Set((await cautionsEnCours()).map((r) => r.id));
     for (const reservation of libereesRetenues) {
       expect(identifiants.has(reservation.id)).toBe(false);
     }
   });
 
-  it("somme exactement les cautions immobilisées dans la synthèse", () => {
-    const attendu = cautionsEnCours().reduce(
+  it("somme exactement les cautions immobilisées dans la synthèse", async () => {
+    const attendu = (await cautionsEnCours()).reduce(
       (somme, reservation) => somme + reservation.caution,
       0,
     );
-    const synthese = syntheseLocataire();
+    const synthese = (await syntheseLocataire());
 
     expect(synthese.cautionsGelees).toBe(attendu);
-    expect(synthese.cautionsNombre).toBe(cautionsEnCours().length);
+    expect(synthese.cautionsNombre).toBe((await cautionsEnCours()).length);
   });
 
-  it("n'immobilise jamais de caution sur une location non engagée", () => {
-    for (const reservation of mesReservations()) {
+  it("n'immobilise jamais de caution sur une location non engagée", async () => {
+    for (const reservation of (await mesReservations())) {
       if (["demandee", "refusee", "annulee", "expiree"].includes(reservation.statut)) {
         expect(reservation.cautionEtat).toBe("liberee");
       }
     }
   });
 
-  it("ne retient un montant que sur une caution effectivement retenue", () => {
-    for (const reservation of mesReservations()) {
+  it("ne retient un montant que sur une caution effectivement retenue", async () => {
+    for (const reservation of (await mesReservations())) {
       if (reservation.cautionEtat === "retenue") {
         expect(reservation.cautionRetenue).toBeGreaterThan(0);
         // Une retenue supérieure à la caution voudrait dire que la plateforme
@@ -76,32 +76,32 @@ describe("cautions — ce qui pèse réellement sur la carte", () => {
 });
 
 describe("avis — la fenêtre de dépôt", () => {
-  it("ne propose d'écrire que sur une location terminée", () => {
+  it("ne propose d'écrire que sur une location terminée", async () => {
     const parIdentifiant = new Map(
-      mesReservations().map((reservation) => [reservation.id, reservation]),
+      (await mesReservations()).map((reservation) => [reservation.id, reservation]),
     );
 
-    for (const entree of avisAecrire()) {
+    for (const entree of (await avisAecrire())) {
       expect(parIdentifiant.get(entree.reservationId)?.statut).toBe("cloturee");
     }
   });
 
-  it("ne propose jamais un délai expiré ou nul", () => {
-    for (const entree of avisAecrire()) {
+  it("ne propose jamais un délai expiré ou nul", async () => {
+    for (const entree of (await avisAecrire())) {
       expect(entree.joursRestants).toBeGreaterThan(0);
       expect(entree.joursRestants).toBeLessThanOrEqual(14);
     }
   });
 
-  it("ne propose pas d'écrire un avis déjà déposé", () => {
-    const dejaEcrits = new Set(mesAvis().map((avis) => avis.reservationId));
-    for (const entree of avisAecrire()) {
+  it("ne propose pas d'écrire un avis déjà déposé", async () => {
+    const dejaEcrits = new Set((await mesAvis()).map((avis) => avis.reservationId));
+    for (const entree of (await avisAecrire())) {
       expect(dejaEcrits.has(entree.reservationId)).toBe(false);
     }
   });
 
-  it("note toujours entre 1 et 5, sans décimale", () => {
-    for (const avis of mesAvis()) {
+  it("note toujours entre 1 et 5, sans décimale", async () => {
+    for (const avis of (await mesAvis())) {
       expect(Number.isInteger(avis.note)).toBe(true);
       expect(avis.note).toBeGreaterThanOrEqual(1);
       expect(avis.note).toBeLessThanOrEqual(5);
@@ -110,8 +110,8 @@ describe("avis — la fenêtre de dépôt", () => {
 });
 
 describe("relevé des paiements", () => {
-  it("écrit la caution sur une ligne distincte de la location", () => {
-    const lignes = mesPaiements();
+  it("écrit la caution sur une ligne distincte de la location", async () => {
+    const lignes = (await mesPaiements());
     const cautions = lignes.filter((ligne) => ligne.nature === "caution");
     const locations = lignes.filter((ligne) => ligne.nature === "location");
 
@@ -122,10 +122,10 @@ describe("relevé des paiements", () => {
     for (const ligne of locations) expect(ligne.cautionEtat).toBeNull();
   });
 
-  it("rembourse intégralement une location annulée", () => {
-    const lignes = mesPaiements();
+  it("rembourse intégralement une location annulée", async () => {
+    const lignes = (await mesPaiements());
 
-    for (const reservation of mesReservations()) {
+    for (const reservation of (await mesReservations())) {
       if (reservation.statut !== "annulee") continue;
 
       const remboursement = lignes.find(
@@ -145,8 +145,8 @@ describe("relevé des paiements", () => {
     }
   });
 
-  it("n'exprime que des entiers de centimes, avec leur devise", () => {
-    for (const ligne of mesPaiements()) {
+  it("n'exprime que des entiers de centimes, avec leur devise", async () => {
+    for (const ligne of (await mesPaiements())) {
       expect(Number.isInteger(ligne.montant)).toBe(true);
       expect(ligne.devise).toMatch(/^[A-Z]{3}$/);
     }
@@ -154,10 +154,10 @@ describe("relevé des paiements", () => {
 });
 
 describe("cohérence générale", () => {
-  it("n'attribue jamais un statut incompatible avec les dates", () => {
+  it("n'attribue jamais un statut incompatible avec les dates", async () => {
     const maintenant = new Date();
 
-    for (const reservation of mesReservations()) {
+    for (const reservation of (await mesReservations())) {
       expect(reservation.fin >= reservation.debut).toBe(true);
       if (reservation.fin < maintenant) {
         expect(reservation.statut).not.toBe("confirmee");
@@ -169,33 +169,33 @@ describe("cohérence générale", () => {
     }
   });
 
-  it("sépare strictement les locations à venir et en cours", () => {
-    const aVenir = new Set(reservationsAvenir().map((r) => r.id));
-    for (const reservation of reservationsEnCours()) {
+  it("sépare strictement les locations à venir et en cours", async () => {
+    const aVenir = new Set((await reservationsAvenir()).map((r) => r.id));
+    for (const reservation of (await reservationsEnCours())) {
       expect(aVenir.has(reservation.id)).toBe(false);
     }
 
-    const synthese = syntheseLocataire();
-    expect(synthese.aVenir).toBe(reservationsAvenir().length);
-    expect(synthese.enCours).toBe(reservationsEnCours().length);
+    const synthese = (await syntheseLocataire());
+    expect(synthese.aVenir).toBe((await reservationsAvenir()).length);
+    expect(synthese.enCours).toBe((await reservationsEnCours()).length);
   });
 
-  it("ne met jamais en favori une annonce déjà louée", () => {
+  it("ne met jamais en favori une annonce déjà louée", async () => {
     const louees = new Set(
-      mesReservations().map((reservation) => reservation.annonceId),
+      (await mesReservations()).map((reservation) => reservation.annonceId),
     );
-    for (const favori of mesFavoris()) {
+    for (const favori of (await mesFavoris())) {
       expect(louees.has(favori.annonceId)).toBe(false);
     }
   });
 
-  it("ne compte comme non lus que les messages reçus", () => {
-    for (const fil of mesFils()) {
+  it("ne compte comme non lus que les messages reçus", async () => {
+    for (const fil of (await mesFils())) {
       if (fil.deMoi) expect(fil.nonLus).toBe(0);
       expect(fil.nonLus).toBeGreaterThanOrEqual(0);
     }
 
-    const attendu = mesFils().reduce((somme, fil) => somme + fil.nonLus, 0);
-    expect(syntheseLocataire().messagesNonLus).toBe(attendu);
+    const attendu = (await mesFils()).reduce((somme, fil) => somme + fil.nonLus, 0);
+    expect((await syntheseLocataire()).messagesNonLus).toBe(attendu);
   });
 });

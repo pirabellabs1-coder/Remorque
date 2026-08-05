@@ -38,11 +38,11 @@ export default async function TableauDeBordLocataire({ params }: Props) {
   const t = await getTranslations("espaces.locataire.tableau");
   const format = await getFormatter();
 
-  const synthese = syntheseLocataire();
+  const synthese = await syntheseLocataire();
   const enCours = await reservationsEnCours();
-  const aEcrire = avisAecrire();
+  const aEcrire = await avisAecrire();
 
-  const mise = prochaineLocation();
+  const mise = await prochaineLocation();
   const prochaine = mise?.reservation;
 
   const montant = (centimes: number, devise: string) =>
