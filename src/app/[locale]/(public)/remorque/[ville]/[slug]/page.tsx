@@ -1,15 +1,26 @@
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { CarteReservation } from "@/components/annonce/carte-reservation";
+import {
+  BlocFiche,
+  ChiffresCles,
+  ListeCaracteristiques,
+  RepartitionNotes,
+} from "@/components/annonce/sections-fiche";
+import { Etoiles } from "@/components/espace/statut";
 import { DonneesStructurees } from "@/components/ui/carte";
 import { Illustration } from "@/components/ui/illustration";
 import { BAREME_PAR_DEFAUT } from "@/config/baremes";
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
 import type { Market } from "@/config/markets";
-import { Link, getPathname } from "@/i18n/navigation";
+import { BAREME_FR } from "@/domain/compatibilite/permis";
+import { getPathname, Link } from "@/i18n/navigation";
+import { avisDeLannonce } from "@/server/annonces/avis";
 import {
+  annoncesDeLaVille,
   listerAdressesAnnonces,
   trouverAnnonce,
 } from "@/server/annonces/catalogue";
@@ -51,6 +62,26 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
+/**
+ * Fiche d'une annonce.
+ *
+ * La page était plate : des titres séparés par de simples filets, une
+ * description en paragraphe nu, des caractéristiques en grille sans contour.
+ * Rien ne délimitait une information de la suivante, et l'œil glissait sans
+ * accrocher.
+ *
+ * Elle est reconstruite sur deux niveaux, et deux seulement. Un bandeau de
+ * chiffres clés juste sous la photographie — PTAC, charge utile, dimensions,
+ * permis — parce que ce sont les quatre nombres qui décident de la location et
+ * qu'ils étaient noyés au milieu de sept lignes de spécifications. Puis des
+ * blocs encadrés pour ce qui se consulte : description, caractéristiques,
+ * équipements, avis, loueur, conditions.
+ *
+ * Les avis apparaissent pour la première fois. C'était le manque le plus
+ * coûteux de la page : on y demandait à un inconnu de confier plusieurs
+ * centaines d'euros de caution sans lui donner le seul élément qui fonde la
+ * confiance sur une place de marché.
+ */
 export default async function PageAnnonce({ params }: Props) {
   const { locale, ville, slug } = await params;
   setRequestLocale(locale);
@@ -64,24 +95,60 @@ export default async function PageAnnonce({ params }: Props) {
     (entree) => entree.slug === annonce.categorie,
   )!;
 
+  const notes = avisDeLannonce(annonce.id, 4);
+
+  // Annonces voisines, la fiche courante exclue. Trois suffisent : au-delà, ce
+  // n'est plus une suggestion mais une seconde page de résultats.
+  const voisines = (await annoncesDeLaVille(annonce.villeSlug))
+    .filter((autre) => autre.id !== annonce.id)
+    .slice(0, 3);
+
   const mm = (valeur: number) =>
     t("cm", { cm: format.number(valeur / 10, { maximumFractionDigits: 0 }) });
 
-  /** Caractéristiques : des chiffres, pas des phrases. */
+  const dimensions = [
+    mm(annonce.longueurUtileMm),
+    mm(annonce.largeurUtileMm),
+    annonce.hauteurUtileMm ? mm(annonce.hauteurUtileMm) : null,
+  ]
+    .filter(Boolean)
+    .join(" × ");
+
+  /**
+   * Permis requis, dérivé du barème du domaine et jamais écrit en dur.
+   *
+   * Le calcul suppose un véhicule tracteur courant, ce que la précision dit
+   * explicitement : annoncer « permis B » sans réserve à quelqu'un qui tracte
+   * avec un utilitaire lourd serait une affirmation fausse, et coûteuse.
+   */
+  const permis =
+    annonce.ptacKg > BAREME_FR.plafondRemorqueBE
+      ? null
+      : annonce.ptacKg <= BAREME_FR.seuilRemorqueFreineeKg
+        ? t("permisB")
+        : annonce.ptacKg <= 1_500
+          ? t("permisB96")
+          : t("permisBE");
+
+  const chiffres = [
+    { libelle: t("ptac"), valeur: t("kg", { kg: annonce.ptacKg }) },
+    { libelle: t("chargeUtile"), valeur: t("kg", { kg: annonce.chargeUtileKg }) },
+    {
+      libelle: t("dimensions"),
+      valeur: `${mm(annonce.longueurUtileMm)} × ${mm(annonce.largeurUtileMm)}`,
+    },
+    {
+      libelle: t("permisRequis"),
+      valeur: permis ?? "—",
+      precision: t("permisAide"),
+    },
+  ];
+
   const caracteristiques = [
     { cle: t("ptac"), valeur: t("kg", { kg: annonce.ptacKg }) },
     { cle: t("chargeUtile"), valeur: t("kg", { kg: annonce.chargeUtileKg }) },
     { cle: t("poidsVide"), valeur: t("kg", { kg: annonce.poidsVideKg }) },
-    {
-      cle: t("dimensions"),
-      valeur: [
-        mm(annonce.longueurUtileMm),
-        mm(annonce.largeurUtileMm),
-        annonce.hauteurUtileMm ? mm(annonce.hauteurUtileMm) : null,
-      ]
-        .filter(Boolean)
-        .join(" × "),
-    },
+    { cle: t("dimensions"), valeur: dimensions },
     {
       cle: t("freinage"),
       valeur: annonce.freinee ? t("freinee") : t("nonFreinee"),
@@ -92,6 +159,12 @@ export default async function PageAnnonce({ params }: Props) {
       valeur: t("broches", { nombre: annonce.faisceauBroches }),
     },
   ];
+
+  const ANNULATIONS = {
+    souple: t("annulationSouple"),
+    moderee: t("annulationModeree"),
+    stricte: t("annulationStricte"),
+  } as const;
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
@@ -122,103 +195,242 @@ export default async function PageAnnonce({ params }: Props) {
       </nav>
 
       <header className="mt-4">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
           {annonce.titre}
         </h1>
-        <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-texte-attenue">
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-texte-attenue">
           {annonce.note !== null ? (
-            <span>
-              <span aria-hidden>★ </span>
-              <span className="font-medium text-texte">
+            <span className="flex items-center gap-1.5">
+              <Etoiles note={Math.round(annonce.note)} />
+              <span className="font-medium tabular-nums text-texte">
                 {format.number(annonce.note, { maximumFractionDigits: 1 })}
-              </span>{" "}
-              ({annonce.nombreAvis})
+              </span>
+              <span>({annonce.nombreAvis})</span>
             </span>
           ) : null}
           <span>
             {annonce.quartier}, {annonce.ville}
           </span>
           {annonce.reservationInstantanee ? (
-            <span className="text-accent">{t("instantanee")}</span>
+            <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
+              {t("instantanee")}
+            </span>
           ) : null}
-        </p>
+        </div>
       </header>
 
       <Illustration
         src={annonce.photo}
         alt={annonce.photoAlt}
         priorite
-        className="mt-5 aspect-16/9 w-full rounded-carte"
+        className="mt-5 aspect-16/9 w-full rounded-carte border border-bordure"
         tailles="(min-width: 1024px) 66vw, 100vw"
       />
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_23rem] lg:items-start">
-        <div>
-          <p className="text-pretty">{annonce.description}</p>
+      {/* Les quatre nombres qui décident de la location, à l'endroit où l'œil
+          arrive après l'image. */}
+      <div className="mt-5">
+        <ChiffresCles entrees={chiffres} />
+      </div>
 
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold">{t("caracteristiques")}</h2>
-            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-              {caracteristiques.map((entree) => (
-                <div key={entree.cle}>
-                  <dt className="text-sm text-texte-attenue">{entree.cle}</dt>
-                  <dd className="mt-0.5 font-medium">{entree.valeur}</dd>
-                </div>
-              ))}
-            </dl>
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_23rem] lg:items-start">
+        <div className="space-y-6">
+          <BlocFiche titre={t("description")}>
+            <p className="leading-relaxed whitespace-pre-line text-pretty">
+              {annonce.description}
+            </p>
+          </BlocFiche>
 
-            <p className="mt-6 text-sm">
+          <BlocFiche
+            titre={t("caracteristiques")}
+            action={
               <Link
                 href="/quel-permis-pour-quelle-remorque"
-                className="text-accent underline-offset-4 hover:underline"
+                className="text-sm font-medium text-accent hover:underline"
               >
                 {t("verifierPermis")}
               </Link>
-            </p>
-          </section>
+            }
+          >
+            <ListeCaracteristiques entrees={caracteristiques} />
+          </BlocFiche>
 
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold">{t("equipements")}</h2>
-            <ul className="mt-4 flex flex-wrap gap-2">
-              {annonce.equipements.map((equipement) => (
-                <li
-                  key={equipement}
-                  className="rounded-full border border-bordure px-3 py-1 text-sm"
-                >
-                  {equipement}
-                </li>
-              ))}
-            </ul>
-          </section>
+          {annonce.equipements.length > 0 ? (
+            <BlocFiche titre={t("equipements")}>
+              <ul className="flex flex-wrap gap-2">
+                {annonce.equipements.map((equipement) => (
+                  <li
+                    key={equipement}
+                    className="rounded-full border border-bordure bg-fond-doux px-3 py-1.5 text-sm"
+                  >
+                    {equipement}
+                  </li>
+                ))}
+              </ul>
+            </BlocFiche>
+          ) : null}
 
-          <section className="mt-8 border-t border-bordure pt-6">
-            <h2 className="text-lg font-semibold">{t("proprietaire")}</h2>
-            <p className="mt-3">
-              <span className="font-medium">{annonce.proprietaire.prenom}</span>
-              {annonce.proprietaire.professionnel ? (
-                <span className="ml-2 rounded-full bg-fond-doux px-2 py-0.5 text-xs font-medium text-accent">
-                  {t("professionnel")}
-                </span>
-              ) : null}
-            </p>
-            <p className="mt-1 text-sm text-texte-attenue">
-              {t("depuis", { annee: annonce.proprietaire.depuis })} ·{" "}
-              {t("tauxReponse", { taux: annonce.proprietaire.tauxReponse })}
-            </p>
-          </section>
+          {/* ---------- Avis ---------- */}
+          <BlocFiche
+            titre={t("avis")}
+            aparte={
+              notes.moyenne !== null
+                ? `${format.number(notes.moyenne, { maximumFractionDigits: 1 })} · ${t("avisNombre", { nombre: notes.nombre })}`
+                : undefined
+            }
+          >
+            {notes.nombre === 0 ? (
+              <div className="py-2">
+                <p className="font-medium">{t("avisAucun")}</p>
+                <p className="mt-1 text-[0.9375rem] text-texte-attenue">
+                  {t("avisAucunTexte")}
+                </p>
+              </div>
+            ) : (
+              <>
+                <RepartitionNotes
+                  repartition={notes.repartition}
+                  total={notes.nombre}
+                  libelle={(note) => t("etoiles", { nombre: note })}
+                />
 
-          <section className="mt-8 border-t border-bordure pt-6">
-            <h2 className="text-lg font-semibold">{t("retrait")}</h2>
-            <p className="mt-3 text-sm text-texte-attenue">
+                <ul className="mt-6 space-y-5 border-t border-bordure pt-5">
+                  {notes.avis.map((avis) => (
+                    <li key={avis.id}>
+                      <article>
+                        <div className="flex items-center gap-3">
+                          <span
+                            aria-hidden
+                            className="grid size-9 shrink-0 place-items-center rounded-full bg-fond-doux text-sm font-medium"
+                          >
+                            {avis.auteur.charAt(0)}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-[0.9375rem] font-medium">
+                              {avis.auteur}
+                            </p>
+                            <p className="flex items-center gap-2 text-xs text-texte-attenue">
+                              <Etoiles note={avis.note} />
+                              <time dateTime={avis.date.toISOString()}>
+                                {format.dateTime(avis.date, {
+                                  month: "long",
+                                  year: "numeric",
+                                })}
+                              </time>
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="mt-2.5 text-[0.9375rem] text-pretty">
+                          {avis.texte}
+                        </p>
+
+                        {/* La réponse du loueur en retrait : c'est une
+                            réplique, pas un avis de même rang. */}
+                        {avis.reponse ? (
+                          <div className="mt-3 border-l-2 border-bordure pl-4">
+                            <p className="text-xs font-medium text-texte-attenue">
+                              {t("reponseProprietaire")}
+                            </p>
+                            <p className="mt-1 text-[0.9375rem]">
+                              {avis.reponse}
+                            </p>
+                          </div>
+                        ) : null}
+                      </article>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </BlocFiche>
+
+          {/* ---------- Loueur ---------- */}
+          <BlocFiche titre={t("proprietaire")}>
+            <div className="flex items-start gap-4">
+              <span
+                aria-hidden
+                className="grid size-12 shrink-0 place-items-center rounded-full bg-fond-doux text-lg font-semibold"
+              >
+                {annonce.proprietaire.prenom.charAt(0)}
+              </span>
+
+              <div className="min-w-0">
+                <p className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">
+                    {annonce.proprietaire.prenom}
+                  </span>
+                  {annonce.proprietaire.professionnel ? (
+                    <span className="rounded-full border border-accent/30 bg-accent/10 px-2 py-0.5 text-xs font-medium text-accent">
+                      {t("professionnel")}
+                    </span>
+                  ) : null}
+                </p>
+                <p className="mt-1 text-[0.9375rem] text-texte-attenue">
+                  {t("loueurDepuis", { annee: annonce.proprietaire.depuis })}
+                </p>
+                <p className="text-[0.9375rem] text-texte-attenue">
+                  {t("tauxReponse", { taux: annonce.proprietaire.tauxReponse })}
+                </p>
+              </div>
+            </div>
+          </BlocFiche>
+
+          {/* ---------- Retrait, annulation, assurance ---------- */}
+          <BlocFiche titre={t("retrait")}>
+            <p className="text-[0.9375rem]">
               {t("adresseMasquee", { quartier: annonce.quartier })}
             </p>
-          </section>
+            <p className="mt-1.5 text-sm text-texte-attenue">
+              {t("retraitAide")}
+            </p>
+
+            <div className="mt-5 border-t border-bordure pt-4">
+              <h3 className="text-[0.9375rem] font-medium">{t("annulation")}</h3>
+              <p className="mt-1 text-[0.9375rem] text-texte-attenue">
+                {ANNULATIONS[annonce.politiqueAnnulation]}
+              </p>
+            </div>
+
+            <div className="mt-4 border-t border-bordure pt-4">
+              <h3 className="text-[0.9375rem] font-medium">{t("assurance")}</h3>
+              <p className="mt-1 text-[0.9375rem] text-texte-attenue">
+                {t("assuranceTexte")}
+              </p>
+              <Link
+                href="/assurance"
+                className="mt-2 inline-block text-sm font-medium text-accent hover:underline"
+              >
+                {t("enSavoirPlus")}
+              </Link>
+            </div>
+          </BlocFiche>
         </div>
 
         {/* Le barème descend depuis le serveur : il viendra de la table `pays`
             dès qu'elle sera branchée, sans toucher au composant. */}
         <CarteReservation annonce={annonce} bareme={BAREME_PAR_DEFAUT} />
       </div>
+
+      {/* ---------- À proximité ---------- */}
+      {voisines.length > 0 ? (
+        <section className="mt-12 border-t border-bordure pt-8">
+          <h2 className="text-xl font-semibold tracking-tight">
+            {t("similaires")}
+          </h2>
+          <p className="mt-1 text-[0.9375rem] text-texte-attenue">
+            {t("similairesChapo", { ville: annonce.ville })}
+          </p>
+
+          <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {voisines.map((voisine) => (
+              <li key={voisine.id}>
+                <CarteAnnonce annonce={voisine} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <DonneesStructurees
         donnees={{
