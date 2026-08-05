@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
-import { listerAnnonces } from "@/server/annonces/depot";
+import { JEU_DE_DEMONSTRATION } from "@/server/annonces/catalogue";
 import {
   AVIS_LOCATAIRES,
   generateur,
@@ -78,7 +78,7 @@ const global_ = globalThis as unknown as {
 };
 
 function construire(): { reservations: Reservation[]; avis: Avis[] } {
-  const annonces = listerAnnonces();
+  const annonces = JEU_DE_DEMONSTRATION;
   const hasard = generateur(GRAINES.activiteLoueur);
 
   const reservations: Reservation[] = [];

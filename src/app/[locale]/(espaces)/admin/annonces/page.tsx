@@ -5,7 +5,7 @@ import { Cellule, Pastille, Tableau } from "@/components/espace/tableau";
 import { Illustration } from "@/components/ui/illustration";
 import { Link } from "@/i18n/navigation";
 import { PRIX_AFFICHE } from "@/lib/cn";
-import { listerAnnonces } from "@/server/annonces/depot";
+import { listerAnnoncesDetaillees } from "@/server/annonces/depot";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -19,7 +19,7 @@ export default async function PageAnnoncesAdmin({ params }: Props) {
   const t = await getTranslations("espaces.admin.annonces");
   const format = await getFormatter();
 
-  const annonces = listerAnnonces();
+  const annonces = await listerAnnoncesDetaillees();
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
@@ -59,8 +59,8 @@ export default async function PageAnnoncesAdmin({ params }: Props) {
               </span>
             </th>
             <Cellule secondaire attenue>
-              {annonce.proprietaire.prenom}
-              {annonce.proprietaire.professionnel ? " · pro" : ""}
+              {annonce.proprietaire?.prenom ?? "—"}
+              {annonce.proprietaire?.professionnel ? " · pro" : ""}
             </Cellule>
             <Cellule secondaire>{annonce.ville}</Cellule>
             <Cellule numerique>

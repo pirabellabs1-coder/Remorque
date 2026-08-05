@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
-import { listerAnnonces } from "@/server/annonces/depot";
+import { JEU_DE_DEMONSTRATION } from "@/server/annonces/catalogue";
 import {
   AVIS_LOCATAIRES,
   FENETRE_AVIS_JOURS,
@@ -185,7 +185,7 @@ const global_ = globalThis as unknown as {
 };
 
 function construire() {
-  const annonces = listerAnnonces();
+  const annonces = JEU_DE_DEMONSTRATION;
   const hasard = generateur(GRAINES.locataire);
 
   const aujourdhui = new Date();

@@ -1,24 +1,34 @@
 import "server-only";
 
+import { and, eq, sql as raw } from "drizzle-orm";
+
 import { CATEGORIES, type SlugCategorie } from "@/config/categories";
 import { trouverVille } from "@/config/villes";
+import { db } from "@/server/db";
+import {
+  annonce as tableAnnonce,
+  annoncePhoto,
+  categorie as tableCategorie,
+  pays as tablePays,
+  tarif,
+  utilisateur,
+} from "@/server/db/schema";
 
-import { JEU_DE_DEMONSTRATION, type AnnonceDetail } from "./catalogue";
+import { type AnnonceDetail, type AnnonceResume, trouverAnnonce } from "./catalogue";
+import { chercher, versResume } from "./requetes";
 
 /**
- * Dépôt des annonces.
+ * Dépôt des annonces — écritures et lectures de l'espace loueur.
  *
- * Une seule porte d'entrée pour lire et écrire le catalogue, quel que soit le
- * support. Aujourd'hui les annonces vivent en mémoire du serveur ; demain elles
- * viendront de PostgreSQL. Les écrans et les actions ne connaissent que cette
- * interface : brancher la base ne demandera qu'une seconde implémentation, pas
- * une reprise de l'espace loueur.
+ * Il écrivait dans un tableau porté par `globalThis`, ce qui avait deux
+ * conséquences que le passage en base supprime : une annonce publiée
+ * disparaissait au redémarrage du serveur, et — plus grave depuis que le
+ * catalogue public lit PostgreSQL — elle n'apparaissait nulle part côté
+ * visiteur. Publier remplissait une mémoire que plus personne ne lisait.
  *
- * ⚠ La mémoire ne survit pas au redémarrage du serveur. C'est suffisant pour
- * concevoir et recetter un parcours de bout en bout — publier une annonce et
- * la voir apparaître dans le catalogue public — et c'est délibérément
- * insuffisant pour la production, que le garde-fou de `catalogue.ts` protège
- * déjà.
+ * Deux tests l'ont attrapé : ils vérifient précisément qu'une annonce publiée
+ * devient visible dans le catalogue public, et qu'une annonce supprimée en
+ * disparaît. C'est exactement ce que ces tests existent pour empêcher.
  */
 
 export type BrouillonAnnonce = {
@@ -39,20 +49,6 @@ export type BrouillonAnnonce = {
   politiqueAnnulation: "souple" | "moderee" | "stricte";
 };
 
-/**
- * Le stock est porté par `globalThis` : en développement, Next.js recharge les
- * modules à chaque modification, et une simple variable de module repartirait
- * de zéro à la première sauvegarde de fichier.
- */
-const global_ = globalThis as unknown as {
-  __flexitrailerAnnonces?: AnnonceDetail[];
-};
-
-function stock(): AnnonceDetail[] {
-  global_.__flexitrailerAnnonces ??= [...JEU_DE_DEMONSTRATION];
-  return global_.__flexitrailerAnnonces;
-}
-
 function slugifier(valeur: string): string {
   return valeur
     .normalize("NFD")
@@ -62,12 +58,22 @@ function slugifier(valeur: string): string {
     .replace(/^-|-$/g, "");
 }
 
-/** Rend le slug unique dans la ville : deux « benne 750 kg » à Bruxelles. */
-function slugDisponible(villeSlug: string, base: string): string {
+/**
+ * Rend le slug unique dans la ville.
+ *
+ * L'unicité est de toute façon garantie par l'index `annonce_slug_unique` :
+ * cette fonction évite d'aller heurter la contrainte, elle ne la remplace pas.
+ * Deux « benne 750 kg » à Bruxelles donnent donc `benne-750-kg` et
+ * `benne-750-kg-2`.
+ */
+async function slugDisponible(villeSlug: string, base: string): Promise<string> {
   const existants = new Set(
-    stock()
-      .filter((annonce) => annonce.villeSlug === villeSlug)
-      .map((annonce) => annonce.slug),
+    (
+      await db
+        .select({ slug: tableAnnonce.slug })
+        .from(tableAnnonce)
+        .where(eq(tableAnnonce.villeSlug, villeSlug))
+    ).map((ligne) => ligne.slug),
   );
 
   if (!existants.has(base)) return base;
@@ -76,85 +82,204 @@ function slugDisponible(villeSlug: string, base: string): string {
   return `${base}-${suffixe}`;
 }
 
-export function listerAnnonces(): AnnonceDetail[] {
-  return stock();
+const altDe = (slug: string) =>
+  CATEGORIES.find((entree) => entree.slug === slug)?.alt ?? "";
+
+/** Toutes les annonces publiées, en résumé. */
+export async function listerAnnonces(): Promise<AnnonceResume[]> {
+  const lignes = await chercher({ tri: "note" });
+  return lignes.map((ligne) => versResume(ligne, altDe(ligne.categorie)));
 }
 
-export function annoncesDuProprietaire(): AnnonceDetail[] {
-  // Tant que l'authentification n'est pas branchée, le loueur voit tout le
-  // catalogue. Le filtre sur l'identifiant du propriétaire viendra avec la
-  // session — c'est une ligne, à l'endroit prévu.
-  return stock();
-}
+/**
+ * Annonces avec leur propriétaire et leur caution.
+ *
+ * L'administration a besoin de savoir *chez qui* une annonce est publiée et
+ * quelle caution elle exige — deux informations que le résumé public n'expose
+ * pas, et qui n'ont rien à faire dans une carte de recherche.
+ */
+export async function listerAnnoncesDetaillees() {
+  const resumes = await listerAnnonces();
 
-export function trouverParSlug(
-  villeSlug: string,
-  slug: string,
-): AnnonceDetail | undefined {
-  return stock().find(
-    (annonce) => annonce.villeSlug === villeSlug && annonce.slug === slug,
+  return Promise.all(
+    resumes.map(async (resume) => {
+      const detail = await trouverAnnonce(resume.villeSlug, resume.slug);
+      return { ...resume, caution: detail?.caution ?? 0, proprietaire: detail?.proprietaire };
+    }),
   );
 }
 
-export function ajouterAnnonce(brouillon: BrouillonAnnonce): AnnonceDetail {
+/**
+ * Annonces du loueur connecté.
+ *
+ * Tant que l'authentification n'est pas branchée, le loueur voit tout le
+ * catalogue. Le filtre sur l'identifiant du propriétaire viendra avec la
+ * session — c'est une clause `where`, à l'endroit prévu.
+ */
+export async function annoncesDuProprietaire(): Promise<AnnonceResume[]> {
+  return listerAnnonces();
+}
+
+export async function trouverParSlug(
+  villeSlug: string,
+  slug: string,
+): Promise<AnnonceDetail | null> {
+  return trouverAnnonce(villeSlug, slug);
+}
+
+/**
+ * Compte propriétaire par défaut, en attendant la session.
+ *
+ * Il est créé au besoin plutôt que supposé : sans lui, l'insertion échouerait
+ * sur la clé étrangère, et le message d'erreur ne dirait pas pourquoi.
+ */
+async function proprietaireParDefaut(paysId: string): Promise<string> {
+  const email = "moi@demonstration.flexitrailer.eu";
+
+  const [existant] = await db
+    .select({ id: utilisateur.id })
+    .from(utilisateur)
+    .where(eq(utilisateur.email, email))
+    .limit(1);
+
+  if (existant) return existant.id;
+
+  const [cree] = await db
+    .insert(utilisateur)
+    .values({
+      email,
+      emailVerifie: true,
+      prenom: "Vous",
+      typeCompte: "particulier",
+      paysId,
+      langue: "fr",
+      profilProprietaire: true,
+      identiteStatut: "verifie",
+    })
+    .returning({ id: utilisateur.id });
+
+  return cree.id;
+}
+
+export async function ajouterAnnonce(
+  brouillon: BrouillonAnnonce,
+): Promise<AnnonceDetail> {
   const ville = trouverVille(brouillon.villeSlug);
   if (!ville) throw new Error(`Ville inconnue : ${brouillon.villeSlug}`);
 
-  const categorie = CATEGORIES.find(
+  const categorieChoisie = CATEGORIES.find(
     (entree) => entree.slug === brouillon.categorie,
   );
-  if (!categorie) throw new Error(`Catégorie inconnue : ${brouillon.categorie}`);
+  if (!categorieChoisie) {
+    throw new Error(`Catégorie inconnue : ${brouillon.categorie}`);
+  }
 
-  const annonce: AnnonceDetail = {
-    id: `a${Date.now().toString(36)}`,
-    slug: slugDisponible(ville.slug, slugifier(brouillon.titre)),
-    titre: brouillon.titre,
-    categorie: brouillon.categorie,
-    ville: ville.nom,
-    villeSlug: ville.slug,
-    quartier: ville.province,
-    // Sans géocodage ni point de recherche, la distance n'a pas de sens : on
-    // ne l'invente pas, on la met à zéro et la fiche ne l'affiche pas.
-    distanceM: 0,
+  const [paysLigne] = await db
+    .select({ id: tablePays.id, devise: tablePays.devise })
+    .from(tablePays)
+    .where(eq(tablePays.code, ville.pays))
+    .limit(1);
+
+  if (!paysLigne) {
+    throw new Error(
+      `Pays absent de la base : ${ville.pays}. Lancez « npm run db:demo ».`,
+    );
+  }
+
+  const [categorieLigne] = await db
+    .select({ id: tableCategorie.id })
+    .from(tableCategorie)
+    .where(eq(tableCategorie.slug, brouillon.categorie))
+    .limit(1);
+
+  if (!categorieLigne) {
+    throw new Error(
+      `Catégorie absente de la base : ${brouillon.categorie}. Lancez « npm run db:seed ».`,
+    );
+  }
+
+  const proprietaireId = await proprietaireParDefaut(paysLigne.id);
+  const slug = await slugDisponible(ville.slug, slugifier(brouillon.titre));
+
+  const [creee] = await db
+    .insert(tableAnnonce)
+    .values({
+      proprietaireId,
+      categorieId: categorieLigne.id,
+      paysId: paysLigne.id,
+      titre: brouillon.titre,
+      description: brouillon.description,
+      slug,
+      statut: "publiee",
+      etapePublication: 6,
+      ptacKg: brouillon.ptacKg,
+      poidsVideKg: brouillon.poidsVideKg,
+      // La charge utile est dérivée, jamais saisie : c'est le PTAC moins le
+      // poids à vide. La demander au propriétaire serait lui laisser
+      // l'occasion de la contredire.
+      chargeUtileKg: brouillon.ptacKg - brouillon.poidsVideKg,
+      longueurUtileMm: brouillon.longueurUtileMm,
+      largeurUtileMm: brouillon.largeurUtileMm,
+      freinee: brouillon.freinee,
+      typeAttelage: "Boule Ø 50 mm",
+      faisceauBroches: 13,
+      equipements: brouillon.equipements,
+      caracteristiques: { quartier: ville.province },
+      ville: ville.nom,
+      villeSlug: ville.slug,
+      // Sans géocodage de l'adresse, la position est le centre de la commune.
+      // C'est exact au rayon d'imprécision près, qui est de toute façon tout
+      // ce que le public voit avant confirmation.
+      position: { longitude: ville.longitude, latitude: ville.latitude },
+      reservationInstantanee: brouillon.reservationInstantanee,
+      politiqueAnnulation: brouillon.politiqueAnnulation,
+      devise: paysLigne.devise,
+      caution: brouillon.caution,
+      publieeLe: new Date(),
+    })
+    .returning({ id: tableAnnonce.id });
+
+  await db.insert(annoncePhoto).values({
+    annonceId: creee.id,
+    url: categorieChoisie.photo,
+    ordre: 0,
+  });
+
+  await db.insert(tarif).values({
+    annonceId: creee.id,
     prixJour: brouillon.prixJour,
-    devise: "EUR",
-    photo: categorie.photo,
-    photoAlt: categorie.alt,
-    // Une annonce neuve n'a ni note ni avis. Zéro serait faux : c'est
-    // « pas encore noté », et l'interface doit pouvoir les distinguer.
-    note: null,
-    nombreAvis: 0,
-    reservationInstantanee: brouillon.reservationInstantanee,
-    ptacKg: brouillon.ptacKg,
-    poidsVideKg: brouillon.poidsVideKg,
-    chargeUtileKg: brouillon.ptacKg - brouillon.poidsVideKg,
-    longueurUtileMm: brouillon.longueurUtileMm,
-    largeurUtileMm: brouillon.largeurUtileMm,
-    hauteurUtileMm: null,
-    freinee: brouillon.freinee,
-    typeAttelage: "Boule Ø 50 mm",
-    faisceauBroches: 13,
-    caution: brouillon.caution,
-    equipements: brouillon.equipements,
-    politiqueAnnulation: brouillon.politiqueAnnulation,
-    description: brouillon.description,
-    proprietaire: {
-      prenom: "Vous",
-      depuis: String(new Date().getFullYear()),
-      tauxReponse: 100,
-      professionnel: false,
-    },
-  };
+  });
 
-  // En tête de liste : ce que l'on vient de publier doit se voir sans chercher.
-  stock().unshift(annonce);
-  return annonce;
+  const detail = await trouverAnnonce(ville.slug, slug);
+  if (!detail) {
+    throw new Error("L'annonce vient d'être créée mais reste introuvable.");
+  }
+  return detail;
 }
 
-export function supprimerAnnonce(id: string): boolean {
-  const liste = stock();
-  const index = liste.findIndex((annonce) => annonce.id === id);
-  if (index === -1) return false;
-  liste.splice(index, 1);
-  return true;
+/**
+ * Supprime une annonce.
+ *
+ * Photos et tarifs partent en cascade. Une annonce qui porte des réservations
+ * ne peut pas être supprimée — la clé étrangère l'interdit, et c'est voulu :
+ * l'effacer effacerait l'historique des locations qui s'y rattachent. Le geste
+ * attendu dans ce cas est l'archivage, non la suppression.
+ */
+export async function supprimerAnnonce(id: string): Promise<boolean> {
+  const supprimees = await db
+    .delete(tableAnnonce)
+    .where(eq(tableAnnonce.id, id))
+    .returning({ id: tableAnnonce.id });
+
+  return supprimees.length > 0;
+}
+
+/** Nombre d'annonces publiées. */
+export async function compterAnnonces(): Promise<number> {
+  const [ligne] = await db
+    .select({ nombre: raw<number>`count(*)::int` })
+    .from(tableAnnonce)
+    .where(and(eq(tableAnnonce.statut, "publiee")));
+
+  return ligne?.nombre ?? 0;
 }

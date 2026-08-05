@@ -46,7 +46,7 @@ export default async function PageStatistiques({ params }: Props) {
   const reservations = listerReservations().filter((reservation) =>
     ENCAISSES.includes(reservation.statut),
   );
-  const annonces = listerAnnonces();
+  const annonces = await listerAnnonces();
 
   const montant = (centimes: number) =>
     format.number(centimes / 100, {

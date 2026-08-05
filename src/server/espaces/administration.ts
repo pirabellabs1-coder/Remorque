@@ -13,7 +13,7 @@ import {
 } from "@/server/donnees-demo";
 
 import { PAYS, VILLES } from "@/config/villes";
-import { listerAnnonces } from "@/server/annonces/depot";
+import { JEU_DE_DEMONSTRATION } from "@/server/annonces/catalogue";
 
 import { listerAvis, listerReservations } from "./activite";
 
@@ -458,7 +458,7 @@ export function syntheseAdmin(): SyntheseAdmin {
     nouveauxUtilisateurs30j: utilisateurs.filter(
       (utilisateur) => utilisateur.inscritLe >= ilYaTrenteJours,
     ).length,
-    annoncesActives: listerAnnonces().length,
+    annoncesActives: JEU_DE_DEMONSTRATION.length,
     litigesOuverts: listerLitiges().filter((litige) => litige.statut !== "resolu")
       .length,
     sinistresOuverts: listerSinistres().filter((sinistre) =>
@@ -488,7 +488,7 @@ export type LignePays = {
 
 /** Comparaison entre pays — l'indicateur qui décide des ouvertures de marché. */
 export function comparaisonPays(): LignePays[] {
-  const annonces = listerAnnonces();
+  const annonces = JEU_DE_DEMONSTRATION;
   const reservations = listerReservations().filter((reservation) =>
     STATUTS_ENCAISSES.includes(reservation.statut),
   );

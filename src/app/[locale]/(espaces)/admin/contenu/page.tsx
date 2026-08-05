@@ -29,7 +29,7 @@ export default async function PageContenu({ params }: Props) {
   const t = await getTranslations("espaces.admin.contenu");
   const tPays = await getTranslations("accueil.villes.pays");
 
-  const annonces = listerAnnonces();
+  const annonces = await listerAnnonces();
 
   const parVille = VILLES.map((ville) => ({
     ...ville,

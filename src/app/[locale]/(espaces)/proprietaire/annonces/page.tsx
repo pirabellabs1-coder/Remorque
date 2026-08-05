@@ -21,7 +21,7 @@ export default async function PageAnnonces({ params }: Props) {
 
   const t = await getTranslations("espaces.loueur");
   const format = await getFormatter();
-  const annonces = annoncesDuProprietaire();
+  const annonces = await annoncesDuProprietaire();
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8 sm:py-10">

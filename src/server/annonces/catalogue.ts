@@ -1,6 +1,6 @@
 import { CATEGORIES, type SlugCategorie } from "@/config/categories";
 
-import { listerAnnonces } from "./depot";
+
 
 /**
  * Accès au catalogue d'annonces.
@@ -58,6 +58,15 @@ export type AnnonceDetail = AnnonceResume & {
   /** Quartier affiché avant confirmation ; l'adresse exacte reste masquée. */
   quartier: string;
 };
+
+import {
+  adresses,
+  chercher,
+  compterParVille,
+  detail,
+  tauxReponse,
+  versResume,
+} from "./requetes";
 
 const photoDe = (slug: SlugCategorie) => {
   const categorie = CATEGORIES.find((entree) => entree.slug === slug)!;
@@ -369,18 +378,6 @@ export function estTri(valeur: string | undefined): valeur is TriRecherche {
   return valeur !== undefined && (TRIS as readonly string[]).includes(valeur);
 }
 
-const comparateurs: Record<
-  TriRecherche,
-  (a: AnnonceResume, b: AnnonceResume) => number
-> = {
-  // À défaut de moteur de pertinence, on privilégie la proximité : c'est le
-  // critère qui compte réellement sur une place de marché locale.
-  pertinence: (a, b) => a.distanceM - b.distanceM,
-  distance: (a, b) => a.distanceM - b.distanceM,
-  prix: (a, b) => a.prixJour - b.prixJour,
-  note: (a, b) => (b.note ?? 0) - (a.note ?? 0),
-};
-
 export type ResultatRecherche = {
   annonces: AnnonceResume[];
   total: number;
@@ -400,42 +397,39 @@ function normaliserVille(valeur: string): string {
     .replace(/\s+/g, "-");
 }
 
-/**
- * Garde-fou : le jeu de démonstration porte des notes et des nombres d'avis
- * qui n'existent pas. Les exposer en production serait une allégation
- * trompeuse (section 11). Tant que la base n'est pas branchée, la production
- * ne renvoie donc rien — et l'écran vide, qui est de toute façon l'état réel
- * des premiers jours, prend le relais.
- */
-const DEMONSTRATION_AUTORISEE = process.env.NODE_ENV !== "production";
+const altDe = (slug: string) =>
+  CATEGORIES.find((entree) => entree.slug === slug)?.alt ?? "";
 
+/**
+ * Les lectures passent désormais par PostgreSQL.
+ *
+ * Le garde-fou de production qui renvoyait des listes vides a disparu avec sa
+ * raison d'être : il protégeait contre l'affichage de notes inventées par le
+ * jeu d'essai. Les notes sont maintenant la moyenne d'avis réels, rattachés à
+ * des réservations réelles. Il n'y a plus d'allégation à empêcher — et une
+ * base vide produit d'elle-même les écrans vides des premiers jours.
+ */
 export async function rechercherAnnonces(
   criteres: CriteresRecherche,
 ): Promise<ResultatRecherche> {
-  if (!DEMONSTRATION_AUTORISEE) return { annonces: [], total: 0 };
-
   const { ville, categorie, tri = "pertinence" } = criteres;
-  const villeRecherchee = ville ? normaliserVille(ville) : undefined;
 
-  const annonces = listerAnnonces().filter((annonce) => {
-    if (categorie && annonce.categorie !== categorie) return false;
-    // Sans ce filtre, une recherche « Bordeaux » renvoyait les annonces de
-    // Lyon sous le titre « Remorques à louer à Bordeaux ».
-    if (villeRecherchee && annonce.villeSlug !== villeRecherchee) return false;
-    return true;
-  }).sort(comparateurs[tri]);
+  const lignes = await chercher({
+    villeSlug: ville ? normaliserVille(ville) : undefined,
+    categorieSlug: categorie,
+    tri,
+  });
 
+  const annonces = lignes.map((ligne) => versResume(ligne, altDe(ligne.categorie)));
   return { annonces, total: annonces.length };
 }
 
-/** Quelques annonces pour la page d'accueil, les plus proches d'abord. */
+/** Quelques annonces pour la page d'accueil, les mieux notées d'abord. */
 export async function annoncesEnVitrine(
   nombre: number,
 ): Promise<AnnonceResume[]> {
-  if (!DEMONSTRATION_AUTORISEE) return [];
-  return [...listerAnnonces()]
-    .sort(comparateurs.pertinence)
-    .slice(0, nombre);
+  const lignes = await chercher({ tri: "note", limite: nombre });
+  return lignes.map((ligne) => versResume(ligne, altDe(ligne.categorie)));
 }
 
 /**
@@ -446,30 +440,23 @@ export async function annoncesDeLaVille(
   villeSlug: string,
   categorie?: string,
 ): Promise<AnnonceResume[]> {
-  if (!DEMONSTRATION_AUTORISEE) return [];
-
-  return listerAnnonces().filter(
-    (annonce) =>
-      annonce.villeSlug === villeSlug &&
-      (!categorie || annonce.categorie === categorie),
-  ).sort(comparateurs.pertinence);
+  const lignes = await chercher({
+    villeSlug,
+    categorieSlug: categorie,
+    tri: "distance",
+  });
+  return lignes.map((ligne) => versResume(ligne, altDe(ligne.categorie)));
 }
 
 /**
- * Nombre d'annonces actives par ville.
+ * Nombre d'annonces publiées par ville.
  *
  * C'est l'indicateur avancé du projet — la densité d'offre par ville, et non
- * le trafic (section 15). Il est compté, jamais saisi : afficher un volume
- * arrondi ou espéré serait une allégation invérifiable.
+ * le trafic (section 15). Il est compté en base, jamais saisi : afficher un
+ * volume arrondi ou espéré serait une allégation invérifiable.
  */
 export async function compterAnnoncesParVille(): Promise<Map<string, number>> {
-  const comptes = new Map<string, number>();
-  if (!DEMONSTRATION_AUTORISEE) return comptes;
-
-  for (const annonce of listerAnnonces()) {
-    comptes.set(annonce.villeSlug, (comptes.get(annonce.villeSlug) ?? 0) + 1);
-  }
-  return comptes;
+  return compterParVille();
 }
 
 /** Prix journalier le plus bas d'une ville, en centimes. */
@@ -486,17 +473,38 @@ export async function trouverAnnonce(
   villeSlug: string,
   slug: string,
 ): Promise<AnnonceDetail | null> {
-  return (
-    listerAnnonces().find(
-      (annonce) => annonce.villeSlug === villeSlug && annonce.slug === slug,
-    ) ?? null
-  );
+  const ligne = await detail(villeSlug, slug);
+  if (!ligne) return null;
+
+  const resume = versResume(ligne, altDe(ligne.categorie));
+  const taux = await tauxReponse(ligne.proprietaireId);
+
+  return {
+    ...resume,
+    description: ligne.description ?? "",
+    poidsVideKg: ligne.poidsVideKg ?? 0,
+    longueurUtileMm: ligne.longueurUtileMm ?? 0,
+    largeurUtileMm: ligne.largeurUtileMm ?? 0,
+    hauteurUtileMm: ligne.hauteurUtileMm,
+    typeAttelage: ligne.typeAttelage ?? "",
+    faisceauBroches: ligne.faisceauBroches ?? 13,
+    caution: ligne.caution,
+    equipements: ligne.equipements,
+    politiqueAnnulation: ligne.politiqueAnnulation,
+    proprietaire: {
+      prenom: ligne.proprietairePrenom ?? "",
+      depuis: String(ligne.proprietaireDepuis.getFullYear()),
+      // Nul quand le propriétaire n'a encore reçu aucune demande tranchée :
+      // afficher « 0 % de réponse » à un nouveau venu serait faux et le
+      // pénaliserait pour n'avoir pas encore eu de client.
+      tauxReponse: taux ?? 0,
+      professionnel: ligne.proprietaireProfessionnel,
+    },
+    quartier: String(ligne.caracteristiques.quartier ?? ligne.ville),
+  };
 }
 
 /** Adresses des fiches, pour la pré-génération et le plan de site. */
 export async function listerAdressesAnnonces() {
-  return listerAnnonces().map(({ villeSlug, slug }) => ({
-    ville: villeSlug,
-    slug,
-  }));
+  return adresses();
 }

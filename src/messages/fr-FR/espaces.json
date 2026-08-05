@@ -491,7 +491,9 @@
           "litiges": "Litiges ouverts",
           "litigesPrecision": "Fonds gelés tant qu’ils le restent",
           "sinistres": "Sinistres déclarés",
-          "sinistresPrecision": "À transmettre au partenaire"
+          "sinistresPrecision": "À transmettre au partenaire",
+          "support": "Demandes de support",
+          "supportPrecision": "Tickets ouverts ou en cours de traitement"
         },
         "pays": "Comparaison entre pays",
         "colonne": {

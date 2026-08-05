@@ -17,17 +17,32 @@ import {
  *
  * Une annonce déposée depuis l'espace loueur doit apparaître dans le catalogue
  * public — recherche, page de la ville, fiche — et non seulement dans la liste
- * du propriétaire. C'est précisément le raccord que le passage à PostgreSQL
- * risquerait de casser sans que rien ne le signale, puisque chaque écran
- * fonctionnerait encore isolément.
+ * du propriétaire. C'est exactement le raccord que le passage à PostgreSQL a
+ * cassé : le catalogue lisait déjà la base quand le dépôt écrivait encore en
+ * mémoire, et chaque écran continuait de fonctionner isolément. Ces deux tests
+ * sont les seuls à avoir vu la rupture.
+ *
+ * Ce sont désormais des tests d'intégration : ils écrivent et lisent une vraie
+ * base. Sans `DATABASE_URL`, ils sont **ignorés et signalés comme tels**,
+ * jamais silencieusement réputés verts — un test qui ne s'exécute pas ne
+ * prouve rien, et doit le dire.
  */
 
+const baseDisponible = Boolean(process.env.DATABASE_URL);
+
+if (!baseDisponible) {
+  console.warn(
+    "Tests d'integration du depot ignores : DATABASE_URL absente. " +
+      "Renseignez « .env.local » puis relancez pour les executer.",
+  );
+}
+
 const BROUILLON: BrouillonAnnonce = {
-  titre: "Porte-moto essai automatisé",
+  titre: "Porte-moto essai automatise",
   categorie: "porte-moto",
   villeSlug: "bruxelles",
   description:
-    "Remorque d'essai créée par la suite de tests, avec une description assez longue.",
+    "Remorque d'essai creee par la suite de tests, avec une description assez longue.",
   prixJour: 4200,
   caution: 30000,
   ptacKg: 750,
@@ -41,17 +56,19 @@ const BROUILLON: BrouillonAnnonce = {
 };
 
 /** Retire les annonces laissées par un test précédent. */
-function nettoyer() {
-  for (const annonce of [...listerAnnonces()]) {
-    if (annonce.titre.includes("essai automatisé")) supprimerAnnonce(annonce.id);
+async function nettoyer() {
+  for (const annonce of await listerAnnonces()) {
+    if (annonce.titre.includes("essai automatise")) {
+      await supprimerAnnonce(annonce.id);
+    }
   }
 }
 
-describe("dépôt des annonces", () => {
+describe.skipIf(!baseDisponible)("dépôt des annonces", () => {
   beforeEach(nettoyer);
 
   it("rend l'annonce publiée visible dans le catalogue public", async () => {
-    const annonce = ajouterAnnonce(BROUILLON);
+    const annonce = await ajouterAnnonce(BROUILLON);
 
     const fiche = await trouverAnnonce("bruxelles", annonce.slug);
     expect(fiche?.titre).toBe(BROUILLON.titre);
@@ -64,8 +81,8 @@ describe("dépôt des annonces", () => {
     expect(resultats.total).toBe(resultats.annonces.length);
   });
 
-  it("calcule la charge utile et n'invente ni note ni avis", () => {
-    const annonce = ajouterAnnonce(BROUILLON);
+  it("calcule la charge utile et n'invente ni note ni avis", async () => {
+    const annonce = await ajouterAnnonce(BROUILLON);
 
     expect(annonce.chargeUtileKg).toBe(
       BROUILLON.ptacKg - BROUILLON.poidsVideKg,
@@ -76,8 +93,8 @@ describe("dépôt des annonces", () => {
     expect(annonce.nombreAvis).toBe(0);
   });
 
-  it("conserve les montants en centiemes entiers", () => {
-    const annonce = ajouterAnnonce(BROUILLON);
+  it("conserve les montants en centiemes entiers", async () => {
+    const annonce = await ajouterAnnonce(BROUILLON);
 
     expect(Number.isInteger(annonce.prixJour)).toBe(true);
     expect(Number.isInteger(annonce.caution)).toBe(true);
@@ -85,28 +102,30 @@ describe("dépôt des annonces", () => {
     expect(annonce.devise).toBe("EUR");
   });
 
-  it("distingue deux annonces de même titre dans la même ville", () => {
-    const premiere = ajouterAnnonce(BROUILLON);
-    const seconde = ajouterAnnonce(BROUILLON);
+  it("distingue deux annonces de même titre dans la même ville", async () => {
+    const premiere = await ajouterAnnonce(BROUILLON);
+    const seconde = await ajouterAnnonce(BROUILLON);
 
     expect(seconde.slug).not.toBe(premiere.slug);
     expect(seconde.slug.startsWith(premiere.slug)).toBe(true);
   });
 
-  it("refuse une ville ou une catégorie inconnue", () => {
-    expect(() =>
+  it("refuse une ville ou une catégorie inconnue", async () => {
+    await expect(
       ajouterAnnonce({ ...BROUILLON, villeSlug: "atlantide" }),
-    ).toThrow();
-    expect(() =>
+    ).rejects.toThrow();
+    await expect(
       ajouterAnnonce({ ...BROUILLON, categorie: "soucoupe" as never }),
-    ).toThrow();
+    ).rejects.toThrow();
   });
 
   it("retire l'annonce du catalogue public à la suppression", async () => {
-    const annonce = ajouterAnnonce(BROUILLON);
-    expect(supprimerAnnonce(annonce.id)).toBe(true);
+    const annonce = await ajouterAnnonce(BROUILLON);
+    expect(await supprimerAnnonce(annonce.id)).toBe(true);
 
     expect(await trouverAnnonce("bruxelles", annonce.slug)).toBeNull();
-    expect(supprimerAnnonce(annonce.id)).toBe(false);
+    // Une seconde suppression ne trouve plus rien : elle rend « faux » plutôt
+    // que de lever, car supprimer ce qui n'existe plus n'est pas une erreur.
+    expect(await supprimerAnnonce(annonce.id)).toBe(false);
   });
 });

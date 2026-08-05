@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { listerAnnonces } from "@/server/annonces/depot";
+import { JEU_DE_DEMONSTRATION } from "@/server/annonces/catalogue";
 import { listerAvis, listerFils, listerReservations } from "@/server/espaces/activite";
 import { listerUtilisateurs } from "@/server/espaces/administration";
 import { mesFils, mesReservations } from "@/server/espaces/locataire";
@@ -173,7 +173,7 @@ describe("textes partagés", () => {
 
 describe("catalogue", () => {
   it("alimente les deux espaces depuis les mêmes annonces", () => {
-    const identifiants = new Set(listerAnnonces().map((annonce) => annonce.id));
+    const identifiants = new Set(JEU_DE_DEMONSTRATION.map((annonce) => annonce.id));
 
     for (const reservation of listerReservations()) {
       expect(identifiants.has(reservation.annonceId)).toBe(true);

@@ -71,7 +71,7 @@ export async function publierAnnonce(
     return { statut: "erreur", message: "poidsVideKg" };
   }
 
-  const annonce = ajouterAnnonce({
+  const annonce = await ajouterAnnonce({
     titre: valeurs.titre,
     categorie: valeurs.categorie as never,
     villeSlug: valeurs.villeSlug,
