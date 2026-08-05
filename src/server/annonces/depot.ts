@@ -101,12 +101,35 @@ export async function listerAnnonces(): Promise<AnnonceResume[]> {
 export async function listerAnnoncesDetaillees() {
   const resumes = await listerAnnonces();
 
-  return Promise.all(
-    resumes.map(async (resume) => {
-      const detail = await trouverAnnonce(resume.villeSlug, resume.slug);
-      return { ...resume, caution: detail?.caution ?? 0, proprietaire: detail?.proprietaire };
-    }),
+  // Une seule requête pour les cautions et les propriétaires, et non une par
+  // annonce. La première version appelait `trouverAnnonce` dans une boucle :
+  // huit annonces produisaient huit allers-retours, et le millième en
+  // produirait mille. C'est le défaut classique dit « N+1 », qui ne se voit
+  // pas sur un jeu d'essai et écroule la production.
+  const complements = new Map(
+    (
+      await db
+        .select({
+          id: tableAnnonce.id,
+          caution: tableAnnonce.caution,
+          prenom: utilisateur.prenom,
+          professionnel: raw<boolean>`${utilisateur.typeCompte} = 'professionnel'`,
+        })
+        .from(tableAnnonce)
+        .innerJoin(utilisateur, eq(utilisateur.id, tableAnnonce.proprietaireId))
+    ).map((ligne) => [ligne.id, ligne]),
   );
+
+  return resumes.map((resume) => {
+    const complement = complements.get(resume.id);
+    return {
+      ...resume,
+      caution: complement?.caution ?? 0,
+      proprietaire: complement
+        ? { prenom: complement.prenom ?? "", professionnel: complement.professionnel }
+        : undefined,
+    };
+  });
 }
 
 /**

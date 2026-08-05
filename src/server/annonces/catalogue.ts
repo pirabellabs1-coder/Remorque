@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { CATEGORIES, type SlugCategorie } from "@/config/categories";
 
 
@@ -469,7 +471,7 @@ export async function prixMinimumDansLaVille(
   return Math.min(...annonces.map((annonce) => annonce.prixJour));
 }
 
-export async function trouverAnnonce(
+export const trouverAnnonce = cache(async function trouverAnnonce(
   villeSlug: string,
   slug: string,
 ): Promise<AnnonceDetail | null> {
@@ -502,7 +504,7 @@ export async function trouverAnnonce(
     },
     quartier: String(ligne.caracteristiques.quartier ?? ligne.ville),
   };
-}
+});
 
 /** Adresses des fiches, pour la pré-génération et le plan de site. */
 export async function listerAdressesAnnonces() {

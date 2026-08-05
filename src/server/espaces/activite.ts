@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { desc, eq, sql } from "drizzle-orm";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
@@ -82,7 +84,12 @@ const nomAffiche = sql<string>`
 /*  Lectures                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export async function listerReservations(): Promise<Reservation[]> {
+/**
+ * Mémorisée par requête HTTP : la synthèse, les listes filtrées et les courbes
+ * de revenus repartent toutes des mêmes cent quarante lignes. Sans
+ * déduplication, un seul tableau de bord les relisait six fois.
+ */
+export const listerReservations = cache(async (): Promise<Reservation[]> => {
   const lignes = await db
     .select({
       id: reservation.id,
@@ -111,9 +118,9 @@ export async function listerReservations(): Promise<Reservation[]> {
     statut: ligne.statut as StatutReservation,
     commission: ligne.commission ?? 0,
   }));
-}
+});
 
-export async function listerAvis(): Promise<Avis[]> {
+export const listerAvis = cache(async (): Promise<Avis[]> => {
   const lignes = await db
     .select({
       id: tableAvis.id,
@@ -141,7 +148,7 @@ export async function listerAvis(): Promise<Avis[]> {
     date: ligne.date!,
     reponse: ligne.reponse,
   }));
-}
+});
 
 /** Réservations qui demandent une action du loueur, les plus urgentes d'abord. */
 export async function reservationsAtraiter(): Promise<Reservation[]> {

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { desc, eq, sql } from "drizzle-orm";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
@@ -183,7 +185,7 @@ const MOYENS = ["Visa ••4218", "Mastercard ••7731", "Visa ••4218", "
  */
 const COURRIEL_DEMO = "moi@demonstration.flexitrailer.eu";
 
-async function compteCourant(): Promise<string | null> {
+const compteCourant = cache(async (): Promise<string | null> => {
   const [ligne] = await db
     .select({ id: utilisateur.id })
     .from(utilisateur)
@@ -191,7 +193,7 @@ async function compteCourant(): Promise<string | null> {
     .limit(1);
 
   return ligne?.id ?? null;
-}
+});
 
 /**
  * État de la caution, déduit du statut et du calendrier.
@@ -223,7 +225,20 @@ function etatCaution(
 /*  Lectures                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export async function mesReservations(): Promise<MaReservation[]> {
+/**
+ * Mémorisation par requête HTTP.
+ *
+ * Un seul écran appelait cette fonction jusqu'à dix fois : le tableau de bord
+ * demande la synthèse, qui demande les cautions, les fils et les avis à
+ * écrire, qui demandent chacun les réservations. Dix allers-retours jusqu'à
+ * Stockholm pour le même jeu de lignes, soit près de quatre secondes.
+ *
+ * `cache` de React déduplique par requête entrante et par arguments : la
+ * première lecture interroge la base, les suivantes rendent le même résultat.
+ * Le cache meurt avec la requête — il n'y a donc aucun risque de servir à un
+ * visiteur les données d'un autre, ce qu'un cache de module ferait.
+ */
+export const mesReservations = cache(async (): Promise<MaReservation[]> => {
   const moi = await compteCourant();
   if (!moi) return [];
 
@@ -273,9 +288,9 @@ export async function mesReservations(): Promise<MaReservation[]> {
     // inventer une retenue ferait croire à un litige qui n'existe pas.
     cautionRetenue: 0,
   }));
-}
+});
 
-export async function mesAvis(): Promise<MonAvis[]> {
+export const mesAvis = cache(async (): Promise<MonAvis[]> => {
   const moi = await compteCourant();
   if (!moi) return [];
 
@@ -312,7 +327,7 @@ export async function mesAvis(): Promise<MonAvis[]> {
     date: ligne.date!,
     reponse: ligne.reponse,
   }));
-}
+});
 
 /** Locations à venir, la plus proche d'abord — l'ordre dans lequel on les vit. */
 export async function reservationsAvenir(): Promise<MaReservation[]> {
@@ -465,7 +480,7 @@ export async function mesPaiements(): Promise<LignePaiement[]> {
  * vient de rendre n'aurait pas de sens. Le tirage est déterministe, donc stable
  * d'un rechargement à l'autre.
  */
-export async function mesFavoris(): Promise<Favori[]> {
+export const mesFavoris = cache(async (): Promise<Favori[]> => {
   const louees = new Set((await mesReservations()).map((entree) => entree.annonceId));
   const hasard = generateur(GRAINES.locataire);
   const maintenant = aujourdhui();
@@ -531,7 +546,7 @@ export async function mesFavoris(): Promise<Favori[]> {
   }
 
   return favoris.sort((a, b) => b.ajouteLe.getTime() - a.ajouteLe.getTime());
-}
+});
 
 /**
  * Fils de discussion, un par location engagée.

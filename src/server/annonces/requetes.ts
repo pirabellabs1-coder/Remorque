@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { and, eq, sql } from "drizzle-orm";
 
 import type { SlugCategorie } from "@/config/categories";
@@ -202,7 +204,12 @@ function ordonner(
   }
 }
 
-export async function chercher(options: {
+/**
+ * Mémorisée par requête HTTP et par jeu de critères. Une page de ville demande
+ * les annonces pour la liste, puis le prix minimum, qui les redemande : sans
+ * déduplication, la même requête partait deux fois.
+ */
+export const chercher = cache(async function chercher(options: {
   villeSlug?: string;
   categorieSlug?: string;
   tri?: TriRecherche;
@@ -236,7 +243,7 @@ export async function chercher(options: {
 
   const lignes = limite ? await requete.limit(limite) : await requete;
   return lignes as LigneResume[];
-}
+});
 
 export { versResume, type LigneResume };
 
@@ -244,7 +251,12 @@ export { versResume, type LigneResume };
 /*  Fiche détaillée                                                           */
 /* -------------------------------------------------------------------------- */
 
-export async function detail(
+/**
+ * Mémorisée : Next.js appelle `generateMetadata` puis le composant de page, et
+ * les deux ont besoin de la même annonce. Sans déduplication, chaque fiche
+ * partait chercher ses données deux fois.
+ */
+export const detail = cache(async function detail(
   villeSlug: string,
   slug: string,
 ): Promise<(LigneResume & {
@@ -308,7 +320,7 @@ export async function detail(
     .limit(1);
 
   return (ligne as never) ?? null;
-}
+});
 
 /**
  * Taux de réponse d'un propriétaire, calculé sur ses demandes tranchées.
@@ -319,7 +331,9 @@ export async function detail(
  * pas répondu — c'est ce que le taux mesure. Les demandes encore en attente
  * sont exclues : elles ne sont ni honorées ni manquées.
  */
-export async function tauxReponse(proprietaireId: string): Promise<number | null> {
+export const tauxReponse = cache(async function tauxReponse(
+  proprietaireId: string,
+): Promise<number | null> {
   const [ligne] = await db
     .select({
       tranchees: sql<number>`count(*) filter (where ${reservation.statut} <> 'demandee')::int`,
@@ -330,10 +344,12 @@ export async function tauxReponse(proprietaireId: string): Promise<number | null
 
   if (!ligne || ligne.tranchees === 0) return null;
   return Math.round(((ligne.tranchees - ligne.expirees) / ligne.tranchees) * 100);
-}
+});
 
 /** Nombre d'annonces publiées par ville. Compté, jamais saisi. */
-export async function compterParVille(): Promise<Map<string, number>> {
+export const compterParVille = cache(async function compterParVille(): Promise<
+  Map<string, number>
+> {
   const lignes = await db
     .select({
       villeSlug: annonce.villeSlug,
@@ -344,7 +360,7 @@ export async function compterParVille(): Promise<Map<string, number>> {
     .groupBy(annonce.villeSlug);
 
   return new Map(lignes.map((ligne) => [ligne.villeSlug, ligne.nombre]));
-}
+});
 
 /** Adresses des fiches publiées, pour le plan de site et la pré-génération. */
 export async function adresses(): Promise<{ ville: string; slug: string }[]> {
