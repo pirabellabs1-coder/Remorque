@@ -3,20 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:prepare": "tsx --env-file-if-exists=.env.local scripts/preparer-base.ts",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio",
     "db:seed": "tsx --env-file-if-exists=.env.local src/server/db/seed.ts",
+    "db:setup": "npm run db:prepare && npm run db:migrate && npm run db:seed",
+    "db:studio": "drizzle-kit studio",
+    "db:verifier": "tsx --env-file-if-exists=.env.local scripts/verifier-base.ts",
+    "dev": "next dev",
+    "lint": "eslint",
+    "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:prepare": "tsx --env-file-if-exists=.env.local scripts/preparer-base.ts",
-    "db:setup": "npm run db:prepare && npm run db:migrate && npm run db:seed"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "better-auth": "^1.6.25",
