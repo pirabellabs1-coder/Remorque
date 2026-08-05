@@ -41,8 +41,11 @@ export type SyntheseAvis = {
  * ferait paraître excellente une annonce n'ayant reçu que des 3 — l'histogramme
  * n'aurait qu'une barre, pleine, et se lirait comme un sans-faute.
  */
-export function avisDeLannonce(annonceId: string, limite?: number): SyntheseAvis {
-  const tous = listerAvis()
+export async function avisDeLannonce(
+  annonceId: string,
+  limite?: number,
+): Promise<SyntheseAvis> {
+  const tous = (await listerAvis())
     .filter((avis) => avis.annonceId === annonceId)
     .sort((a, b) => b.date.getTime() - a.date.getTime());
 

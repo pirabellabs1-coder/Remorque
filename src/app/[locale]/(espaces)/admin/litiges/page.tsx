@@ -33,7 +33,7 @@ export default async function PageLitiges({ params }: Props) {
   const t = await getTranslations("espaces.admin.litiges");
   const format = await getFormatter();
 
-  const litiges = listerLitiges();
+  const litiges = (await listerLitiges());
   const ouverts = litiges.filter((litige) => litige.statut !== "resolu");
   const totalGele = ouverts.reduce((somme, litige) => somme + litige.fondsGeles, 0);
   const devise = litiges[0]?.devise ?? "EUR";

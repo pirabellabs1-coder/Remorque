@@ -42,7 +42,7 @@ export default async function PageReservations({ params, searchParams }: Props) 
   const t = await getTranslations("espaces.loueur.reservations");
   const format = await getFormatter();
 
-  const toutes = listerReservations();
+  const toutes = await listerReservations();
   const reservations = toutes.filter((reservation) =>
     FILTRES[actif](reservation.statut),
   );

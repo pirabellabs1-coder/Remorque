@@ -1,34 +1,30 @@
 import "server-only";
 
+import { desc, eq, sql } from "drizzle-orm";
+
 import type { StatutReservation } from "@/domain/reservation/machine";
-import { JEU_DE_DEMONSTRATION } from "@/server/annonces/catalogue";
-import {
-  AVIS_LOCATAIRES,
-  generateur,
-  GRAINES,
-  MESSAGES_FIL,
-  REPARTITION_LOUEUR,
-  REPONSES_LOUEURS,
-  STATUTS_ENCAISSES,
-  tirer,
-  tirerPersonne,
-  tirerPondere,
-  VOLUMES,
-} from "@/server/donnees-demo";
+import { db } from "@/server/db";
+import { annonce, avis as tableAvis, reservation, utilisateur } from "@/server/db/schema";
+import { MESSAGES_FIL, STATUTS_ENCAISSES } from "@/server/donnees-demo";
 
 /**
- * Dépôt d'activité des espaces : réservations, avis, messages, revenus.
+ * Activité du loueur, lue en base.
  *
- * Même contrat que `annonces/depot.ts` — une seule porte d'entrée, une
- * implémentation en mémoire aujourd'hui, PostgreSQL demain. Les écrans
- * n'appellent que les fonctions publiées ici et n'auront pas à changer.
+ * Ce module produisait jusqu'ici un jeu d'essai déterministe en mémoire. Les
+ * réservations et les avis vivent désormais dans PostgreSQL, écrits par
+ * `npm run db:demo` : les mêmes lignes servent l'espace loueur, l'espace
+ * locataire, l'administration et le calcul des notes publiques. C'était tout
+ * l'objet du passage en base — un seul jeu de faits, plusieurs lectures, et
+ * aucune chance qu'un écran contredise l'autre.
  *
- * Le jeu initial est **déterministe** : il dérive du catalogue par un
- * générateur pseudo-aléatoire à graine fixe. Deux conséquences voulues — le
- * rendu serveur et l'hydratation client concordent toujours, et une capture
- * d'écran prise aujourd'hui montrera les mêmes chiffres demain. Un
- * `Math.random()` nu donnerait des totaux qui changent à chaque rechargement,
- * rendant tout écart impossible à diagnostiquer.
+ * Les signatures publiques gardent leur forme et changent de nature : elles
+ * sont devenues asynchrones. C'est la seule modification que subissent les dix
+ * écrans qui les consomment.
+ *
+ * **Aucun montant n'est recalculé ici.** Loyer, commission et net reversé sont
+ * lus tels qu'ils ont été figés à la réservation. Les recalculer à l'affichage
+ * les ferait diverger de la comptabilité le jour où un barème change — c'est
+ * précisément pour cela que `reservation.baremes` conserve le barème appliqué.
  */
 
 export type Reservation = {
@@ -70,149 +66,106 @@ export type Fil = {
   nonLus: number;
 };
 
-/** Commission de la plateforme, en points de base — 15 %. */
-const COMMISSION_PDB = 1500;
-
-const global_ = globalThis as unknown as {
-  __flexitrailerActivite?: { reservations: Reservation[]; avis: Avis[] };
-};
-
-function construire(): { reservations: Reservation[]; avis: Avis[] } {
-  const annonces = JEU_DE_DEMONSTRATION;
-  const hasard = generateur(GRAINES.activiteLoueur);
-
-  const reservations: Reservation[] = [];
-  const avis: Avis[] = [];
-
-  const aujourdhui = new Date();
-  aujourdhui.setHours(12, 0, 0, 0);
-
-  // Réparties sur les quatorze derniers mois : de quoi dessiner une courbe
-  // annuelle et une saisonnalité crédible. Le volume se règle dans
-  // `donnees-demo/volumes.ts`.
-  for (let index = 0; index < VOLUMES.reservationsLoueur; index += 1) {
-    const annonce = annonces[Math.floor(hasard() * annonces.length)];
-    if (!annonce) break;
-
-    const joursEnArriere = Math.floor(hasard() * 420);
-    const debut = new Date(aujourdhui);
-    debut.setDate(debut.getDate() - joursEnArriere + 30);
-
-    const duree = 1 + Math.floor(hasard() * 4);
-    const fin = new Date(debut);
-    fin.setDate(fin.getDate() + duree);
-
-    // Le statut doit être cohérent avec la date : une location dont la fin est
-    // passée ne peut pas être « confirmée », et une location future ne peut
-    // pas être « clôturée ». Sans cette règle, les écrans afficheraient des
-    // absurdités que l'on prendrait pour des bogues.
-    let statut = tirerPondere(hasard, REPARTITION_LOUEUR);
-    const passee = fin < aujourdhui;
-    const future = debut > aujourdhui;
-
-    if (passee && ["confirmee", "payee", "acceptee", "demandee", "en_cours"].includes(statut)) {
-      statut = hasard() < 0.9 ? "cloturee" : "annulee";
-    }
-    if (future && ["cloturee", "restituee", "en_cours"].includes(statut)) {
-      statut = hasard() < 0.7 ? "confirmee" : "demandee";
-    }
-    if (!passee && !future) statut = "en_cours";
-
-    const montantTotal = annonce.prixJour * duree;
-    const commission = Math.round((montantTotal * COMMISSION_PDB) / 10000);
-
-    // Le locataire vient de l'annuaire commun, et s'affiche en prénom et
-    // initiale : un loueur n'a pas à connaître le patronyme de son locataire.
-    // L'administration, elle, lit le même annuaire en nom complet.
-    const locataire = tirerPersonne(hasard);
-
-    reservations.push({
-      id: `r${index.toString().padStart(3, "0")}`,
-      reference: `FT-${debut.getFullYear()}-${(index + 1).toString().padStart(4, "0")}`,
-      annonceId: annonce.id,
-      annonceTitre: annonce.titre,
-      ville: annonce.ville,
-      locataire: locataire.nomAffiche,
-      debut,
-      fin,
-      statut,
-      montantTotal,
-      commission,
-      netProprietaire: montantTotal - commission,
-      caution: annonce.caution,
-      devise: annonce.devise,
-      instantanee: annonce.reservationInstantanee,
-    });
-  }
-
-  reservations.sort((a, b) => b.debut.getTime() - a.debut.getTime());
-
-  // Un avis pour environ une location close sur deux — un taux de dépôt
-  // d'avis de 100 % n'existe nulle part.
-  for (const reservation of reservations) {
-    if (reservation.statut !== "cloturee") continue;
-    if (hasard() > 0.55) continue;
-
-    const note = hasard() < 0.72 ? 5 : hasard() < 0.85 ? 4 : hasard() < 0.95 ? 3 : 2;
-    const date = new Date(reservation.fin);
-    date.setDate(date.getDate() + 1 + Math.floor(hasard() * 5));
-
-    avis.push({
-      id: `av${avis.length.toString().padStart(3, "0")}`,
-      annonceId: reservation.annonceId,
-      annonceTitre: reservation.annonceTitre,
-      auteur: reservation.locataire,
-      note,
-      texte: tirer(hasard, AVIS_LOCATAIRES),
-      date,
-      reponse: hasard() < 0.3 ? tirer(hasard, REPONSES_LOUEURS) : null,
-    });
-  }
-
-  avis.sort((a, b) => b.date.getTime() - a.date.getTime());
-
-  return { reservations, avis };
-}
-
-function activite() {
-  global_.__flexitrailerActivite ??= construire();
-  return global_.__flexitrailerActivite;
-}
+/**
+ * Nom d'affichage d'un locataire : prénom et initiale du nom.
+ *
+ * L'espace loueur ne montre jamais le patronyme entier — le locataire n'est
+ * pas un client dont on tient le fichier, et la référence de réservation
+ * suffit à l'identifier. L'administration, elle, voit le nom complet : elle
+ * instruit des litiges et doit désigner quelqu'un sans ambiguïté.
+ */
+const nomAffiche = sql<string>`
+  ${utilisateur.prenom} || coalesce(' ' || left(${utilisateur.nom}, 1) || '.', '')
+`;
 
 /* -------------------------------------------------------------------------- */
 /*  Lectures                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function listerReservations(): Reservation[] {
-  return activite().reservations;
+export async function listerReservations(): Promise<Reservation[]> {
+  const lignes = await db
+    .select({
+      id: reservation.id,
+      reference: reservation.numero,
+      annonceId: reservation.annonceId,
+      annonceTitre: annonce.titre,
+      ville: annonce.ville,
+      locataire: nomAffiche,
+      debut: reservation.debut,
+      fin: reservation.fin,
+      statut: reservation.statut,
+      montantTotal: reservation.loyer,
+      commission: reservation.commissionProprietaire,
+      netProprietaire: reservation.montantReverse,
+      caution: reservation.caution,
+      devise: reservation.devise,
+      instantanee: annonce.reservationInstantanee,
+    })
+    .from(reservation)
+    .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
+    .innerJoin(utilisateur, eq(utilisateur.id, reservation.locataireId))
+    .orderBy(desc(reservation.debut));
+
+  return lignes.map((ligne) => ({
+    ...ligne,
+    statut: ligne.statut as StatutReservation,
+    commission: ligne.commission ?? 0,
+  }));
 }
 
-export function listerAvis(): Avis[] {
-  return activite().avis;
+export async function listerAvis(): Promise<Avis[]> {
+  const lignes = await db
+    .select({
+      id: tableAvis.id,
+      annonceId: tableAvis.annonceId,
+      annonceTitre: annonce.titre,
+      auteur: nomAffiche,
+      note: tableAvis.note,
+      texte: tableAvis.commentaire,
+      date: tableAvis.publieLe,
+      reponse: tableAvis.reponse,
+    })
+    .from(tableAvis)
+    .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
+    .innerJoin(utilisateur, eq(utilisateur.id, tableAvis.auteurId))
+    .where(sql`${tableAvis.publieLe} is not null and ${tableAvis.masque} = false`)
+    .orderBy(desc(tableAvis.publieLe));
+
+  return lignes.map((ligne) => ({
+    id: ligne.id,
+    annonceId: ligne.annonceId!,
+    annonceTitre: ligne.annonceTitre,
+    auteur: ligne.auteur,
+    note: ligne.note,
+    texte: ligne.texte ?? "",
+    date: ligne.date!,
+    reponse: ligne.reponse,
+  }));
 }
 
 /** Réservations qui demandent une action du loueur, les plus urgentes d'abord. */
-export function reservationsAtraiter(): Reservation[] {
-  return listerReservations()
-    .filter((reservation) => reservation.statut === "demandee")
+export async function reservationsAtraiter(): Promise<Reservation[]> {
+  const toutes = await listerReservations();
+  return toutes
+    .filter((entree) => entree.statut === "demandee")
     .sort((a, b) => a.debut.getTime() - b.debut.getTime());
 }
 
-export function reservationsAvenir(): Reservation[] {
+export async function reservationsAvenir(): Promise<Reservation[]> {
   const maintenant = new Date();
-  return listerReservations()
+  const toutes = await listerReservations();
+  return toutes
     .filter(
-      (reservation) =>
-        reservation.debut >= maintenant &&
-        ["confirmee", "payee", "acceptee"].includes(reservation.statut),
+      (entree) =>
+        entree.debut >= maintenant &&
+        ["confirmee", "payee", "acceptee"].includes(entree.statut),
     )
     .sort((a, b) => a.debut.getTime() - b.debut.getTime());
 }
 
-export function reservationsEnCours(): Reservation[] {
-  return listerReservations().filter(
-    (reservation) => reservation.statut === "en_cours",
-  );
+export async function reservationsEnCours(): Promise<Reservation[]> {
+  const toutes = await listerReservations();
+  return toutes.filter((entree) => entree.statut === "en_cours");
 }
 
 export type MoisRevenu = {
@@ -231,9 +184,10 @@ export type MoisRevenu = {
  * saute les mois creux ment sur la saisonnalité, laquelle est précisément ce
  * que le loueur vient regarder.
  */
-export function revenusParMois(nombreMois = 12): MoisRevenu[] {
-  const reservations = listerReservations().filter((reservation) =>
-    STATUTS_ENCAISSES.includes(reservation.statut),
+export async function revenusParMois(nombreMois = 12): Promise<MoisRevenu[]> {
+  const toutes = await listerReservations();
+  const encaissees = toutes.filter((entree) =>
+    STATUTS_ENCAISSES.includes(entree.statut),
   );
 
   const mois: MoisRevenu[] = [];
@@ -245,20 +199,18 @@ export function revenusParMois(nombreMois = 12): MoisRevenu[] {
   for (let index = 0; index < nombreMois; index += 1) {
     const annee = curseur.getFullYear();
     const numero = curseur.getMonth();
-    const cle = `${annee}-${String(numero + 1).padStart(2, "0")}`;
 
-    const duMois = reservations.filter(
-      (reservation) =>
-        reservation.debut.getFullYear() === annee &&
-        reservation.debut.getMonth() === numero,
+    const duMois = encaissees.filter(
+      (entree) =>
+        entree.debut.getFullYear() === annee && entree.debut.getMonth() === numero,
     );
 
     mois.push({
-      cle,
+      cle: `${annee}-${String(numero + 1).padStart(2, "0")}`,
       etiquette: new Intl.DateTimeFormat("fr-FR", { month: "short" }).format(curseur),
-      brut: duMois.reduce((somme, reservation) => somme + reservation.montantTotal, 0),
-      commission: duMois.reduce((somme, reservation) => somme + reservation.commission, 0),
-      net: duMois.reduce((somme, reservation) => somme + reservation.netProprietaire, 0),
+      brut: duMois.reduce((somme, entree) => somme + entree.montantTotal, 0),
+      commission: duMois.reduce((somme, entree) => somme + entree.commission, 0),
+      net: duMois.reduce((somme, entree) => somme + entree.netProprietaire, 0),
       locations: duMois.length,
     });
 
@@ -268,21 +220,26 @@ export function revenusParMois(nombreMois = 12): MoisRevenu[] {
   return mois;
 }
 
-/** Répartition du chiffre d'affaires par annonce, décroissante. */
-export function revenusParAnnonce(): { titre: string; net: number }[] {
-  const parAnnonce = new Map<string, { titre: string; net: number }>();
-
-  for (const reservation of listerReservations()) {
-    if (!STATUTS_ENCAISSES.includes(reservation.statut)) continue;
-    const entree = parAnnonce.get(reservation.annonceId) ?? {
-      titre: reservation.annonceTitre,
-      net: 0,
-    };
-    entree.net += reservation.netProprietaire;
-    parAnnonce.set(reservation.annonceId, entree);
-  }
-
-  return [...parAnnonce.values()].sort((a, b) => b.net - a.net);
+/**
+ * Répartition du chiffre d'affaires par annonce, décroissante.
+ *
+ * Agrégée par PostgreSQL et non en JavaScript : c'est une somme groupée, ce
+ * que la base fait mieux que nous, et cela évite de rapatrier cent quarante
+ * lignes pour en produire huit.
+ */
+export async function revenusParAnnonce(): Promise<{ titre: string; net: number }[]> {
+  return db
+    .select({
+      titre: annonce.titre,
+      net: sql<number>`coalesce(sum(${reservation.montantReverse}), 0)::int`,
+    })
+    .from(reservation)
+    .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
+    .where(
+      sql`${reservation.statut} in ('payee','confirmee','en_cours','restituee','cloturee')`,
+    )
+    .groupBy(annonce.id, annonce.titre)
+    .orderBy(sql`coalesce(sum(${reservation.montantReverse}), 0) desc`);
 }
 
 export type SyntheseLoueur = {
@@ -300,33 +257,50 @@ export type SyntheseLoueur = {
 };
 
 /** Chiffres de tête du tableau de bord. Aucun n'est inventé au rendu. */
-export function syntheseLoueur(): SyntheseLoueur {
-  const reservations = listerReservations();
-  const mois = revenusParMois(2);
-  const avis = listerAvis();
+export async function syntheseLoueur(): Promise<SyntheseLoueur> {
+  const [reservations, avis, mois] = await Promise.all([
+    listerReservations(),
+    listerAvis(),
+    revenusParMois(2),
+  ]);
 
-  const encaissees = reservations.filter((reservation) =>
-    STATUTS_ENCAISSES.includes(reservation.statut),
+  const maintenant = new Date();
+  const encaissees = reservations.filter((entree) =>
+    STATUTS_ENCAISSES.includes(entree.statut),
   );
 
-  // Taux d'acceptation : sur les seules demandes tranchées. Les demandes encore
-  // en attente ne sont ni acceptées ni refusées, les compter fausserait le taux.
-  const tranchees = reservations.filter((reservation) =>
-    ["refusee", "expiree", "acceptee", "payee", "confirmee", "en_cours", "restituee", "cloturee"]
-      .includes(reservation.statut),
+  // Taux d'acceptation : sur les seules demandes tranchées. Les demandes
+  // encore en attente ne sont ni acceptées ni refusées ; les compter ferait
+  // varier le taux au fil de la journée sans qu'aucune décision soit prise.
+  const tranchees = reservations.filter((entree) =>
+    [
+      "refusee",
+      "expiree",
+      "acceptee",
+      "payee",
+      "confirmee",
+      "en_cours",
+      "restituee",
+      "cloturee",
+    ].includes(entree.statut),
   );
   const acceptees = tranchees.filter(
-    (reservation) => !["refusee", "expiree"].includes(reservation.statut),
+    (entree) => !["refusee", "expiree"].includes(entree.statut),
   );
 
   return {
-    netTotal: encaissees.reduce((somme, reservation) => somme + reservation.netProprietaire, 0),
+    netTotal: encaissees.reduce((somme, entree) => somme + entree.netProprietaire, 0),
     netMoisCourant: mois[1]?.net ?? 0,
     netMoisPrecedent: mois[0]?.net ?? 0,
-    locationsCloturees: reservations.filter((r) => r.statut === "cloturee").length,
-    aTraiter: reservationsAtraiter().length,
-    aVenir: reservationsAvenir().length,
-    enCours: reservationsEnCours().length,
+    locationsCloturees: reservations.filter((entree) => entree.statut === "cloturee")
+      .length,
+    aTraiter: reservations.filter((entree) => entree.statut === "demandee").length,
+    aVenir: reservations.filter(
+      (entree) =>
+        entree.debut >= maintenant &&
+        ["confirmee", "payee", "acceptee"].includes(entree.statut),
+    ).length,
+    enCours: reservations.filter((entree) => entree.statut === "en_cours").length,
     noteMoyenne:
       avis.length > 0
         ? avis.reduce((somme, entree) => somme + entree.note, 0) / avis.length
@@ -334,32 +308,27 @@ export function syntheseLoueur(): SyntheseLoueur {
     nombreAvis: avis.length,
     tauxAcceptation:
       tranchees.length > 0 ? (acceptees.length / tranchees.length) * 100 : null,
-    devise: "EUR",
+    devise: reservations[0]?.devise ?? "EUR",
   };
 }
 
 /**
  * Fils de discussion, dérivés des réservations les plus récentes.
  *
- * Les messages viennent du jeu commun, dont le point de vue de référence est
- * celui du **locataire** : `deMoi` y signifie « écrit par le locataire ». Vu du
- * loueur, ce sont donc exactement ces messages-là qui peuvent être non lus, et
- * jamais les siens. Compter ses propres messages comme non lus est le bogue
- * classique de cet écran, et il se voit tout de suite.
+ * La messagerie n'a pas encore de table alimentée : les fils sont construits à
+ * partir des réservations réelles, avec des amorces prises dans le jeu de
+ * textes commun. Les interlocuteurs et les matériels sont vrais — c'est
+ * l'écran qui est incomplet, non les données qui seraient fausses.
  */
-export function listerFils(): Fil[] {
-  return listerReservations()
-    .slice(0, 12)
-    .map((reservation, index) => {
-      const message = MESSAGES_FIL[index % MESSAGES_FIL.length];
+export async function listerFils(): Promise<Fil[]> {
+  const reservations = await listerReservations();
 
-      return {
-        id: `f${index}`,
-        interlocuteur: reservation.locataire,
-        annonceTitre: reservation.annonceTitre,
-        dernierMessage: message.texte,
-        date: reservation.debut,
-        nonLus: message.deMoi && index < 4 ? (index % 2) + 1 : 0,
-      };
-    });
+  return reservations.slice(0, 12).map((entree, index) => ({
+    id: `f${index}`,
+    interlocuteur: entree.locataire,
+    annonceTitre: entree.annonceTitre,
+    dernierMessage: MESSAGES_FIL[index % MESSAGES_FIL.length].texte,
+    date: entree.debut,
+    nonLus: index < 3 ? (index % 2) + 1 : 0,
+  }));
 }

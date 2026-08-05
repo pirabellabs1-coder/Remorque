@@ -54,7 +54,7 @@ export default async function PageCalendrier({ params, searchParams }: Props) {
   const precedent = new Date(annee, numeroMois - 1, 1);
   const suivant = new Date(annee, numeroMois + 1, 1);
 
-  const reservations = listerReservations().filter(
+  const reservations = (await listerReservations()).filter(
     (reservation) =>
       reservation.debut <= dernier &&
       reservation.fin >= premier &&

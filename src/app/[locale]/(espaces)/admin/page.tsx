@@ -33,9 +33,9 @@ export default async function VueDensembleAdmin({ params }: Props) {
   const tPays = await getTranslations("accueil.villes.pays");
   const format = await getFormatter();
 
-  const synthese = syntheseAdmin();
-  const pays = comparaisonPays();
-  const inscriptions = inscriptionsParMois(12);
+  const synthese = (await syntheseAdmin());
+  const pays = (await comparaisonPays());
+  const inscriptions = (await inscriptionsParMois(12));
 
   const montant = (centimes: number) =>
     format.number(centimes / 100, {

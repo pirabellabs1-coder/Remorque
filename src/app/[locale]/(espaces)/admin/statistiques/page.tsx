@@ -38,12 +38,12 @@ export default async function PageStatistiques({ params }: Props) {
   const tPays = await getTranslations("accueil.villes.pays");
   const format = await getFormatter();
 
-  const synthese = syntheseAdmin();
-  const mois = revenusParMois(12);
-  const inscriptions = inscriptionsParMois(12);
-  const pays = comparaisonPays();
+  const synthese = (await syntheseAdmin());
+  const mois = await revenusParMois(12);
+  const inscriptions = (await inscriptionsParMois(12));
+  const pays = (await comparaisonPays());
 
-  const reservations = listerReservations().filter((reservation) =>
+  const reservations = (await listerReservations()).filter((reservation) =>
     ENCAISSES.includes(reservation.statut),
   );
   const annonces = await listerAnnonces();
@@ -82,11 +82,11 @@ export default async function PageStatistiques({ params }: Props) {
   // dénominateur diluerait artificiellement les deux taux.
   const tauxLitige =
     reservations.length > 0
-      ? (listerLitiges().length / reservations.length) * 100
+      ? ((await listerLitiges()).length / reservations.length) * 100
       : null;
   const tauxSinistre =
     reservations.length > 0
-      ? (listerSinistres().length / reservations.length) * 100
+      ? ((await listerSinistres()).length / reservations.length) * 100
       : null;
 
   const panierMoyen =

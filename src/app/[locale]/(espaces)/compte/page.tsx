@@ -39,7 +39,7 @@ export default async function TableauDeBordLocataire({ params }: Props) {
   const format = await getFormatter();
 
   const synthese = syntheseLocataire();
-  const enCours = reservationsEnCours();
+  const enCours = await reservationsEnCours();
   const aEcrire = avisAecrire();
 
   const mise = prochaineLocation();

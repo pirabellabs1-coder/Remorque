@@ -15,7 +15,7 @@ export default async function PageMessages({ params }: Props) {
 
   const t = await getTranslations("espaces.loueur.messages");
   const format = await getFormatter();
-  const fils = listerFils();
+  const fils = await listerFils();
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">

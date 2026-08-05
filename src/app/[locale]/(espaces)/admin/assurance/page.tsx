@@ -25,7 +25,7 @@ export default async function PageAssurance({ params }: Props) {
   const t = await getTranslations("espaces.admin.assurance");
   const format = await getFormatter();
 
-  const sinistres = listerSinistres();
+  const sinistres = (await listerSinistres());
   const devise = sinistres[0]?.devise ?? "EUR";
 
   return (

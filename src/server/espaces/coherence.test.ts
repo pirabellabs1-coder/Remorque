@@ -34,54 +34,54 @@ import {
  */
 
 describe("tableau de bord du loueur", () => {
-  const synthese = syntheseLoueur();
+  const synthese = () => syntheseLoueur();
 
-  it("compte exactement les réservations que la liste affiche", () => {
-    expect(synthese.aTraiter).toBe(reservationsAtraiter().length);
-    expect(synthese.aVenir).toBe(reservationsAvenir().length);
-    expect(synthese.enCours).toBe(reservationsEnCours().length);
+  it("compte exactement les réservations que la liste affiche", async () => {
+    expect((await synthese()).aTraiter).toBe((await reservationsAtraiter()).length);
+    expect((await synthese()).aVenir).toBe((await reservationsAvenir()).length);
+    expect((await synthese()).enCours).toBe((await reservationsEnCours()).length);
   });
 
-  it("dérive le net total des seules réservations encaissées", () => {
-    const attendu = listerReservations()
+  it("dérive le net total des seules réservations encaissées", async () => {
+    const attendu = (await listerReservations())
       .filter((reservation) => STATUTS_ENCAISSES.includes(reservation.statut))
       .reduce((somme, reservation) => somme + reservation.netProprietaire, 0);
 
-    expect(synthese.netTotal).toBe(attendu);
+    expect((await synthese()).netTotal).toBe(attendu);
   });
 
-  it("fait concorder la répartition par annonce avec le net total", () => {
-    const parAnnonce = revenusParAnnonce().reduce(
+  it("fait concorder la répartition par annonce avec le net total", async () => {
+    const parAnnonce = (await revenusParAnnonce()).reduce(
       (somme, ligne) => somme + ligne.net,
       0,
     );
-    expect(parAnnonce).toBe(synthese.netTotal);
+    expect(parAnnonce).toBe((await synthese()).netTotal);
   });
 
-  it("accorde la note moyenne avec les avis effectivement déposés", () => {
-    const avis = listerAvis();
-    expect(synthese.nombreAvis).toBe(avis.length);
+  it("accorde la note moyenne avec les avis effectivement déposés", async () => {
+    const avis = (await listerAvis());
+    expect((await synthese()).nombreAvis).toBe(avis.length);
 
     if (avis.length === 0) {
-      expect(synthese.noteMoyenne).toBeNull();
+      expect((await synthese()).noteMoyenne).toBeNull();
       return;
     }
 
     const moyenne =
       avis.reduce((somme, entree) => somme + entree.note, 0) / avis.length;
-    expect(synthese.noteMoyenne).toBeCloseTo(moyenne, 10);
+    expect((await synthese()).noteMoyenne).toBeCloseTo(moyenne, 10);
   });
 
-  it("n'omet aucun mois dans la courbe annuelle", () => {
+  it("n'omet aucun mois dans la courbe annuelle", async () => {
     // Une courbe qui saute les mois creux ment sur la saisonnalité, laquelle
     // est précisément ce que le loueur vient regarder.
-    const mois = revenusParMois(12);
+    const mois = (await revenusParMois(12));
     expect(mois).toHaveLength(12);
     expect(new Set(mois.map((entree) => entree.cle)).size).toBe(12);
   });
 
-  it("ne fait jamais dépasser le net du brut, mois par mois", () => {
-    for (const mois of revenusParMois(12)) {
+  it("ne fait jamais dépasser le net du brut, mois par mois", async () => {
+    for (const mois of (await revenusParMois(12))) {
       expect(mois.net).toBeLessThanOrEqual(mois.brut);
       expect(mois.net + mois.commission).toBe(mois.brut);
     }
@@ -89,58 +89,58 @@ describe("tableau de bord du loueur", () => {
 });
 
 describe("tableau de bord du locataire", () => {
-  const synthese = syntheseLocataire();
+  const synthese = () => syntheseLocataire();
 
-  it("compte exactement les cautions que la liste affiche", () => {
+  it("compte exactement les cautions que la liste affiche", async () => {
     const cautions = cautionsEnCours();
-    expect(synthese.cautionsNombre).toBe(cautions.length);
-    expect(synthese.cautionsGelees).toBe(
+    expect((await synthese()).cautionsNombre).toBe(cautions.length);
+    expect((await synthese()).cautionsGelees).toBe(
       cautions.reduce((somme, reservation) => somme + reservation.caution, 0),
     );
   });
 
-  it("ne compte comme immobilisée aucune caution déjà libérée", () => {
+  it("ne compte comme immobilisée aucune caution déjà libérée", async () => {
     for (const reservation of cautionsEnCours()) {
       expect(reservation.cautionEtat).not.toBe("liberee");
       expect(reservation.cautionEtat).not.toBe("retenue");
     }
   });
 
-  it("dérive le total dépensé des seules locations encaissées", () => {
-    const attendu = mesReservations()
+  it("dérive le total dépensé des seules locations encaissées", async () => {
+    const attendu = (await mesReservations())
       .filter((reservation) => STATUTS_ENCAISSES.includes(reservation.statut))
       .reduce((somme, reservation) => somme + reservation.montantTotal, 0);
 
-    expect(synthese.totalDepense).toBe(attendu);
+    expect((await synthese()).totalDepense).toBe(attendu);
   });
 });
 
 describe("administration", () => {
-  const synthese = syntheseAdmin();
+  const synthese = () => syntheseAdmin();
 
-  it("ne répartit entre pays ni plus ni moins que le volume total", () => {
-    const parPays = comparaisonPays().reduce(
+  it("ne répartit entre pays ni plus ni moins que le volume total", async () => {
+    const parPays = (await comparaisonPays()).reduce(
       (somme, ligne) => somme + ligne.volume,
       0,
     );
     // La somme des pays ne peut pas dépasser le total ; l'égalité n'est pas
     // exigée, une réservation pouvant relever d'un pays non encore ouvert.
-    expect(parPays).toBeLessThanOrEqual(synthese.volumeAffaires);
+    expect(parPays).toBeLessThanOrEqual((await synthese()).volumeAffaires);
   });
 
-  it("lit le même volume d'affaires que l'espace loueur", () => {
+  it("lit le même volume d'affaires que l'espace loueur", async () => {
     // Les deux écrans résument le même jeu de réservations. S'ils divergent,
     // c'est qu'un filtre a été dupliqué au lieu d'être partagé.
-    const brut = listerReservations()
+    const brut = (await listerReservations())
       .filter((reservation) => STATUTS_ENCAISSES.includes(reservation.statut))
       .reduce((somme, reservation) => somme + reservation.montantTotal, 0);
 
-    expect(synthese.volumeAffaires).toBe(brut);
+    expect((await synthese()).volumeAffaires).toBe(brut);
   });
 
-  it("ne fait jamais dépasser la commission du volume", () => {
-    expect(synthese.commissionPercue).toBeLessThanOrEqual(
-      synthese.volumeAffaires,
+  it("ne fait jamais dépasser la commission du volume", async () => {
+    expect((await synthese()).commissionPercue).toBeLessThanOrEqual(
+      (await synthese()).volumeAffaires,
     );
   });
 });

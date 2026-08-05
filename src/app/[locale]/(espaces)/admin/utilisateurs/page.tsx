@@ -47,7 +47,7 @@ export default async function PageUtilisateurs({ params, searchParams }: Props) 
   const t = await getTranslations("espaces.admin.utilisateurs");
   const format = await getFormatter();
 
-  const tous = listerUtilisateurs();
+  const tous = (await listerUtilisateurs());
   const utilisateurs = tous.filter(FILTRES[actif]);
 
   return (

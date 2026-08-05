@@ -21,7 +21,7 @@ export default async function PageReservationsAdmin({ params }: Props) {
   const tStatuts = await getTranslations("espaces.statuts");
   const format = await getFormatter();
 
-  const reservations = listerReservations();
+  const reservations = await listerReservations();
 
   // Répartition par statut : elle raconte la santé du parcours. Beaucoup
   // d'« expirée » signale des loueurs qui ne répondent pas ; beaucoup

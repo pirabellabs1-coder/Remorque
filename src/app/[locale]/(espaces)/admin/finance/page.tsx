@@ -32,8 +32,8 @@ export default async function PageFinance({ params }: Props) {
   const t = await getTranslations("espaces.admin.finance");
   const format = await getFormatter();
 
-  const synthese = syntheseAdmin();
-  const mois = revenusParMois(12);
+  const synthese = (await syntheseAdmin());
+  const mois = await revenusParMois(12);
 
   const montant = (centimes: number) =>
     format.number(centimes / 100, {
@@ -43,10 +43,10 @@ export default async function PageFinance({ params }: Props) {
 
   const reverse = synthese.volumeAffaires - synthese.commissionPercue;
 
-  const geleParLitiges = listerLitiges()
+  const geleParLitiges = (await listerLitiges())
     .filter((litige) => litige.statut !== "resolu")
     .reduce((somme, litige) => somme + litige.fondsGeles, 0);
-  const geleParSinistres = listerSinistres()
+  const geleParSinistres = (await listerSinistres())
     .filter((sinistre) => ["declare", "transmis"].includes(sinistre.statut))
     .reduce((somme, sinistre) => somme + sinistre.montantEstime, 0);
 

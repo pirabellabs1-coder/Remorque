@@ -37,11 +37,11 @@ export default async function TableauDeBordLoueur({ params }: Props) {
   const t = await getTranslations("espaces.loueur.tableau");
   const format = await getFormatter();
 
-  const synthese = syntheseLoueur();
-  const mois = revenusParMois(12);
-  const aTraiter = reservationsAtraiter();
-  const aVenir = reservationsAvenir();
-  const parAnnonce = revenusParAnnonce();
+  const synthese = await syntheseLoueur();
+  const mois = await revenusParMois(12);
+  const aTraiter = await reservationsAtraiter();
+  const aVenir = await reservationsAvenir();
+  const parAnnonce = await revenusParAnnonce();
 
   const montant = (centimes: number) =>
     format.number(centimes / 100, {

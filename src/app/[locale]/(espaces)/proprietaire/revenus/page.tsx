@@ -30,9 +30,9 @@ export default async function PageRevenus({ params }: Props) {
   const t = await getTranslations("espaces.loueur.revenus");
   const format = await getFormatter();
 
-  const synthese = syntheseLoueur();
-  const mois = revenusParMois(12);
-  const parAnnonce = revenusParAnnonce();
+  const synthese = await syntheseLoueur();
+  const mois = await revenusParMois(12);
+  const parAnnonce = await revenusParAnnonce();
 
   const montant = (centimes: number) =>
     format.number(centimes / 100, {

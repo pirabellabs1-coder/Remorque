@@ -23,16 +23,16 @@ import {
  */
 
 describe("règle 6 — gel des fonds", () => {
-  it("ne gèle rien pour un litige résolu", () => {
-    for (const litige of listerLitiges()) {
+  it("ne gèle rien pour un litige résolu", async () => {
+    for (const litige of (await listerLitiges())) {
       if (litige.statut === "resolu") {
         expect(litige.fondsGeles).toBe(0);
       }
     }
   });
 
-  it("gèle un montant pour tout litige non résolu", () => {
-    const enCours = listerLitiges().filter(
+  it("gèle un montant pour tout litige non résolu", async () => {
+    const enCours = (await listerLitiges()).filter(
       (litige) => litige.statut !== "resolu",
     );
 
@@ -44,19 +44,19 @@ describe("règle 6 — gel des fonds", () => {
     }
   });
 
-  it("additionne litiges et sinistres en cours, et eux seuls", () => {
-    const parLitiges = listerLitiges()
+  it("additionne litiges et sinistres en cours, et eux seuls", async () => {
+    const parLitiges = (await listerLitiges())
       .filter((litige) => litige.statut !== "resolu")
       .reduce((somme, litige) => somme + litige.fondsGeles, 0);
 
-    const parSinistres = listerSinistres()
+    const parSinistres = (await listerSinistres())
       .filter((sinistre) => ["declare", "transmis"].includes(sinistre.statut))
       .reduce((somme, sinistre) => somme + sinistre.montantEstime, 0);
 
-    expect(fondsGeles()).toBe(parLitiges + parSinistres);
+    expect((await fondsGeles())).toBe(parLitiges + parSinistres);
 
     // Un sinistre indemnisé ou refusé est clos : il ne doit plus rien geler.
-    const clos = listerSinistres().filter((sinistre) =>
+    const clos = (await listerSinistres()).filter((sinistre) =>
       ["indemnise", "refuse"].includes(sinistre.statut),
     );
     const avecLesClos =
@@ -64,12 +64,12 @@ describe("règle 6 — gel des fonds", () => {
       parSinistres +
       clos.reduce((somme, sinistre) => somme + sinistre.montantEstime, 0);
 
-    if (clos.length > 0) expect(fondsGeles()).toBeLessThan(avecLesClos);
+    if (clos.length > 0) expect((await fondsGeles())).toBeLessThan(avecLesClos);
   });
 });
 
 describe("règle 2 — aucun taux codé en dur", () => {
-  it("exprime tous les taux en points de base entiers", () => {
+  it("exprime tous les taux en points de base entiers", async () => {
     for (const pays of listerPays()) {
       expect(Number.isInteger(pays.commissionPdb)).toBe(true);
       expect(Number.isInteger(pays.tvaPdb)).toBe(true);
@@ -80,7 +80,7 @@ describe("règle 2 — aucun taux codé en dur", () => {
     }
   });
 
-  it("exprime tous les montants en centiemes entiers, avec leur devise", () => {
+  it("exprime tous les montants en centiemes entiers, avec leur devise", async () => {
     for (const pays of listerPays()) {
       expect(Number.isInteger(pays.plafondCaution)).toBe(true);
       expect(pays.devise).toMatch(/^[A-Z]{3}$/);
@@ -89,8 +89,8 @@ describe("règle 2 — aucun taux codé en dur", () => {
 });
 
 describe("synthèse de l'administration", () => {
-  it("ne compte jamais la commission au-delà du volume", () => {
-    const synthese = syntheseAdmin();
+  it("ne compte jamais la commission au-delà du volume", async () => {
+    const synthese = (await syntheseAdmin());
     expect(synthese.commissionPercue).toBeLessThanOrEqual(
       synthese.volumeAffaires,
     );
@@ -99,24 +99,24 @@ describe("synthèse de l'administration", () => {
     expect(synthese.tauxCommissionReel!).toBeLessThan(100);
   });
 
-  it("compte autant d'utilisateurs que la liste en contient", () => {
-    expect(syntheseAdmin().utilisateurs).toBe(listerUtilisateurs().length);
+  it("compte autant d'utilisateurs que la liste en contient", async () => {
+    expect((await syntheseAdmin()).utilisateurs).toBe((await listerUtilisateurs()).length);
   });
 
-  it("ne répartit pas plus de réservations entre pays qu'il n'en existe", () => {
-    const total = comparaisonPays().reduce(
+  it("ne répartit pas plus de réservations entre pays qu'il n'en existe", async () => {
+    const total = (await comparaisonPays()).reduce(
       (somme, ligne) => somme + ligne.reservations,
       0,
     );
-    expect(total).toBeLessThanOrEqual(listerReservations().length);
+    expect(total).toBeLessThanOrEqual((await listerReservations()).length);
   });
 });
 
 describe("cohérence du jeu d'essai", () => {
-  it("n'attribue jamais un statut incompatible avec les dates", () => {
+  it("n'attribue jamais un statut incompatible avec les dates", async () => {
     const maintenant = new Date();
 
-    for (const reservation of listerReservations()) {
+    for (const reservation of (await listerReservations())) {
       if (reservation.fin < maintenant) {
         // Une location terminée ne peut pas être encore « confirmée » ou
         // « en cours » : l'écran afficherait une absurdité que l'on prendrait
@@ -131,8 +131,8 @@ describe("cohérence du jeu d'essai", () => {
     }
   });
 
-  it("dérive le net du brut moins la commission, au centime près", () => {
-    for (const reservation of listerReservations()) {
+  it("dérive le net du brut moins la commission, au centime près", async () => {
+    for (const reservation of (await listerReservations())) {
       expect(reservation.netProprietaire).toBe(
         reservation.montantTotal - reservation.commission,
       );

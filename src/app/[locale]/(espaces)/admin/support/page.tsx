@@ -29,7 +29,7 @@ export default async function PageSupport({ params }: Props) {
   const t = await getTranslations("espaces.admin.support");
   const format = await getFormatter();
 
-  const tickets = listerTickets();
+  const tickets = (await listerTickets());
   const ouverts = tickets.filter((ticket) => ticket.statut !== "resolu");
 
   return (

@@ -28,7 +28,7 @@ export default async function PageEtatsDesLieux({ params }: Props) {
   const t = await getTranslations("espaces.loueur.etatsDesLieux");
   const format = await getFormatter();
 
-  const reservations = listerReservations();
+  const reservations = await listerReservations();
 
   // À faire : le départ d'une location confirmée, le retour d'une location
   // restituée ou en cours.

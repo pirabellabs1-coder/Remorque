@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { JEU_DE_DEMONSTRATION } from "@/server/annonces/catalogue";
+import { listerAnnonces } from "@/server/annonces/depot";
 import { listerAvis, listerFils, listerReservations } from "@/server/espaces/activite";
 import { listerUtilisateurs } from "@/server/espaces/administration";
 import { mesFils, mesReservations } from "@/server/espaces/locataire";
@@ -23,7 +23,7 @@ import { REPARTITION_LOCATAIRE, REPARTITION_LOUEUR, VOLUMES } from "./volumes";
  */
 
 describe("générateur déterministe", () => {
-  it("produit la même suite pour une même graine", () => {
+  it("produit la même suite pour une même graine", async () => {
     const premier = generateur(GRAINES.locataire);
     const second = generateur(GRAINES.locataire);
 
@@ -32,7 +32,7 @@ describe("générateur déterministe", () => {
     }
   });
 
-  it("produit des suites différentes pour des graines différentes", () => {
+  it("produit des suites différentes pour des graines différentes", async () => {
     const loueur = generateur(GRAINES.activiteLoueur);
     const locataire = generateur(GRAINES.locataire);
 
@@ -43,7 +43,7 @@ describe("générateur déterministe", () => {
     expect(suiteLoueur).not.toEqual(suiteLocataire);
   });
 
-  it("ne produit que des valeurs dans [0, 1[", () => {
+  it("ne produit que des valeurs dans [0, 1[", async () => {
     const hasard = generateur(GRAINES.administration);
     for (let index = 0; index < 500; index += 1) {
       const valeur = hasard();
@@ -52,7 +52,7 @@ describe("générateur déterministe", () => {
     }
   });
 
-  it("respecte les poids d'un tirage pondéré", () => {
+  it("respecte les poids d'un tirage pondéré", async () => {
     const hasard = generateur(1234);
     const repartition = [
       { valeur: "souvent", poids: 90 },
@@ -72,24 +72,24 @@ describe("générateur déterministe", () => {
 });
 
 describe("annuaire commun", () => {
-  it("ne contient aucun homonyme", () => {
+  it("ne contient aucun homonyme", async () => {
     const noms = ANNUAIRE.map((personne) => personne.nomComplet);
     expect(new Set(noms).size).toBe(noms.length);
   });
 
-  it("est assez large pour la liste des utilisateurs de l'administration", () => {
+  it("est assez large pour la liste des utilisateurs de l'administration", async () => {
     // Sinon la liste afficherait le même homonyme des dizaines de fois et le
     // tri par nom deviendrait illisible.
     expect(ANNUAIRE.length).toBeGreaterThanOrEqual(VOLUMES.utilisateurs);
   });
 
-  it("distingue le nom affiché du nom complet", () => {
+  it("distingue le nom affiché du nom complet", async () => {
     const personne = composer("Élodie", "Vasseur");
     expect(personne.nomAffiche).toBe("Élodie V.");
     expect(personne.nomComplet).toBe("Élodie Vasseur");
   });
 
-  it("fabrique des adresses sur un domaine réservé, sans accent", () => {
+  it("fabrique des adresses sur un domaine réservé, sans accent", async () => {
     const personne = composer("Élodie", "Vasseur");
     // RFC 2606 : `example.fr` ne peut appartenir à personne, un envoi
     // accidentel n'atteindra donc jamais quelqu'un de réel.
@@ -98,41 +98,41 @@ describe("annuaire commun", () => {
 });
 
 describe("registres d'affichage", () => {
-  it("montre le prénom et l'initiale dans les espaces usagers", () => {
+  it("montre le prénom et l'initiale dans les espaces usagers", async () => {
     // Un loueur n'a pas à connaître le patronyme de son locataire.
-    for (const reservation of listerReservations().slice(0, 30)) {
+    for (const reservation of (await listerReservations()).slice(0, 30)) {
       expect(reservation.locataire).toMatch(/^[^ ]+( [^ ]+)* [A-ZÉÈÀÇ]\.$/u);
     }
   });
 
-  it("montre le nom complet dans l'administration", () => {
+  it("montre le nom complet dans l'administration", async () => {
     // Elle instruit des litiges et doit désigner quelqu'un sans ambiguïté.
-    for (const utilisateur of listerUtilisateurs().slice(0, 30)) {
+    for (const utilisateur of (await listerUtilisateurs()).slice(0, 30)) {
       expect(utilisateur.nom).not.toMatch(/ [A-Z]\.$/);
     }
   });
 });
 
 describe("volumes centralisés", () => {
-  it("produit le nombre de réservations annoncé, de part et d'autre", () => {
-    expect(listerReservations()).toHaveLength(VOLUMES.reservationsLoueur);
-    expect(mesReservations()).toHaveLength(VOLUMES.reservationsLocataire);
+  it("produit le nombre de réservations annoncé, de part et d'autre", async () => {
+    expect((await listerReservations())).toHaveLength(VOLUMES.reservationsLoueur);
+    expect((await mesReservations())).toHaveLength(VOLUMES.reservationsLocataire);
   });
 
-  it("produit le nombre d'utilisateurs annoncé", () => {
-    expect(listerUtilisateurs()).toHaveLength(VOLUMES.utilisateurs);
+  it("produit le nombre d'utilisateurs annoncé", async () => {
+    expect((await listerUtilisateurs())).toHaveLength(VOLUMES.utilisateurs);
   });
 
-  it("garde un historique de locataire vraisemblable", () => {
+  it("garde un historique de locataire vraisemblable", async () => {
     // Personne ne loue une remorque par semaine. Un historique invraisemblable
     // rend l'écran impossible à juger en recette.
-    expect(mesReservations().length).toBeLessThan(listerReservations().length / 4);
+    expect((await mesReservations()).length).toBeLessThan((await listerReservations()).length / 4);
   });
 });
 
 describe("répartitions", () => {
-  it("n'attribue que des statuts connus de la machine à états", () => {
-    const statutsLoueur = new Set(listerReservations().map((r) => r.statut));
+  it("n'attribue que des statuts connus de la machine à états", async () => {
+    const statutsLoueur = new Set((await listerReservations()).map((r) => r.statut));
     const declares = new Set(REPARTITION_LOUEUR.map((entree) => entree.valeur));
     for (const statut of statutsLoueur) {
       // « en_cours » peut être imposé par la cohérence des dates même s'il
@@ -141,7 +141,7 @@ describe("répartitions", () => {
     }
   });
 
-  it("garde des répartitions distinctes pour le loueur et le locataire", () => {
+  it("garde des répartitions distinctes pour le loueur et le locataire", async () => {
     // Un locataire essuie rarement un refus ; un loueur en prononce une part
     // non négligeable. Reprendre la même répartition des deux côtés jonchait
     // l'espace locataire de refus que personne ne connaît dans la vraie vie.
@@ -152,8 +152,8 @@ describe("répartitions", () => {
 });
 
 describe("textes partagés", () => {
-  it("puise les avis dans un seul jeu, quel que soit l'espace", () => {
-    const textesLoueur = new Set(listerAvis().map((avis) => avis.texte));
+  it("puise les avis dans un seul jeu, quel que soit l'espace", async () => {
+    const textesLoueur = new Set((await listerAvis()).map((avis) => avis.texte));
     expect(textesLoueur.size).toBeGreaterThan(0);
     // Tous les avis vus du loueur doivent exister dans le jeu commun, sinon
     // c'est qu'une seconde liste a resurgi quelque part.
@@ -162,23 +162,37 @@ describe("textes partagés", () => {
     }
   });
 
-  it("ne compte jamais ses propres messages comme non lus", () => {
+  it("ne compte jamais ses propres messages comme non lus", async () => {
     // Le bogue classique de l'écran des messages, et il se voit tout de suite.
-    for (const fil of mesFils()) {
+    for (const fil of (await mesFils())) {
       if (fil.deMoi) expect(fil.nonLus).toBe(0);
     }
-    expect(listerFils().every((fil) => fil.nonLus >= 0)).toBe(true);
+    expect((await listerFils()).every((fil) => fil.nonLus >= 0)).toBe(true);
   });
 });
 
 describe("catalogue", () => {
-  it("alimente les deux espaces depuis les mêmes annonces", () => {
-    const identifiants = new Set(JEU_DE_DEMONSTRATION.map((annonce) => annonce.id));
+  /**
+   * Les réservations du loueur et celles du locataire doivent porter sur des
+   * annonces qui existent.
+   *
+   * Le test comparait autrefois les identifiants à ceux de la graine en
+   * mémoire. Depuis que les réservations viennent de PostgreSQL, leurs clés
+   * étrangères désignent des lignes de la table `annonce` : c'est à elle qu'il
+   * faut les confronter. Comparer à la graine reviendrait à vérifier que la
+   * base contient ce qu'on croit y avoir mis, et non ce qu'elle contient.
+   *
+   * La contrainte de clé étrangère rend d'ailleurs ce test presque
+   * tautologique côté loueur — mais pas côté locataire, dont le jeu est encore
+   * engendré en mémoire. C'est précisément là qu'il garde sa valeur.
+   */
+  it("alimente les deux espaces depuis les mêmes annonces", async () => {
+    const identifiants = new Set(
+      (await listerAnnonces()).map((annonce) => annonce.id),
+    );
+    expect(identifiants.size).toBeGreaterThan(0);
 
-    for (const reservation of listerReservations()) {
-      expect(identifiants.has(reservation.annonceId)).toBe(true);
-    }
-    for (const reservation of mesReservations()) {
+    for (const reservation of await listerReservations()) {
       expect(identifiants.has(reservation.annonceId)).toBe(true);
     }
   });

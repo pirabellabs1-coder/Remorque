@@ -30,7 +30,7 @@ import { listerAvis, listerReservations } from "./activite";
  *  — **Aucun taux codé en dur** (règle 2). Commission, TVA, plafond de caution
  *    et délai de libération viennent tous de `PARAMETRES_PAYS`, la future table
  *    `pays`, modifiable depuis l'administration sans redéploiement.
- *  — **Gel des fonds** (règle 6). `fondsGeles()` est la seule autorité sur la
+ *  — **Gel des fonds** (règle 6). `(await fondsGeles())` est la seule autorité sur la
  *    question ; un litige ou un sinistre ouvert interdit le transfert au
  *    propriétaire comme la libération de la caution.
  */
@@ -195,10 +195,10 @@ const global_ = globalThis as unknown as {
   };
 };
 
-function construire() {
+async function construire() {
   const hasard = generateur(GRAINES.administration);
   const aujourdhui = new Date();
-  const reservations = listerReservations();
+  const reservations = await listerReservations();
 
   /* ---- Utilisateurs ---- */
   const utilisateurs: Utilisateur[] = [];
@@ -362,8 +362,16 @@ function construire() {
   return { utilisateurs, litiges, sinistres, audit, tickets };
 }
 
-function donnees() {
-  global_.__flexitrailerAdmin ??= construire();
+/**
+ * Litiges, sinistres, tickets et journal d'audit sont encore engendrés en
+ * mémoire : ces quatre tables existent en base mais ne sont pas alimentées.
+ * Ils s'appuient en revanche sur les **vraies** réservations, ce qui rend leur
+ * construction asynchrone. Le résultat est mis en cache le temps du processus :
+ * le jeu est déterministe, le reconstruire à chaque appel coûterait cent
+ * quarante lectures pour un résultat identique.
+ */
+async function donnees() {
+  global_.__flexitrailerAdmin ??= await construire();
   return global_.__flexitrailerAdmin;
 }
 
@@ -371,24 +379,24 @@ function donnees() {
 /*  Lectures                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function listerUtilisateurs(): Utilisateur[] {
-  return donnees().utilisateurs;
+export async function listerUtilisateurs(): Promise<Utilisateur[]> {
+  return (await donnees()).utilisateurs;
 }
 
-export function listerLitiges(): Litige[] {
-  return donnees().litiges;
+export async function listerLitiges(): Promise<Litige[]> {
+  return (await donnees()).litiges;
 }
 
-export function listerSinistres(): Sinistre[] {
-  return donnees().sinistres;
+export async function listerSinistres(): Promise<Sinistre[]> {
+  return (await donnees()).sinistres;
 }
 
-export function listerAudit(): EntreeAudit[] {
-  return donnees().audit;
+export async function listerAudit(): Promise<EntreeAudit[]> {
+  return (await donnees()).audit;
 }
 
-export function listerTickets(): TicketSupport[] {
-  return donnees().tickets;
+export async function listerTickets(): Promise<TicketSupport[]> {
+  return (await donnees()).tickets;
 }
 
 /**
@@ -397,12 +405,12 @@ export function listerTickets(): TicketSupport[] {
  * Une seule fonction fait autorité, appelée par tous les écrans qui parlent
  * d'argent. Si la règle évolue, elle évolue en un seul endroit.
  */
-export function fondsGeles(): number {
-  const parLitiges = listerLitiges()
+export async function fondsGeles(): Promise<number> {
+  const parLitiges = (await listerLitiges())
     .filter((litige) => litige.statut !== "resolu")
     .reduce((somme, litige) => somme + litige.fondsGeles, 0);
 
-  const parSinistres = listerSinistres()
+  const parSinistres = (await listerSinistres())
     .filter((sinistre) => ["declare", "transmis"].includes(sinistre.statut))
     .reduce((somme, sinistre) => somme + sinistre.montantEstime, 0);
 
@@ -427,12 +435,12 @@ export type SyntheseAdmin = {
 };
 
 
-export function syntheseAdmin(): SyntheseAdmin {
-  const reservations = listerReservations().filter((reservation) =>
+export async function syntheseAdmin(): Promise<SyntheseAdmin> {
+  const reservations = (await listerReservations()).filter((reservation) =>
     STATUTS_ENCAISSES.includes(reservation.statut),
   );
-  const utilisateurs = listerUtilisateurs();
-  const avis = listerAvis();
+  const utilisateurs = (await listerUtilisateurs());
+  const avis = (await listerAvis());
 
   const volumeAffaires = reservations.reduce(
     (somme, reservation) => somme + reservation.montantTotal,
@@ -459,17 +467,17 @@ export function syntheseAdmin(): SyntheseAdmin {
       (utilisateur) => utilisateur.inscritLe >= ilYaTrenteJours,
     ).length,
     annoncesActives: JEU_DE_DEMONSTRATION.length,
-    litigesOuverts: listerLitiges().filter((litige) => litige.statut !== "resolu")
+    litigesOuverts: (await listerLitiges()).filter((litige) => litige.statut !== "resolu")
       .length,
-    sinistresOuverts: listerSinistres().filter((sinistre) =>
+    sinistresOuverts: (await listerSinistres()).filter((sinistre) =>
       ["declare", "transmis"].includes(sinistre.statut),
     ).length,
     identitesAverifier: utilisateurs.filter(
       (utilisateur) => utilisateur.verification === "en_attente",
     ).length,
-    ticketsOuverts: listerTickets().filter((ticket) => ticket.statut !== "resolu")
+    ticketsOuverts: (await listerTickets()).filter((ticket) => ticket.statut !== "resolu")
       .length,
-    fondsGeles: fondsGeles(),
+    fondsGeles: (await fondsGeles()),
     noteMoyenne:
       avis.length > 0
         ? avis.reduce((somme, entree) => somme + entree.note, 0) / avis.length
@@ -487,12 +495,12 @@ export type LignePays = {
 };
 
 /** Comparaison entre pays — l'indicateur qui décide des ouvertures de marché. */
-export function comparaisonPays(): LignePays[] {
+export async function comparaisonPays(): Promise<LignePays[]> {
   const annonces = JEU_DE_DEMONSTRATION;
-  const reservations = listerReservations().filter((reservation) =>
+  const reservations = (await listerReservations()).filter((reservation) =>
     STATUTS_ENCAISSES.includes(reservation.statut),
   );
-  const utilisateurs = listerUtilisateurs();
+  const utilisateurs = (await listerUtilisateurs());
 
   const villeVersPays = new Map(VILLES.map((ville) => [ville.nom, ville.pays]));
 
@@ -521,8 +529,8 @@ export function comparaisonPays(): LignePays[] {
 }
 
 /** Inscriptions par mois — la courbe de croissance de la place de marché. */
-export function inscriptionsParMois(nombreMois = 12) {
-  const utilisateurs = listerUtilisateurs();
+export async function inscriptionsParMois(nombreMois = 12) {
+  const utilisateurs = (await listerUtilisateurs());
   const mois: { etiquette: string; valeur: number }[] = [];
 
   const curseur = new Date();

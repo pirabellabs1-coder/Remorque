@@ -18,7 +18,7 @@ export default async function PageAvis({ params }: Props) {
   const t = await getTranslations("espaces.loueur.avis");
   const format = await getFormatter();
 
-  const avis = listerAvis();
+  const avis = await listerAvis();
   const moyenne =
     avis.length > 0
       ? avis.reduce((somme, entree) => somme + entree.note, 0) / avis.length

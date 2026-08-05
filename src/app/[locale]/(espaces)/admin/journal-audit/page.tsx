@@ -30,7 +30,7 @@ export default async function PageJournalAudit({ params }: Props) {
   const t = await getTranslations("espaces.admin.journalAudit");
   const format = await getFormatter();
 
-  const entrees = listerAudit();
+  const entrees = (await listerAudit());
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">

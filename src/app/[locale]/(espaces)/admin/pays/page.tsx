@@ -33,7 +33,7 @@ export default async function PagePays({ params }: Props) {
   const format = await getFormatter();
 
   const parametres = listerPays();
-  const activite = comparaisonPays();
+  const activite = (await comparaisonPays());
 
   const pourcentage = (pointsDeBase: number) =>
     `${format.number(pointsDeBase / 100, { minimumFractionDigits: 2 })} %`;

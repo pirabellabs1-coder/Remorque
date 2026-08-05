@@ -95,7 +95,7 @@ export default async function PageAnnonce({ params }: Props) {
     (entree) => entree.slug === annonce.categorie,
   )!;
 
-  const notes = avisDeLannonce(annonce.id, 4);
+  const notes = await avisDeLannonce(annonce.id, 4);
 
   // Annonces voisines, la fiche courante exclue. Trois suffisent : au-delà, ce
   // n'est plus une suggestion mais une seconde page de résultats.
