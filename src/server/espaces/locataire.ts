@@ -8,6 +8,7 @@ import type { StatutReservation } from "@/domain/reservation/machine";
 import { db } from "@/server/db";
 import {
   annonce,
+  caution,
   avis as tableAvis,
   reservation,
   tarif,
@@ -162,9 +163,6 @@ export type SyntheseLocataire = {
 };
 
 
-/** Délai de libération de la caution, en jours. Valeur France du cadrage. */
-const DELAI_LIBERATION_JOURS = 7;
-
 /**
  * Moyens de paiement du jeu d'essai.
  *
@@ -196,28 +194,35 @@ const compteCourant = cache(async (): Promise<string | null> => {
 });
 
 /**
- * État de la caution, déduit du statut et du calendrier.
+ * État de la caution, lu dans la table `caution`.
  *
- * La table `caution` existe mais n'est pas alimentée : l'état est donc dérivé
- * plutôt qu'inventé, et toujours des mêmes faits — le statut de la réservation
- * et la date de restitution. Le déduire garantit qu'il ne peut pas contredire
- * la réservation qu'il accompagne, ce qu'une colonne indépendante permettrait.
+ * Il était déduit du statut de la réservation tant que la table n'était pas
+ * alimentée. Elle l'est désormais, et la nuance compte : une caution
+ * *contestée* — litige ou sinistre ouvert, règle 6 — ne se devine pas depuis
+ * le calendrier d'une location par ailleurs close. La déduction affichait
+ * « libérée » là où l'argent est en réalité toujours immobilisé, ce qui est
+ * exactement le mensonge que cet écran doit éviter.
+ *
+ * La correspondance ramène cinq états de base à cinq états d'affichage, dont
+ * les libellés parlent du compte bancaire et non du dossier.
  */
 function etatCaution(
-  statut: StatutReservation,
-  fin: Date,
+  statut: string | null,
+  liberationPrevueLe: Date | null,
   maintenant: Date,
 ): EtatCaution {
-  // Sans location engagée, aucune empreinte n'a été prise.
-  if (["demandee", "refusee", "annulee", "expiree"].includes(statut)) return "liberee";
-  if (statut === "restituee") return "en_liberation";
+  // Aucune ligne de caution : la location n'a jamais été engagée — demande en
+  // attente, refusée ou expirée. Rien n'a été immobilisé, et l'écran doit le
+  // dire ainsi plutôt que d'annoncer une empreinte qui n'existe pas.
+  if (statut === null) return "liberee";
 
-  if (statut === "cloturee") {
-    return joursEntre(fin, maintenant) < DELAI_LIBERATION_JOURS
-      ? "en_liberation"
-      : "liberee";
-  }
+  if (statut === "contestee") return "gelee";
+  if (statut === "retenue" || statut === "debitee_partiellement") return "retenue";
+  if (statut === "liberee") return "liberee";
 
+  // Constituée : l'empreinte tient. Reste à savoir si la libération est déjà
+  // programmée — c'est ce qui distingue « gelée » de « libération en cours ».
+  if (liberationPrevueLe && liberationPrevueLe <= maintenant) return "en_liberation";
   return "empreinte";
 }
 
@@ -271,10 +276,16 @@ export const mesReservations = cache(async (): Promise<MaReservation[]> => {
       avisDepose: sql<boolean>`exists (
         select 1 from avis a where a.reservation_id = ${reservation.id}
       )`,
+      cautionStatut: caution.statut,
+      cautionLiberationPrevueLe: caution.liberationPrevueLe,
+      cautionMontantDebite: caution.montantDebite,
     })
     .from(reservation)
     .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
     .innerJoin(utilisateur, eq(utilisateur.id, reservation.proprietaireId))
+    // Jointure ouverte : une demande jamais payée n'a pas d'empreinte, et
+    // c'est un état légitime, pas une donnée manquante.
+    .leftJoin(caution, eq(caution.reservationId, reservation.id))
     .where(eq(reservation.locataireId, moi))
     .orderBy(desc(reservation.debut));
 
@@ -283,10 +294,12 @@ export const mesReservations = cache(async (): Promise<MaReservation[]> => {
     statut: ligne.statut as StatutReservation,
     proprietaire: ligne.proprietaire ?? "",
     photo: ligne.photo ?? "",
-    cautionEtat: etatCaution(ligne.statut as StatutReservation, ligne.fin, maintenant),
-    // Aucune retenue n'est simulée : la table `caution` n'est pas alimentée, et
-    // inventer une retenue ferait croire à un litige qui n'existe pas.
-    cautionRetenue: 0,
+    cautionEtat: etatCaution(
+      ligne.cautionStatut,
+      ligne.cautionLiberationPrevueLe,
+      maintenant,
+    ),
+    cautionRetenue: ligne.cautionMontantDebite ?? 0,
   }));
 });
 

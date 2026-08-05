@@ -53,10 +53,13 @@ import {
   annoncePhoto,
   avis,
   categorie,
+  caution,
   journalAudit,
   litige,
+  paiement,
   pays,
   reservation,
+  reversement,
   sinistre,
   tarif,
   ticketSupport,
@@ -92,6 +95,13 @@ function langueDuPays(code: string): string {
   const marche = Object.values(MARKETS).find((m) => m.country === code);
   return marche?.language ?? "fr";
 }
+
+/**
+ * Moyens de paiement du jeu d'essai — les mêmes que ceux affichés au
+ * locataire. Volontairement peu variés : un particulier paie presque toujours
+ * avec la même carte.
+ */
+const MOYENS_PAIEMENT = ["Visa ••4218", "Mastercard ••7731", "Visa ••4218"];
 
 const NOMS_PAYS: Record<string, string> = {
   BE: "Belgique",
@@ -170,6 +180,15 @@ async function purger() {
       AND entite_id NOT IN (SELECT id::text FROM annonce)
       AND entite_id NOT IN (SELECT id::text FROM utilisateur)
   `;
+  for (const table of ["reversement", "caution", "paiement"]) {
+    await sql.unsafe(`
+      DELETE FROM ${table} WHERE reservation_id IN (
+        SELECT r.id FROM reservation r
+        JOIN utilisateur u ON u.id = r.locataire_id
+        WHERE u.email LIKE '%${DOMAINE_DEMO}'
+      )
+    `);
+  }
   await sql`
     DELETE FROM ticket_support WHERE demandeur_id IN (
       SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
@@ -425,7 +444,14 @@ async function amorcer() {
 
   /* -------------------------------------------------------- Réservations -- */
   const valeursReservations = [];
-  const contexte: { statut: string; fin: Date; annonceId: string; locataireId: string; proprietaireId: string }[] = [];
+  const contexte: {
+    statut: string;
+    debut: Date;
+    fin: Date;
+    annonceId: string;
+    locataireId: string;
+    proprietaireId: string;
+  }[] = [];
 
   for (let index = 0; index < VOLUMES.reservationsLoueur; index += 1) {
     const cible = tirer(hasard, annoncesInserees);
@@ -484,6 +510,7 @@ async function amorcer() {
 
     contexte.push({
       statut,
+      debut,
       fin,
       annonceId: cible.id,
       locataireId,
@@ -744,6 +771,135 @@ async function amorcer() {
     await db.insert(ticketSupport).values(valeursTickets);
   }
 
+
+  /* ------------------------------------------------------------- Finance -- */
+  //
+  // Paiement, caution et reversement sont trois mouvements distincts, et c'est
+  // toute la difficulté du modèle : le locataire *paie* le total, la caution
+  // est seulement *gelée* sur sa carte, et le propriétaire est *reversé* après
+  // la restitution. Les confondre — ou n'en stocker qu'un — rendrait impossible
+  // de répondre à « où est mon argent ? », qui est la question la plus posée au
+  // support d'une place de marché.
+  //
+  // Ils naissent ensemble, à la réservation, et suivent ensuite des calendriers
+  // propres.
+  const litigesParReservation = new Map<string, string>();
+  for (const entree of valeursLitiges) {
+    if (entree.statut !== "resolu" && entree.statut !== "clos_sans_suite") {
+      litigesParReservation.set(entree.reservationId, "litige");
+    }
+  }
+  for (const entree of valeursSinistres) {
+    if (["declare", "transmis", "en_cours"].includes(entree.statut as string)) {
+      litigesParReservation.set(entree.reservationId, "sinistre");
+    }
+  }
+
+  const valeursPaiements = [];
+  const valeursCautions = [];
+  const valeursReversements = [];
+
+  for (const [index, ligne] of lignesReservations.entries()) {
+    const source = contexte[index];
+    const valeurs = valeursReservations[index];
+
+    // Une demande non payée n'a produit aucun mouvement : ni empreinte, ni
+    // débit. En fabriquer un ferait apparaître de l'argent là où il n'y en a
+    // jamais eu.
+    if (["demandee", "refusee", "expiree"].includes(source.statut)) continue;
+
+    const annule = source.statut === "annulee";
+    const termine = ["restituee", "cloturee"].includes(source.statut);
+    const engage = ["payee", "confirmee", "en_cours"].includes(source.statut);
+
+    /* ---- Paiement ---- */
+    valeursPaiements.push({
+      reservationId: ligne.id,
+      statut: (annule ? "rembourse" : "capture") as never,
+      devise: valeurs.devise,
+      montant: valeurs.totalLocataire,
+      montantRembourse: annule ? valeurs.totalLocataire : 0,
+      moyenPaiement: MOYENS_PAIEMENT[index % MOYENS_PAIEMENT.length],
+      autoriseLe: decalerJours(source.debut, -tirerEntier(hasard, 1, 20)),
+      captureLe: annule ? null : decalerJours(source.debut, -1),
+      creeLe: decalerJours(source.debut, -tirerEntier(hasard, 1, 20)),
+    });
+
+    /* ---- Caution ---- */
+    //
+    // La libération n'est pas immédiate : le pays fixe un délai après la
+    // restitution — 72 heures pour la France — pendant lequel un dommage peut
+    // encore être signalé. `liberation_prevue_le` porte cette date, et c'est
+    // elle que l'écran du locataire affiche plutôt qu'un vague « bientôt ».
+    const liberationPrevue = decalerJours(
+      source.fin,
+      Math.ceil(BAREME_PAR_DEFAUT.cautionLiberationHeures / 24),
+    );
+    const blocage = litigesParReservation.get(ligne.id);
+
+    valeursCautions.push({
+      reservationId: ligne.id,
+      // Règle 6 : un litige ou un sinistre ouvert interdit la libération. La
+      // caution reste donc constituée — elle n'est ni rendue ni débitée tant
+      // que le dossier n'est pas tranché.
+      statut: (blocage
+        ? "contestee"
+        : annule
+          ? "liberee"
+          : termine && liberationPrevue < maintenant
+            ? "liberee"
+            : "constituee") as never,
+      devise: valeurs.devise,
+      montant: valeurs.caution,
+      montantDebite: 0,
+      liberationPrevueLe: annule ? null : liberationPrevue,
+      libereeLe:
+        !blocage && (annule || (termine && liberationPrevue < maintenant))
+          ? liberationPrevue
+          : null,
+      contesteeLe: blocage ? decalerJours(source.fin, 2) : null,
+      creeLe: decalerJours(source.debut, -1),
+    });
+
+    /* ---- Reversement ---- */
+    //
+    // Rien n'est reversé tant que la location n'est pas terminée : verser
+    // d'avance reviendrait à financer le propriétaire avec l'argent d'un
+    // locataire qui n'a pas encore reçu le matériel.
+    if (annule) continue;
+
+    valeursReversements.push({
+      reservationId: ligne.id,
+      beneficiaireId: source.proprietaireId,
+      // Règle 6, seconde moitié : un dossier ouvert gèle le transfert. Le
+      // motif est écrit, sans quoi le propriétaire voit un versement bloqué
+      // sans savoir pourquoi et appelle le support.
+      statut: (blocage ? "gele" : termine ? "paye" : "planifie") as never,
+      devise: valeurs.devise,
+      montant: valeurs.montantReverse,
+      commissionRetenue: valeurs.commissionProprietaire,
+      geleMotif: blocage
+        ? blocage === "litige"
+          ? "Litige ouvert sur cette location"
+          : "Sinistre déclaré sur cette location"
+        : null,
+      prevuLe: liberationPrevue,
+      envoyeLe: !blocage && termine && liberationPrevue < maintenant ? liberationPrevue : null,
+      creeLe: source.fin,
+    });
+
+    if (engage) {
+      // Rien de plus : la branche existe pour rendre lisible le fait qu'une
+      // location engagée mais non terminée a bien un reversement *planifié*.
+    }
+  }
+
+  if (valeursPaiements.length > 0) await db.insert(paiement).values(valeursPaiements);
+  if (valeursCautions.length > 0) await db.insert(caution).values(valeursCautions);
+  if (valeursReversements.length > 0) {
+    await db.insert(reversement).values(valeursReversements);
+  }
+
   /* --------------------------------------------------------- Journal d'audit -- */
   // Chaque entrée porte l'identifiant de l'entité concernée. C'est ce qui
   // permet à la purge de reconnaître les entrées de démonstration sans toucher
@@ -793,6 +949,9 @@ async function amorcer() {
   console.log(`  sinistres     ${await compter("sinistre")}`);
   console.log(`  tickets       ${await compter("ticket_support")}`);
   console.log(`  journal       ${await compter("journal_audit")}`);
+  console.log(`  paiements     ${await compter("paiement")}`);
+  console.log(`  cautions      ${await compter("caution")}`);
+  console.log(`  reversements  ${await compter("reversement")}`);
 }
 
 amorcer()
