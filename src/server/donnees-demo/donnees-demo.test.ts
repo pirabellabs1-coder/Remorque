@@ -119,8 +119,22 @@ describe("volumes centralisés", () => {
     expect((await mesReservations())).toHaveLength(VOLUMES.reservationsLocataire);
   });
 
-  it("produit le nombre d'utilisateurs annoncé", async () => {
-    expect((await listerUtilisateurs())).toHaveLength(VOLUMES.utilisateurs);
+  /**
+   * `VOLUMES.utilisateurs` décrit l'annuaire des locataires, non la population
+   * totale de la base : s'y ajoutent les propriétaires du catalogue et le
+   * compte de démonstration, qui porte les deux profils.
+   *
+   * Le test vérifie donc les locataires purs — ceux que le volume décrit
+   * réellement — puis que le total les dépasse. Comparer le total au volume
+   * revenait à faire échouer le test dès qu'on ajoutait un propriétaire, ce
+   * qui n'apprenait rien.
+   */
+  it("produit le nombre de locataires annoncé", async () => {
+    const utilisateurs = await listerUtilisateurs();
+    const locatairesPurs = utilisateurs.filter((entree) => entree.role === "locataire");
+
+    expect(locatairesPurs).toHaveLength(VOLUMES.utilisateurs);
+    expect(utilisateurs.length).toBeGreaterThan(VOLUMES.utilisateurs);
   });
 
   it("garde un historique de locataire vraisemblable", async () => {

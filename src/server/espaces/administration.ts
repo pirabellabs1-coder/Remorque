@@ -1,16 +1,21 @@
 import "server-only";
 
+import { cache } from "react";
+
+import { desc, eq, sql as raw } from "drizzle-orm";
+
+import { db } from "@/server/db";
 import {
-  ANNUAIRE,
-  generateur,
-  GRAINES,
-  ACTIONS_AUDIT,
-  AUTEURS_ADMIN,
-  STATUTS_ENCAISSES,
-  SUJETS_SUPPORT,
-  tirer,
-  VOLUMES,
-} from "@/server/donnees-demo";
+  journalAudit,
+  litige,
+  pays,
+  reservation,
+  sinistre,
+  ticketSupport,
+  utilisateur,
+} from "@/server/db/schema";
+
+import { STATUTS_ENCAISSES } from "@/server/donnees-demo";
 
 import { PAYS, VILLES } from "@/config/villes";
 import { JEU_DE_DEMONSTRATION } from "@/server/annonces/catalogue";
@@ -185,219 +190,223 @@ export type TicketSupport = {
 /* -------------------------------------------------------------------------- */
 
 
-const global_ = globalThis as unknown as {
-  __flexitrailerAdmin?: {
-    utilisateurs: Utilisateur[];
-    litiges: Litige[];
-    sinistres: Sinistre[];
-    audit: EntreeAudit[];
-    tickets: TicketSupport[];
-  };
-};
-
-async function construire() {
-  const hasard = generateur(GRAINES.administration);
-  const aujourdhui = new Date();
-  const reservations = await listerReservations();
-
-  /* ---- Utilisateurs ---- */
-  const utilisateurs: Utilisateur[] = [];
-  for (let index = 0; index < VOLUMES.utilisateurs; index += 1) {
-    const ville = VILLES[Math.floor(hasard() * VILLES.length)];
-    // L'annuaire commun, lu ici en **nom complet** : l'administration instruit
-    // des litiges et doit désigner quelqu'un sans ambiguïté, là où les espaces
-    // usagers s'en tiennent au prénom et à l'initiale.
-    const personne = tirer(hasard, ANNUAIRE);
-
-    const tirage = hasard();
-    const role: RoleUtilisateur =
-      tirage < 0.72 ? "locataire" : tirage < 0.93 ? "loueur" : "les_deux";
-
-    const tirageVerif = hasard();
-    const verification: EtatVerification =
-      tirageVerif < 0.68
-        ? "verifie"
-        : tirageVerif < 0.83
-          ? "en_attente"
-          : tirageVerif < 0.96
-            ? "non_soumis"
-            : "refuse";
-
-    const inscritLe = new Date(aujourdhui);
-    inscritLe.setDate(inscritLe.getDate() - Math.floor(hasard() * 700));
-
-    const loue = role !== "locataire";
-
-    utilisateurs.push({
-      id: `u${index.toString().padStart(3, "0")}`,
-      nom: personne.nomComplet,
-      courriel: personne.courriel,
-      ville: ville.nom,
-      pays: ville.pays,
-      role,
-      verification,
-      inscritLe,
-      locations: Math.floor(hasard() * 14),
-      annonces: loue ? 1 + Math.floor(hasard() * 4) : 0,
-      note: hasard() < 0.7 ? 4 + Math.round(hasard() * 10) / 10 : null,
-      // La suspension est rare : une plateforme qui suspend cinq pour cent de
-      // ses inscrits a un problème bien plus grave que sa modération.
-      suspendu: hasard() < 0.015,
-    });
-  }
-  utilisateurs.sort((a, b) => b.inscritLe.getTime() - a.inscritLe.getTime());
-
-  /* ---- Litiges ---- */
-  const MOTIFS: Litige["motif"][] = [
-    "dommage", "retard", "non_conformite", "annulation", "paiement",
-  ];
-  const litiges: Litige[] = [];
-  const closes = reservations.filter((r) =>
-    ["cloturee", "restituee", "en_cours"].includes(r.statut),
-  );
-
-  for (let index = 0; index < VOLUMES.litiges; index += 1) {
-    const reservation = closes[Math.floor(hasard() * closes.length)];
-    if (!reservation) break;
-
-    const ouvertLe = new Date(reservation.fin);
-    ouvertLe.setDate(ouvertLe.getDate() + Math.floor(hasard() * 4));
-
-    const tirage = hasard();
-    const statut: Litige["statut"] =
-      tirage < 0.35 ? "ouvert" : tirage < 0.6 ? "en_instruction" : "resolu";
-
-    const montantEnJeu = Math.round(reservation.caution * (0.2 + hasard() * 0.8));
-
-    litiges.push({
-      id: `l${index.toString().padStart(3, "0")}`,
-      reference: `LIT-${ouvertLe.getFullYear()}-${(index + 1).toString().padStart(3, "0")}`,
-      reservationReference: reservation.reference,
-      ouvertLe,
-      motif: MOTIFS[Math.floor(hasard() * MOTIFS.length)],
-      montantEnJeu,
-      devise: reservation.devise,
-      partie: hasard() < 0.6 ? "locataire" : "proprietaire",
-      statut,
-      // Un litige résolu ne gèle plus rien : c'est tout l'intérêt de le clore.
-      fondsGeles: statut === "resolu" ? 0 : reservation.netProprietaire + reservation.caution,
-    });
-  }
-  litiges.sort((a, b) => b.ouvertLe.getTime() - a.ouvertLe.getTime());
-
-  /* ---- Sinistres ---- */
-  const NATURES: Sinistre["nature"][] = ["collision", "vol", "bris", "incendie"];
-  const sinistres: Sinistre[] = [];
-
-  for (let index = 0; index < VOLUMES.sinistres; index += 1) {
-    const reservation = closes[Math.floor(hasard() * closes.length)];
-    if (!reservation) break;
-
-    const declareLe = new Date(reservation.fin);
-    declareLe.setDate(declareLe.getDate() + Math.floor(hasard() * 3));
-
-    const tirage = hasard();
-    const statut: Sinistre["statut"] =
-      tirage < 0.3 ? "declare" : tirage < 0.6 ? "transmis" : tirage < 0.9 ? "indemnise" : "refuse";
-
-    const transmisLe = statut === "declare" ? null : new Date(declareLe);
-    if (transmisLe) transmisLe.setDate(transmisLe.getDate() + 1);
-
-    sinistres.push({
-      id: `s${index.toString().padStart(3, "0")}`,
-      reference: `SIN-${declareLe.getFullYear()}-${(index + 1).toString().padStart(3, "0")}`,
-      reservationReference: reservation.reference,
-      declareLe,
-      nature: NATURES[Math.floor(hasard() * NATURES.length)],
-      montantEstime: 30_000 + Math.floor(hasard() * 350_000),
-      devise: reservation.devise,
-      statut,
-      transmisLe,
-    });
-  }
-  sinistres.sort((a, b) => b.declareLe.getTime() - a.declareLe.getTime());
-
-  /* ---- Support ---- */
-
-  const tickets: TicketSupport[] = [];
-  for (let index = 0; index < VOLUMES.tickets; index += 1) {
-    const ouvertLe = new Date(aujourdhui);
-    ouvertLe.setDate(ouvertLe.getDate() - Math.floor(hasard() * 21));
-    const tirage = hasard();
-
-    tickets.push({
-      id: `t${index.toString().padStart(3, "0")}`,
-      reference: `SUP-${(index + 1).toString().padStart(4, "0")}`,
-      ouvertLe,
-      demandeur: utilisateurs[Math.floor(hasard() * utilisateurs.length)].nom,
-      sujet: tirer(hasard, SUJETS_SUPPORT),
-      canal: hasard() < 0.6 ? "formulaire" : hasard() < 0.9 ? "courriel" : "telephone",
-      priorite: tirage < 0.15 ? "haute" : tirage < 0.7 ? "normale" : "basse",
-      statut: tirage < 0.3 ? "ouvert" : tirage < 0.55 ? "en_cours" : "resolu",
-    });
-  }
-  tickets.sort((a, b) => b.ouvertLe.getTime() - a.ouvertLe.getTime());
-
-  /* ---- Journal d'audit ---- */
-  const audit: EntreeAudit[] = [];
-
-  for (let index = 0; index < VOLUMES.entreesAudit; index += 1) {
-    const modele = tirer(hasard, ACTIONS_AUDIT);
-    const horodatage = new Date(aujourdhui);
-    horodatage.setMinutes(horodatage.getMinutes() - Math.floor(hasard() * 60 * 24 * 45));
-
-    audit.push({
-      id: `j${index.toString().padStart(3, "0")}`,
-      horodatage,
-      auteur: tirer(hasard, AUTEURS_ADMIN),
-      action: modele.action,
-      cible: `${modele.cible} #${Math.floor(hasard() * 900) + 100}`,
-      motif: modele.motif,
-      avant: modele.avant ?? null,
-      apres: modele.apres ?? null,
-    });
-  }
-  audit.sort((a, b) => b.horodatage.getTime() - a.horodatage.getTime());
-
-  return { utilisateurs, litiges, sinistres, audit, tickets };
-}
+/* -------------------------------------------------------------------------- */
+/*  Lectures — sur PostgreSQL                                                 */
+/* -------------------------------------------------------------------------- */
 
 /**
- * Litiges, sinistres, tickets et journal d'audit sont encore engendrés en
- * mémoire : ces quatre tables existent en base mais ne sont pas alimentées.
- * Ils s'appuient en revanche sur les **vraies** réservations, ce qui rend leur
- * construction asynchrone. Le résultat est mis en cache le temps du processus :
- * le jeu est déterministe, le reconstruire à chaque appel coûterait cent
- * quarante lectures pour un résultat identique.
+ * Les utilisateurs, avec leurs compteurs.
+ *
+ * Locations, annonces et note moyenne sont **comptés en base**, jamais stockés
+ * sur la fiche : un compteur dénormalisé se désynchronise à la première
+ * annulation, et l'administration se met alors à voir des chiffres que plus
+ * personne ne peut expliquer.
  */
-async function donnees() {
-  global_.__flexitrailerAdmin ??= await construire();
-  return global_.__flexitrailerAdmin;
-}
+export const listerUtilisateurs = cache(async (): Promise<Utilisateur[]> => {
+  const lignes = await db
+    .select({
+      id: utilisateur.id,
+      prenom: utilisateur.prenom,
+      nom: utilisateur.nom,
+      courriel: utilisateur.email,
+      pays: pays.code,
+      profilLocataire: utilisateur.profilLocataire,
+      profilProprietaire: utilisateur.profilProprietaire,
+      verification: utilisateur.identiteStatut,
+      inscritLe: utilisateur.creeLe,
+      suspendu: raw<boolean>`${utilisateur.suspenduLe} is not null`,
+      locations: raw<number>`(
+        select count(*)::int from reservation r where r.locataire_id = ${utilisateur.id}
+      )`,
+      annonces: raw<number>`(
+        select count(*)::int from annonce a where a.proprietaire_id = ${utilisateur.id}
+      )`,
+      note: raw<string | null>`(
+        select avg(v.note) from avis v
+        where v.destinataire_id = ${utilisateur.id} and v.publie_le is not null
+      )`,
+    })
+    .from(utilisateur)
+    .leftJoin(pays, eq(pays.id, utilisateur.paysId))
+    .orderBy(desc(utilisateur.creeLe));
 
-/* -------------------------------------------------------------------------- */
-/*  Lectures                                                                  */
-/* -------------------------------------------------------------------------- */
+  return lignes.map((ligne) => ({
+    id: ligne.id,
+    // Nom complet ici, et non prénom abrégé : l'administration instruit des
+    // litiges et doit désigner quelqu'un sans ambiguïté.
+    nom: [ligne.prenom, ligne.nom].filter(Boolean).join(" ") || ligne.courriel,
+    courriel: ligne.courriel,
+    ville: "",
+    pays: ligne.pays ?? "FR",
+    role:
+      ligne.profilLocataire && ligne.profilProprietaire
+        ? "les_deux"
+        : ligne.profilProprietaire
+          ? "loueur"
+          : "locataire",
+    verification: ligne.verification as EtatVerification,
+    inscritLe: ligne.inscritLe,
+    locations: ligne.locations,
+    annonces: ligne.annonces,
+    note: ligne.note === null ? null : Number(ligne.note),
+    suspendu: ligne.suspendu,
+  }));
+});
 
-export async function listerUtilisateurs(): Promise<Utilisateur[]> {
-  return (await donnees()).utilisateurs;
-}
+/**
+ * Correspondance entre les statuts de la base et ceux de l'écran.
+ *
+ * La base distingue la résolution amiable de l'arbitrage ; l'écran n'a que
+ * trois colonnes. Le rapprochement est fait ici, en un endroit, plutôt que
+ * dans chaque tableau où il finirait par diverger.
+ */
+const STATUT_LITIGE: Record<string, Litige["statut"]> = {
+  ouvert: "ouvert",
+  en_resolution_amiable: "en_instruction",
+  en_arbitrage: "en_instruction",
+  resolu: "resolu",
+  clos_sans_suite: "resolu",
+};
 
-export async function listerLitiges(): Promise<Litige[]> {
-  return (await donnees()).litiges;
-}
+export const listerLitiges = cache(async (): Promise<Litige[]> => {
+  const lignes = await db
+    .select({
+      id: litige.id,
+      reservationReference: reservation.numero,
+      ouvertLe: litige.creeLe,
+      motif: litige.motif,
+      montantEnJeu: litige.montantReclame,
+      devise: litige.devise,
+      statut: litige.statut,
+      ouvertParId: litige.ouvertParId,
+      locataireId: reservation.locataireId,
+    })
+    .from(litige)
+    .innerJoin(reservation, eq(reservation.id, litige.reservationId))
+    .orderBy(desc(litige.creeLe));
 
-export async function listerSinistres(): Promise<Sinistre[]> {
-  return (await donnees()).sinistres;
-}
+  return lignes.map((ligne, index) => {
+    const statut = STATUT_LITIGE[ligne.statut ?? "ouvert"] ?? "ouvert";
+    const montant = ligne.montantEnJeu ?? 0;
 
-export async function listerAudit(): Promise<EntreeAudit[]> {
-  return (await donnees()).audit;
-}
+    return {
+      id: ligne.id,
+      reference: `LIT-${(index + 1).toString().padStart(4, "0")}`,
+      reservationReference: ligne.reservationReference,
+      ouvertLe: ligne.ouvertLe,
+      motif: ligne.motif as Litige["motif"],
+      montantEnJeu: montant,
+      devise: ligne.devise,
+      partie: ligne.ouvertParId === ligne.locataireId ? "locataire" : "proprietaire",
+      statut,
+      // Règle 6 : un litige résolu ne gèle plus rien, un litige ouvert gèle le
+      // montant réclamé. C'est ici, et nulle part ailleurs, que la règle
+      // s'applique.
+      fondsGeles: statut === "resolu" ? 0 : montant,
+    };
+  });
+});
 
-export async function listerTickets(): Promise<TicketSupport[]> {
-  return (await donnees()).tickets;
-}
+const NATURE_SINISTRE: Sinistre["nature"][] = ["collision", "vol", "bris", "incendie"];
+
+export const listerSinistres = cache(async (): Promise<Sinistre[]> => {
+  const lignes = await db
+    .select({
+      id: sinistre.id,
+      reservationReference: reservation.numero,
+      declareLe: sinistre.creeLe,
+      description: sinistre.description,
+      montantEstime: sinistre.montantEstime,
+      devise: sinistre.devise,
+      statut: sinistre.statut,
+      transmisLe: sinistre.transmisLe,
+    })
+    .from(sinistre)
+    .innerJoin(reservation, eq(reservation.id, sinistre.reservationId))
+    .orderBy(desc(sinistre.creeLe));
+
+  return lignes.map((ligne, index) => ({
+    id: ligne.id,
+    reference: `SIN-${(index + 1).toString().padStart(4, "0")}`,
+    reservationReference: ligne.reservationReference,
+    declareLe: ligne.declareLe,
+    // La nature n'a pas de colonne : elle est déduite de la description, ce
+    // qui vaut mieux que de l'inventer à chaque affichage.
+    nature: /[Vv]ol/.test(ligne.description)
+      ? "vol"
+      : /[Ii]ncendie/.test(ligne.description)
+        ? "incendie"
+        : /déchir|Bâche|éclat|arrach/.test(ligne.description)
+          ? "bris"
+          : NATURE_SINISTRE[0],
+    montantEstime: ligne.montantEstime ?? 0,
+    devise: ligne.devise,
+    statut: (ligne.statut === "en_cours" ? "transmis" : ligne.statut) as Sinistre["statut"],
+    transmisLe: ligne.transmisLe,
+  }));
+});
+
+export const listerAudit = cache(async (): Promise<EntreeAudit[]> => {
+  const lignes = await db
+    .select({
+      id: journalAudit.id,
+      horodatage: journalAudit.creeLe,
+      auteur: journalAudit.auteurEmail,
+      action: journalAudit.action,
+      cible: journalAudit.entite,
+      motif: journalAudit.motif,
+      avant: journalAudit.avant,
+      apres: journalAudit.apres,
+    })
+    .from(journalAudit)
+    .orderBy(desc(journalAudit.creeLe))
+    .limit(200);
+
+  const valeur = (donnee: Record<string, unknown> | null) =>
+    donnee && typeof donnee.valeur === "string" ? donnee.valeur : null;
+
+  return lignes.map((ligne) => ({
+    id: ligne.id,
+    horodatage: ligne.horodatage,
+    auteur: ligne.auteur ?? "—",
+    action: ligne.action,
+    cible: ligne.cible,
+    motif: ligne.motif ?? "",
+    avant: valeur(ligne.avant),
+    apres: valeur(ligne.apres),
+  }));
+});
+
+export const listerTickets = cache(async (): Promise<TicketSupport[]> => {
+  const lignes = await db
+    .select({
+      id: ticketSupport.id,
+      reference: ticketSupport.reference,
+      ouvertLe: ticketSupport.creeLe,
+      prenom: utilisateur.prenom,
+      nom: utilisateur.nom,
+      courriel: utilisateur.email,
+      sujet: ticketSupport.sujet,
+      canal: ticketSupport.canal,
+      priorite: ticketSupport.priorite,
+      statut: ticketSupport.statut,
+    })
+    .from(ticketSupport)
+    .leftJoin(utilisateur, eq(utilisateur.id, ticketSupport.demandeurId))
+    .orderBy(desc(ticketSupport.creeLe));
+
+  return lignes.map((ligne) => ({
+    id: ligne.id,
+    reference: ligne.reference,
+    ouvertLe: ligne.ouvertLe,
+    demandeur:
+      [ligne.prenom, ligne.nom].filter(Boolean).join(" ") || (ligne.courriel ?? "—"),
+    sujet: ligne.sujet,
+    canal: ligne.canal as TicketSupport["canal"],
+    priorite: ligne.priorite as TicketSupport["priorite"],
+    statut: ligne.statut as TicketSupport["statut"],
+  }));
+});
 
 /**
  * Montant total gelé par les litiges et sinistres en cours — règle 6.

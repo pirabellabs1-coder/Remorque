@@ -33,8 +33,10 @@ import { MARKETS } from "../src/config/markets";
 import { PAYS, trouverVille } from "../src/config/villes";
 import { JEU_DE_DEMONSTRATION } from "../src/server/annonces/catalogue";
 import {
+  ACTIONS_AUDIT,
   ANNUAIRE,
   aujourdhui,
+  AUTEURS_ADMIN,
   AVIS_LOCATAIRES,
   decalerJours,
   generateur,
@@ -42,6 +44,7 @@ import {
   REPARTITION_LOUEUR,
   tirer,
   tirerEntier,
+  SUJETS_SUPPORT,
   tirerPondere,
   VOLUMES,
 } from "../src/server/donnees-demo";
@@ -50,9 +53,13 @@ import {
   annoncePhoto,
   avis,
   categorie,
+  journalAudit,
+  litige,
   pays,
   reservation,
+  sinistre,
   tarif,
+  ticketSupport,
   utilisateur,
 } from "../src/server/db/schema";
 
@@ -134,6 +141,47 @@ function sansAccent(valeur: string): string {
 async function purger() {
   await sql`
     DELETE FROM avis WHERE auteur_id IN (
+      SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
+    )
+  `;
+  // Le journal d'audit reste en écriture seule **en exploitation** : aucun
+  // code applicatif ne doit le modifier ni le purger, c'est la condition de sa
+  // valeur probante. Mais les entrées de démonstration désignent des
+  // réservations de démonstration, qui vont disparaître : les laisser
+  // produirait un journal renvoyant à des dossiers inexistants, et l'empilerait
+  // de soixante lignes à chaque amorçage. On efface donc exactement celles-là,
+  // par la référence qu'elles portent, et rien d'autre.
+  //
+  // Deux passes : celles qui désignent une réservation de démonstration encore
+  // présente, et celles devenues orphelines lors d'un amorçage antérieur —
+  // leur réservation ayant déjà été effacée, aucune jointure ne les
+  // retrouverait.
+  await sql`
+    DELETE FROM journal_audit WHERE entite_id IN (
+      SELECT r.id::text FROM reservation r
+      JOIN utilisateur u ON u.id = r.locataire_id
+      WHERE u.email LIKE ${"%" + DOMAINE_DEMO}
+    )
+  `;
+  await sql`
+    DELETE FROM journal_audit
+    WHERE entite_id IS NOT NULL
+      AND entite_id NOT IN (SELECT id::text FROM reservation)
+      AND entite_id NOT IN (SELECT id::text FROM annonce)
+      AND entite_id NOT IN (SELECT id::text FROM utilisateur)
+  `;
+  await sql`
+    DELETE FROM ticket_support WHERE demandeur_id IN (
+      SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
+    )
+  `;
+  await sql`
+    DELETE FROM litige WHERE ouvert_par_id IN (
+      SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
+    )
+  `;
+  await sql`
+    DELETE FROM sinistre WHERE declare_par_id IN (
       SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
     )
   `;
@@ -232,7 +280,11 @@ async function amorcer() {
   /* ----------------------------------------------------------- Locataires -- */
   const paysFrance = paysParCode.get("FR")!;
 
-  const valeursLocataires = ANNUAIRE.map((personne) => ({
+  // Exactement le volume déclaré, et non tout l'annuaire : c'est
+  // `donnees-demo/volumes.ts` qui fait autorité sur les quantités, l'annuaire
+  // n'étant qu'un réservoir de noms. Sans cette borne, ajouter un prénom à la
+  // liste changeait silencieusement la population de la base.
+  const valeursLocataires = ANNUAIRE.slice(0, VOLUMES.utilisateurs).map((personne) => ({
     email: `${sansAccent(personne.prenom)}.${sansAccent(personne.nom)}${DOMAINE_DEMO}`,
     emailVerifie: true,
     prenom: personne.prenom,
@@ -523,6 +575,203 @@ async function amorcer() {
     await db.insert(avis).values(valeursAvis);
   }
 
+
+  /* -------------------------------------------------- Litiges et sinistres -- */
+  //
+  // Un litige et un sinistre ne peuvent naître que d'une location réellement
+  // engagée : la clé étrangère vers `reservation` l'impose désormais, là où le
+  // jeu en mémoire pouvait en fabriquer sans support. Ils sont donc tirés parmi
+  // les locations terminées ou en cours, jamais parmi les demandes refusées.
+  const eligibles = lignesReservations
+    .map((ligne, index) => ({ id: ligne.id, ...contexte[index] }))
+    .filter((entree) =>
+      ["cloturee", "restituee", "en_cours", "confirmee"].includes(entree.statut),
+    );
+
+  const MOTIFS_LITIGE = [
+    "dommage",
+    "retard",
+    "non_conformite",
+    "annulation",
+    "paiement",
+  ] as const;
+
+  const DESCRIPTIONS_LITIGE: Record<string, string> = {
+    dommage: "Feu arrière gauche cassé au retour, non signalé au départ.",
+    retard: "Remorque rendue avec deux jours de retard, sans prévenir.",
+    non_conformite: "Bâche annoncée dans l'équipement, absente à la remise.",
+    annulation: "Annulation la veille du départ, remboursement contesté.",
+    paiement: "Double débit constaté sur la carte du locataire.",
+  };
+
+  const valeursLitiges = [];
+  const litigesPris = new Set<number>();
+
+  for (let index = 0; index < VOLUMES.litiges && index < eligibles.length; index += 1) {
+    // Un pas premier balaie tout le lot sans repasser deux fois sur la même
+    // location tant qu'on n'a pas fait le tour.
+    const rang = (index * 11) % eligibles.length;
+    if (litigesPris.has(rang)) continue;
+    litigesPris.add(rang);
+
+    const source = eligibles[rang];
+    const motif = tirer(hasard, MOTIFS_LITIGE);
+
+    // Un litige ouvert immobilise des fonds — règle 6. Le montant réclamé est
+    // donc réel et non décoratif : c'est lui que l'écran d'administration
+    // additionne pour dire ce qui est gelé.
+    const statut = tirerPondere(hasard, [
+      { valeur: "ouvert", poids: 30 },
+      { valeur: "en_resolution_amiable", poids: 25 },
+      { valeur: "en_arbitrage", poids: 15 },
+      { valeur: "resolu", poids: 30 },
+    ] as const);
+
+    const montantReclame = tirerEntier(hasard, 40, 900) * 100;
+
+    valeursLitiges.push({
+      reservationId: source.id,
+      ouvertParId: source.locataireId,
+      statut: statut as never,
+      motif,
+      description: DESCRIPTIONS_LITIGE[motif],
+      devise: "EUR",
+      montantReclame,
+      montantAccorde: statut === "resolu" ? Math.round(montantReclame * 0.6) : null,
+      resoluLe: statut === "resolu" ? decalerJours(source.fin, 12) : null,
+      creeLe: decalerJours(source.fin, 2),
+    });
+  }
+
+  if (valeursLitiges.length > 0) {
+    await db.insert(litige).values(valeursLitiges);
+  }
+
+  const valeursSinistres = [];
+  const sinistresPris = new Set<number>();
+
+  for (let index = 0; index < VOLUMES.sinistres && index < eligibles.length; index += 1) {
+    const rang = (index * 17 + 5) % eligibles.length;
+    if (sinistresPris.has(rang) || litigesPris.has(rang)) continue;
+    sinistresPris.add(rang);
+
+    const source = eligibles[rang];
+    const statut = tirerPondere(hasard, [
+      { valeur: "declare", poids: 25 },
+      { valeur: "transmis", poids: 25 },
+      { valeur: "en_cours", poids: 15 },
+      { valeur: "indemnise", poids: 25 },
+      { valeur: "refuse", poids: 10 },
+    ] as const);
+
+    const montantEstime = tirerEntier(hasard, 200, 3500) * 100;
+
+    valeursSinistres.push({
+      reservationId: source.id,
+      declareParId: source.proprietaireId,
+      statut: statut as never,
+      description: tirer(hasard, [
+        "Choc arrière sur parking, hayon déformé.",
+        "Pneu éclaté sur autoroute, jante endommagée.",
+        "Vol de la roue de secours pendant la location.",
+        "Timon tordu après une manœuvre en marche arrière.",
+        "Bâche déchirée par le vent, arceaux pliés.",
+        "Feux de signalisation arrachés, faisceau sectionné.",
+      ]),
+      devise: "EUR",
+      montantEstime,
+      montantIndemnise: statut === "indemnise" ? montantEstime : null,
+      referenceAssureur: ["transmis", "en_cours", "indemnise", "refuse"].includes(statut)
+        ? `AX-${2026}-${(4000 + index).toString()}`
+        : null,
+      transmisLe: statut === "declare" ? null : decalerJours(source.fin, 3),
+      clotureLe: ["indemnise", "refuse"].includes(statut)
+        ? decalerJours(source.fin, 30)
+        : null,
+      creeLe: decalerJours(source.fin, 1),
+    });
+  }
+
+  if (valeursSinistres.length > 0) {
+    await db.insert(sinistre).values(valeursSinistres);
+  }
+
+  /* --------------------------------------------------------------- Support -- */
+  // Le demandeur est un vrai compte, et le ticket se rattache à une
+  // réservation quand le sujet le suppose. Un ticket « caution non libérée »
+  // sans location derrière serait un dossier qu'aucun agent ne pourrait
+  // instruire.
+  const valeursTickets = SUJETS_SUPPORT.slice(0, VOLUMES.tickets).map(
+    (sujet, index) => {
+      const source = eligibles[(index * 7) % eligibles.length];
+      const statut = tirerPondere(hasard, [
+        { valeur: "ouvert", poids: 35 },
+        { valeur: "en_cours", poids: 25 },
+        { valeur: "resolu", poids: 40 },
+      ] as const);
+
+      const ouvertLe = decalerJours(maintenant, -tirerEntier(hasard, 1, 60));
+
+      return {
+        reference: `SUP-${2026}-${(1000 + index).toString()}`,
+        demandeurId: source.locataireId,
+        reservationId: source.id,
+        sujet,
+        canal: tirerPondere(hasard, [
+          { valeur: "formulaire", poids: 50 },
+          { valeur: "courriel", poids: 35 },
+          { valeur: "telephone", poids: 15 },
+        ] as const) as never,
+        priorite: tirerPondere(hasard, [
+          { valeur: "normale", poids: 55 },
+          { valeur: "haute", poids: 25 },
+          { valeur: "basse", poids: 20 },
+        ] as const) as never,
+        statut: statut as never,
+        // La première réponse est ce que mesure l'engagement de délai : elle
+        // n'existe pas tant que le ticket n'a pas été pris en charge.
+        premiereReponseLe:
+          statut === "ouvert" ? null : decalerJours(ouvertLe, 1),
+        resoluLe: statut === "resolu" ? decalerJours(ouvertLe, 3) : null,
+        creeLe: ouvertLe,
+      };
+    },
+  );
+
+  // Les sujets se répètent au-delà de la liste : on ne fabrique pas de doublon
+  // de référence, la contrainte d'unicité l'interdirait de toute façon.
+  if (valeursTickets.length > 0) {
+    await db.insert(ticketSupport).values(valeursTickets);
+  }
+
+  /* --------------------------------------------------------- Journal d'audit -- */
+  // Chaque entrée porte l'identifiant de l'entité concernée. C'est ce qui
+  // permet à la purge de reconnaître les entrées de démonstration sans toucher
+  // aux autres — et, plus tard, de retrouver l'historique d'un dossier précis.
+  const valeursAudit = [];
+
+  for (let index = 0; index < VOLUMES.entreesAudit; index += 1) {
+    const modele = ACTIONS_AUDIT[index % ACTIONS_AUDIT.length];
+    const auteur = tirer(hasard, AUTEURS_ADMIN);
+
+    valeursAudit.push({
+      // L'adresse est figée au moment de l'action, même si le compte évolue
+      // ensuite : c'est l'auteur d'alors qu'il faut pouvoir nommer.
+      auteurEmail: auteur,
+      action: modele.action,
+      entite: modele.cible,
+      entiteId: tirer(hasard, eligibles).id,
+      motif: modele.motif,
+      avant: modele.avant ? { valeur: modele.avant } : null,
+      apres: modele.apres ? { valeur: modele.apres } : null,
+      creeLe: decalerJours(maintenant, -tirerEntier(hasard, 0, 180)),
+    });
+  }
+
+  if (valeursAudit.length > 0) {
+    await db.insert(journalAudit).values(valeursAudit);
+  }
+
   /* ------------------------------------------------------------- Rapport -- */
   const compter = async (table: string) => {
     const [{ n }] = await sql.unsafe<{ n: number }[]>(
@@ -540,6 +789,10 @@ async function amorcer() {
   console.log(`  tarifs        ${await compter("tarif")}`);
   console.log(`  réservations  ${await compter("reservation")}`);
   console.log(`  avis          ${await compter("avis")}`);
+  console.log(`  litiges       ${await compter("litige")}`);
+  console.log(`  sinistres     ${await compter("sinistre")}`);
+  console.log(`  tickets       ${await compter("ticket_support")}`);
+  console.log(`  journal       ${await compter("journal_audit")}`);
 }
 
 amorcer()
