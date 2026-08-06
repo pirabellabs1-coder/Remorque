@@ -6,6 +6,7 @@ import { desc, eq, sql as raw } from "drizzle-orm";
 
 import { db } from "@/server/db";
 import {
+  annonce,
   journalAudit,
   litige,
   pays,
@@ -15,6 +16,7 @@ import {
   utilisateur,
 } from "@/server/db/schema";
 
+import type { StatutReservation } from "@/domain/reservation/machine";
 import { STATUTS_ENCAISSES } from "@/server/donnees-demo";
 
 import { PAYS, VILLES } from "@/config/villes";
@@ -558,6 +560,107 @@ export async function inscriptionsParMois(nombreMois = 12) {
           utilisateur.inscritLe.getFullYear() === annee &&
           utilisateur.inscritLe.getMonth() === numero,
       ).length,
+    });
+
+    curseur.setMonth(curseur.getMonth() + 1);
+  }
+
+  return mois;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Vues d'ensemble de la plateforme                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Les réservations de **toute** la plateforme.
+ *
+ * Elle vit ici, et non dans `activite.ts`, parce que ce module-là est
+ * entièrement restreint au loueur connecté — c'est sa garantie, et une
+ * fonction « toutes les réservations » y ouvrirait une porte que le reste du
+ * fichier s'emploie à fermer.
+ *
+ * Ici, la vue d'ensemble est l'objet même du module, et l'accès est protégé en
+ * amont par `exigerAdministration` dans le layout de l'espace.
+ */
+export const listerReservationsPlateforme = cache(async () => {
+  const lignes = await db
+    .select({
+      id: reservation.id,
+      reference: reservation.numero,
+      annonceId: reservation.annonceId,
+      annonceTitre: annonce.titre,
+      ville: annonce.ville,
+      // Nom complet : l'administration instruit des litiges et doit désigner
+      // quelqu'un sans ambiguïté, là où l'espace loueur s'en tient au prénom.
+      locataire: raw<string>`${utilisateur.prenom} || coalesce(' ' || ${utilisateur.nom}, '')`,
+      debut: reservation.debut,
+      fin: reservation.fin,
+      statut: reservation.statut,
+      montantTotal: reservation.loyer,
+      commission: reservation.commissionProprietaire,
+      netProprietaire: reservation.montantReverse,
+      caution: reservation.caution,
+      devise: reservation.devise,
+      instantanee: annonce.reservationInstantanee,
+    })
+    .from(reservation)
+    .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
+    .innerJoin(utilisateur, eq(utilisateur.id, reservation.locataireId))
+    .orderBy(desc(reservation.debut));
+
+  return lignes.map((ligne) => ({
+    ...ligne,
+    statut: ligne.statut as StatutReservation,
+    commission: ligne.commission ?? 0,
+  }));
+});
+
+export type MoisPlateforme = {
+  cle: string;
+  etiquette: string;
+  brut: number;
+  commission: number;
+  net: number;
+  locations: number;
+};
+
+/**
+ * Volume de la plateforme, mois par mois.
+ *
+ * Les mois sans location sont produits à zéro et non omis : une courbe qui
+ * saute les mois creux ment sur la saisonnalité.
+ */
+export async function revenusPlateformeParMois(
+  nombreMois = 12,
+): Promise<MoisPlateforme[]> {
+  const toutes = await listerReservationsPlateforme();
+  const encaissees = toutes.filter((entree) =>
+    STATUTS_ENCAISSES.includes(entree.statut),
+  );
+
+  const mois: MoisPlateforme[] = [];
+  const curseur = new Date();
+  curseur.setDate(1);
+  curseur.setHours(0, 0, 0, 0);
+  curseur.setMonth(curseur.getMonth() - (nombreMois - 1));
+
+  for (let index = 0; index < nombreMois; index += 1) {
+    const annee = curseur.getFullYear();
+    const numero = curseur.getMonth();
+
+    const duMois = encaissees.filter(
+      (entree) =>
+        entree.debut.getFullYear() === annee && entree.debut.getMonth() === numero,
+    );
+
+    mois.push({
+      cle: `${annee}-${String(numero + 1).padStart(2, "0")}`,
+      etiquette: new Intl.DateTimeFormat("fr-FR", { month: "short" }).format(curseur),
+      brut: duMois.reduce((somme, entree) => somme + entree.montantTotal, 0),
+      commission: duMois.reduce((somme, entree) => somme + entree.commission, 0),
+      net: duMois.reduce((somme, entree) => somme + entree.netProprietaire, 0),
+      locations: duMois.length,
     });
 
     curseur.setMonth(curseur.getMonth() + 1);

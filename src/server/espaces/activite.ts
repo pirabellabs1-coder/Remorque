@@ -2,9 +2,10 @@ import "server-only";
 
 import { cache } from "react";
 
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
+import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
 import { annonce, avis as tableAvis, reservation, utilisateur } from "@/server/db/schema";
 import { MESSAGES_FIL, STATUTS_ENCAISSES } from "@/server/donnees-demo";
@@ -27,6 +28,21 @@ import { MESSAGES_FIL, STATUTS_ENCAISSES } from "@/server/donnees-demo";
  * lus tels qu'ils ont été figés à la réservation. Les recalculer à l'affichage
  * les ferait diverger de la comptabilité le jour où un barème change — c'est
  * précisément pour cela que `reservation.baremes` conserve le barème appliqué.
+ *
+ * ─── Portée ──────────────────────────────────────────────────────────────
+ *
+ * **Tout ici est restreint au loueur connecté.** Aucune fonction n'expose les
+ * locations d'un autre, et aucune ne prend de paramètre permettant de le
+ * demander. C'est délibéré : le défaut dangereux serait « tout voir », et il
+ * suffirait d'un écran ajouté un jour de fatigue pour qu'un propriétaire lise
+ * le chiffre d'affaires de son voisin.
+ *
+ * L'administration, qui a légitimement besoin de la vue d'ensemble, passe par
+ * `administration.ts` — un module distinct, derrière une garde distincte.
+ *
+ * Sans session, les lectures rendent des listes vides plutôt que de lever :
+ * les gardes de layout ont déjà renvoyé le visiteur vers la connexion, et une
+ * exception ici ne signalerait qu'un défaut de garde, pas une erreur d'usager.
  */
 
 export type Reservation = {
@@ -90,6 +106,9 @@ const nomAffiche = sql<string>`
  * déduplication, un seul tableau de bord les relisait six fois.
  */
 export const listerReservations = cache(async (): Promise<Reservation[]> => {
+  const moi = await compteConnecte();
+  if (!moi) return [];
+
   const lignes = await db
     .select({
       id: reservation.id,
@@ -111,6 +130,7 @@ export const listerReservations = cache(async (): Promise<Reservation[]> => {
     .from(reservation)
     .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
     .innerJoin(utilisateur, eq(utilisateur.id, reservation.locataireId))
+    .where(eq(reservation.proprietaireId, moi.id))
     .orderBy(desc(reservation.debut));
 
   return lignes.map((ligne) => ({
@@ -121,6 +141,9 @@ export const listerReservations = cache(async (): Promise<Reservation[]> => {
 });
 
 export const listerAvis = cache(async (): Promise<Avis[]> => {
+  const moi = await compteConnecte();
+  if (!moi) return [];
+
   const lignes = await db
     .select({
       id: tableAvis.id,
@@ -135,7 +158,12 @@ export const listerAvis = cache(async (): Promise<Avis[]> => {
     .from(tableAvis)
     .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
     .innerJoin(utilisateur, eq(utilisateur.id, tableAvis.auteurId))
-    .where(sql`${tableAvis.publieLe} is not null and ${tableAvis.masque} = false`)
+    .where(
+      and(
+        eq(tableAvis.destinataireId, moi.id),
+        sql`${tableAvis.publieLe} is not null and ${tableAvis.masque} = false`,
+      ),
+    )
     .orderBy(desc(tableAvis.publieLe));
 
   return lignes.map((ligne) => ({
@@ -235,6 +263,9 @@ export async function revenusParMois(nombreMois = 12): Promise<MoisRevenu[]> {
  * lignes pour en produire huit.
  */
 export async function revenusParAnnonce(): Promise<{ titre: string; net: number }[]> {
+  const moi = await compteConnecte();
+  if (!moi) return [];
+
   return db
     .select({
       titre: annonce.titre,
@@ -243,7 +274,10 @@ export async function revenusParAnnonce(): Promise<{ titre: string; net: number 
     .from(reservation)
     .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
     .where(
-      sql`${reservation.statut} in ('payee','confirmee','en_cours','restituee','cloturee')`,
+      and(
+        eq(reservation.proprietaireId, moi.id),
+        sql`${reservation.statut} in ('payee','confirmee','en_cours','restituee','cloturee')`,
+      ),
     )
     .groupBy(annonce.id, annonce.titre)
     .orderBy(sql`coalesce(sum(${reservation.montantReverse}), 0) desc`);

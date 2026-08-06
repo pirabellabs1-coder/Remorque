@@ -6,12 +6,13 @@ import { CarteIndicateur } from "@/components/espace/indicateurs";
 import { CATEGORIES } from "@/config/categories";
 import { PRIX_AFFICHE } from "@/lib/cn";
 import { listerAnnonces } from "@/server/annonces/depot";
-import { listerReservations, revenusParMois } from "@/server/espaces/activite";
 import {
   comparaisonPays,
   inscriptionsParMois,
   listerLitiges,
+  listerReservationsPlateforme,
   listerSinistres,
+  revenusPlateformeParMois,
   syntheseAdmin,
 } from "@/server/espaces/administration";
 
@@ -39,11 +40,11 @@ export default async function PageStatistiques({ params }: Props) {
   const format = await getFormatter();
 
   const synthese = (await syntheseAdmin());
-  const mois = await revenusParMois(12);
+  const mois = await revenusPlateformeParMois(12);
   const inscriptions = (await inscriptionsParMois(12));
   const pays = (await comparaisonPays());
 
-  const reservations = (await listerReservations()).filter((reservation) =>
+  const reservations = (await listerReservationsPlateforme()).filter((reservation) =>
     ENCAISSES.includes(reservation.statut),
   );
   const annonces = await listerAnnonces();

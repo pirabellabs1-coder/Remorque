@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hacherMotDePasse, verifierMotDePasse } from "./session";
+import { hacherMotDePasse, verifierMotDePasse } from "./mots-de-passe";
 
 /**
  * Ce que ces tests protègent.

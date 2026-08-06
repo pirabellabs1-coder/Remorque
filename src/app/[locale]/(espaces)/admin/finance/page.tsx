@@ -5,10 +5,10 @@ import { Anneau, Courbe } from "@/components/espace/graphique";
 import { CarteIndicateur } from "@/components/espace/indicateurs";
 import { Cellule, Tableau } from "@/components/espace/tableau";
 import { PRIX_AFFICHE } from "@/lib/cn";
-import { revenusParMois } from "@/server/espaces/activite";
 import {
   listerLitiges,
   listerSinistres,
+  revenusPlateformeParMois,
   syntheseAdmin,
 } from "@/server/espaces/administration";
 
@@ -33,7 +33,7 @@ export default async function PageFinance({ params }: Props) {
   const format = await getFormatter();
 
   const synthese = (await syntheseAdmin());
-  const mois = await revenusParMois(12);
+  const mois = await revenusPlateformeParMois(12);
 
   const montant = (centimes: number) =>
     format.number(centimes / 100, {

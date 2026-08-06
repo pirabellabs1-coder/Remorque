@@ -23,7 +23,7 @@
  * (code du pays, adresse électronique, couple ville/slug, numéro de
  * réservation), jamais par l'identifiant technique qui, lui, est engendré.
  */
-import { eq } from "drizzle-orm";
+import { eq, sql as raw } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -48,12 +48,14 @@ import {
   tirerPondere,
   VOLUMES,
 } from "../src/server/donnees-demo";
+import { hacherMotDePasse } from "../src/server/authentification/mots-de-passe";
 import {
   annonce,
   annoncePhoto,
   avis,
   categorie,
   caution,
+  identifiant,
   journalAudit,
   litige,
   paiement,
@@ -124,6 +126,9 @@ const NOMS_PAYS: Record<string, string> = {
  * par une seule requête.
  */
 const DOMAINE_DEMO = "@demonstration.flexitrailer.eu";
+
+/** Mot de passe commun aux comptes de démonstration. Jeu d'essai, non secret. */
+const MOT_DE_PASSE_DEMO = "Demonstration2026!";
 
 /** Minuscules sans diacritique, pour fabriquer une adresse depuis un nom. */
 function sansAccent(valeur: string): string {
@@ -530,23 +535,26 @@ async function amorcer() {
    * Il porte les deux profils. La plateforme le prévoit — la navigation offre
    * « Passer en loueur » — et c'est le même individu : rien ne justifie deux
    * comptes pour une personne qui loue et met en location.
+   *
+   * Il **est** l'un des propriétaires du catalogue, et non un compte de plus.
+   *
+   * Une première version en créait un séparé. Résultat : deux Élodie en base,
+   * l'une possédant des annonces sans jamais louer, l'autre louant sans rien
+   * posséder. Le compte « les deux profils » avait donc un espace loueur vide
+   * — exactement ce que la démonstration doit montrer. On promeut plutôt un
+   * propriétaire existant en lui ouvrant le profil locataire : c'est la même
+   * personne, et c'est ce que la plateforme prévoit.
    */
   const [compteDemo] = await db
-    .insert(utilisateur)
-    .values({
+    .update(utilisateur)
+    .set({
       email: `moi${DOMAINE_DEMO}`,
-      emailVerifie: true,
-      prenom: "Élodie",
       nom: "Vasseur",
-      typeCompte: "particulier",
-      paysId: paysFrance.id,
-      langue: "fr",
       profilLocataire: true,
-      profilProprietaire: true,
-      identiteStatut: "verifie",
       identiteVerifieeLe: decalerJours(maintenant, -500),
       creeLe: decalerJours(maintenant, -730),
     })
+    .where(eq(utilisateur.id, proprietaires.get("Élodie") ?? ""))
     .returning({ id: utilisateur.id });
 
   // Les locations lui sont attribuées en nombre exact — `VOLUMES` fait
@@ -928,6 +936,60 @@ async function amorcer() {
     await db.insert(journalAudit).values(valeursAudit);
   }
 
+  /* --------------------------------------------------- Accès de démonstration -- */
+  //
+  // Sans mot de passe, les comptes de démonstration ne servent à rien depuis
+  // que les espaces exigent une session : on arriverait sur une page de
+  // connexion qu'aucun identifiant n'ouvre, et les écrans peuplés seraient
+  // devenus inaccessibles.
+  //
+  // Le mot de passe est le même pour tous, et il est écrit en clair juste
+  // ici — c'est un jeu d'essai, pas un secret. La seule chose qui compte est
+  // qu'aucun de ces comptes ne survive à la mise en production : ils portent
+  // tous le domaine de démonstration, et la purge les emporte d'une requête.
+  const empreinteDemo = await hacherMotDePasse(MOT_DE_PASSE_DEMO);
+
+  const comptesAvecAcces = await db
+    .select({ id: utilisateur.id, email: utilisateur.email })
+    .from(utilisateur)
+    .where(raw`${utilisateur.email} LIKE ${"%" + DOMAINE_DEMO}`);
+
+  await db.insert(identifiant).values(
+    comptesAvecAcces.map((compte) => ({
+      utilisateurId: compte.id,
+      fournisseur: "mot_de_passe",
+      identifiantExterne: compte.email,
+      empreinte: empreinteDemo,
+    })),
+  );
+
+  // Un compte d'administration, sans lequel les treize écrans du back-office
+  // seraient injoignables. Le rôle est le plus élevé : c'est un environnement
+  // de démonstration, et restreindre ici ne protégerait rien.
+  const [admin] = await db
+    .insert(utilisateur)
+    .values({
+      email: `admin${DOMAINE_DEMO}`,
+      emailVerifie: true,
+      prenom: "Administration",
+      nom: "Démonstration",
+      typeCompte: "particulier",
+      paysId: paysFrance.id,
+      langue: "fr",
+      profilLocataire: false,
+      profilProprietaire: false,
+      identiteStatut: "verifie",
+      role: "super_administrateur",
+    })
+    .returning({ id: utilisateur.id });
+
+  await db.insert(identifiant).values({
+    utilisateurId: admin.id,
+    fournisseur: "mot_de_passe",
+    identifiantExterne: `admin${DOMAINE_DEMO}`,
+    empreinte: empreinteDemo,
+  });
+
   /* ------------------------------------------------------------- Rapport -- */
   const compter = async (table: string) => {
     const [{ n }] = await sql.unsafe<{ n: number }[]>(
@@ -952,6 +1014,27 @@ async function amorcer() {
   console.log(`  paiements     ${await compter("paiement")}`);
   console.log(`  cautions      ${await compter("caution")}`);
   console.log(`  reversements  ${await compter("reversement")}`);
+  console.log("");
+  console.log("Comptes de démonstration — mot de passe : " + MOT_DE_PASSE_DEMO);
+  console.log(`  locataire             moi${DOMAINE_DEMO}`);
+  console.log(`  administration        admin${DOMAINE_DEMO}`);
+
+  // Le compte « moi » porte les deux profils mais ne possède aucune annonce :
+  // son espace loueur est donc vide, ce qui est exact mais ne montre rien. On
+  // nomme donc aussi le propriétaire le mieux fourni, pour que la
+  // démonstration de l'espace loueur ait quelque chose à montrer.
+  const [meilleurLoueur] = await sql<{ email: string; n: number }[]>`
+    SELECT u.email, count(*)::int n
+    FROM reservation r
+    JOIN utilisateur u ON u.id = r.proprietaire_id
+    WHERE u.email LIKE ${"%" + DOMAINE_DEMO}
+    GROUP BY u.email ORDER BY n DESC LIMIT 1
+  `;
+  if (meilleurLoueur) {
+    console.log(
+      `  loueur                ${meilleurLoueur.email}  (${meilleurLoueur.n} locations)`,
+    );
+  }
 }
 
 amorcer()

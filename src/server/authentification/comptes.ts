@@ -11,7 +11,7 @@ import {
   utilisateur,
 } from "@/server/db/schema";
 
-import { hacherMotDePasse } from "./session";
+import { hacherMotDePasse } from "./mots-de-passe";
 
 /** Version des conditions générales acceptée à l'inscription. */
 export const VERSION_CGU = "2026-07";

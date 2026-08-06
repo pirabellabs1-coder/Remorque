@@ -29,6 +29,22 @@ for (const fichier of [".env.local", ".env"]) {
 export default defineConfig({
   resolve: {
     alias: {
+      // ⚠ L'ordre compte : Vite applique le premier alias qui correspond.
+      // Placé après « @ », celui-ci ne serait jamais atteint, puisque
+      // « @/server/authentification/session » commence par « @ ».
+      // Les dépôts sont restreints au compte connecté et appellent donc
+      // `cookies()`, qui lève hors d'une requête HTTP. On substitue le module
+      // de session, et lui seul : le code de production reste strict — hors
+      // session, aucune donnée — tandis que les tests s'exécutent au nom d'un
+      // compte réel, celui de la démonstration, qui porte les deux profils.
+      //
+      // L'alternative aurait été de faire tolérer l'absence de requête à
+      // `compteConnecte`. Les tests seraient devenus verts et vides : chaque
+      // dépôt aurait rendu une liste sans rien, et les vérifications de
+      // cohérence n'auraient plus rien comparé.
+      "@/server/authentification/session": fileURLToPath(
+        new URL("./test/session.ts", import.meta.url),
+      ),
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       // `server-only` lève une erreur dès qu'il est importé hors du rendu
       // serveur de Next.js. Les tests exécutent pourtant bien du code serveur :

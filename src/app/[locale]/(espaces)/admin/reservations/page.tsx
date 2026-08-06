@@ -6,7 +6,9 @@ import { PastilleStatut } from "@/components/espace/statut";
 import { Cellule, Tableau } from "@/components/espace/tableau";
 import { STATUTS } from "@/domain/reservation/machine";
 import { PRIX_AFFICHE } from "@/lib/cn";
-import { listerReservations } from "@/server/espaces/activite";
+import {
+  listerReservationsPlateforme,
+} from "@/server/espaces/administration";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -21,7 +23,7 @@ export default async function PageReservationsAdmin({ params }: Props) {
   const tStatuts = await getTranslations("espaces.statuts");
   const format = await getFormatter();
 
-  const reservations = await listerReservations();
+  const reservations = await listerReservationsPlateforme();
 
   // Répartition par statut : elle raconte la santé du parcours. Beaucoup
   // d'« expirée » signale des loueurs qui ne répondent pas ; beaucoup

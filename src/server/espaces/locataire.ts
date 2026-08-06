@@ -5,6 +5,7 @@ import { cache } from "react";
 import { desc, eq, sql } from "drizzle-orm";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
+import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
 import {
   annonce,
@@ -173,25 +174,20 @@ export type SyntheseLocataire = {
 const MOYENS = ["Visa ••4218", "Mastercard ••7731", "Visa ••4218", "Visa ••4218"];
 
 /**
- * Le compte dont on montre l'espace.
+ * Le compte connecté.
  *
- * Tant que l'authentification n'est pas branchée, l'espace locataire affiche
- * celui d'un compte désigné, créé par `npm run db:demo` avec un historique
- * complet. Le jour où la session existe, c'est cette fonction qui la lira —
- * une ligne, à un seul endroit, plutôt qu'un identifiant recopié dans chaque
- * requête.
+ * Il était désigné en dur — une adresse de démonstration écrite dans ce
+ * fichier — le temps que l'authentification existe. Elle existe : deux comptes
+ * différents voyaient jusqu'ici exactement les mêmes réservations, ce qui
+ * n'était pas un défaut d'affichage mais une fuite de données.
+ *
+ * `compteConnecte` est mémorisée par requête, et cette fonction n'ajoute donc
+ * rien au coût des huit lectures qui l'appellent.
  */
-const COURRIEL_DEMO = "moi@demonstration.flexitrailer.eu";
-
-const compteCourant = cache(async (): Promise<string | null> => {
-  const [ligne] = await db
-    .select({ id: utilisateur.id })
-    .from(utilisateur)
-    .where(eq(utilisateur.email, COURRIEL_DEMO))
-    .limit(1);
-
-  return ligne?.id ?? null;
-});
+async function compteCourant(): Promise<string | null> {
+  const compte = await compteConnecte();
+  return compte?.id ?? null;
+}
 
 /**
  * État de la caution, lu dans la table `caution`.

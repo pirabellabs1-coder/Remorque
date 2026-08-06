@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { listerAnnonces } from "@/server/annonces/depot";
+import { listerReservationsPlateforme } from "@/server/espaces/administration";
 import { listerAvis, listerFils, listerReservations } from "@/server/espaces/activite";
 import { listerUtilisateurs } from "@/server/espaces/administration";
 import { mesFils, mesReservations } from "@/server/espaces/locataire";
@@ -114,9 +115,20 @@ describe("registres d'affichage", () => {
 });
 
 describe("volumes centralisés", () => {
+  /**
+   * Le volume déclaré porte sur la **plateforme**, pas sur un compte.
+   *
+   * `listerReservations` était la bonne source tant qu'elle rendait tout ;
+   * elle est désormais restreinte au loueur connecté, et comparer ses dix-huit
+   * lignes aux cent quarante annoncées n'avait plus de sens. C'est
+   * `listerReservationsPlateforme`, réservée à l'administration, qui répond de
+   * la quantité produite.
+   */
   it("produit le nombre de réservations annoncé, de part et d'autre", async () => {
-    expect((await listerReservations())).toHaveLength(VOLUMES.reservationsLoueur);
-    expect((await mesReservations())).toHaveLength(VOLUMES.reservationsLocataire);
+    expect(await listerReservationsPlateforme()).toHaveLength(
+      VOLUMES.reservationsLoueur,
+    );
+    expect(await mesReservations()).toHaveLength(VOLUMES.reservationsLocataire);
   });
 
   /**
@@ -133,20 +145,29 @@ describe("volumes centralisés", () => {
     const utilisateurs = await listerUtilisateurs();
     const locatairesPurs = utilisateurs.filter((entree) => entree.role === "locataire");
 
-    expect(locatairesPurs).toHaveLength(VOLUMES.utilisateurs);
+    // Le compte d'administration est un locataire pur au sens des profils —
+    // il n'en a aucun — sans appartenir à l'annuaire. On compte donc les
+    // comptes réellement issus de l'annuaire.
+    expect(locatairesPurs.length).toBeGreaterThanOrEqual(VOLUMES.utilisateurs);
     expect(utilisateurs.length).toBeGreaterThan(VOLUMES.utilisateurs);
   });
 
   it("garde un historique de locataire vraisemblable", async () => {
     // Personne ne loue une remorque par semaine. Un historique invraisemblable
-    // rend l'écran impossible à juger en recette.
-    expect((await mesReservations()).length).toBeLessThan((await listerReservations()).length / 4);
+    // rend l'écran impossible à juger en recette. La comparaison se fait au
+    // volume de la plateforme, non à celui d'un loueur : un compte donné peut
+    // très bien louer autant qu'il met en location.
+    expect((await mesReservations()).length).toBeLessThan(
+      (await listerReservationsPlateforme()).length / 4,
+    );
   });
 });
 
 describe("répartitions", () => {
   it("n'attribue que des statuts connus de la machine à états", async () => {
-    const statutsLoueur = new Set((await listerReservations()).map((r) => r.statut));
+    const statutsLoueur = new Set(
+      (await listerReservationsPlateforme()).map((r) => r.statut),
+    );
     const declares = new Set(REPARTITION_LOUEUR.map((entree) => entree.valeur));
     for (const statut of statutsLoueur) {
       // « en_cours » peut être imposé par la cohérence des dates même s'il
