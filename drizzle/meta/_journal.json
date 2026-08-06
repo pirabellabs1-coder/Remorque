@@ -15,6 +15,13 @@
       "when": 1785943339609,
       "tag": "0001_tickets_support",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785987915367,
+      "tag": "0002_authentification",
+      "breakpoints": true
     }
   ]
 }

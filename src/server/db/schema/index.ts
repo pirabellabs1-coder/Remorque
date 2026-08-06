@@ -15,3 +15,4 @@ export * from "./reservation";
 export * from "./finance";
 export * from "./location";
 export * from "./audit";
+export * from "./authentification";

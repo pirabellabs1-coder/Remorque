@@ -1,12 +1,15 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useId, useState, useTransition } from "react";
 
 import { BoutonsFournisseurs } from "@/components/compte/boutons-fournisseurs";
+import { ChoixRole, type Role } from "@/components/compte/choix-role";
 import { Bouton } from "@/components/ui/bouton";
 import { Champ, Separateur } from "@/components/ui/champ";
+import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
+import { inscrire } from "@/server/authentification/actions";
 
 /** Longueur minimale exigée du mot de passe. */
 const LONGUEUR_MINIMALE = 12;
@@ -15,15 +18,37 @@ export function FormulaireInscription() {
   const t = useTranslations("compte.inscription");
   const tCommun = useTranslations("compte");
   const identifiant = useId();
+  const router = useRouter();
 
   const [motDePasse, setMotDePasse] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [role, setRole] = useState<Role | null>(null);
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [enCours, demarrer] = useTransition();
 
   const assezLong = motDePasse.length >= LONGUEUR_MINIMALE;
 
   function soumettre(evenement: React.FormEvent<HTMLFormElement>) {
     evenement.preventDefault();
-    setMessage(tCommun("nonBranche"));
+    setErreur(null);
+
+    const donnees = new FormData(evenement.currentTarget);
+
+    demarrer(async () => {
+      const resultat = await inscrire(donnees);
+
+      if (resultat.ok) {
+        // `refresh` avant `push` : la coquille d'espace lit la session côté
+        // serveur, et sans rafraîchissement elle servirait la version mise en
+        // cache d'un visiteur non connecté.
+        router.refresh();
+        router.push(resultat.redirection as never);
+        return;
+      }
+
+      setErreur(
+        resultat.cle === "dejaUtilise" ? t("dejaUtilise") : t("echec"),
+      );
+    });
   }
 
   return (
@@ -31,7 +56,24 @@ export function FormulaireInscription() {
       <BoutonsFournisseurs />
       <Separateur libelle={tCommun("ou")} />
 
-      <form onSubmit={soumettre} className="space-y-5">
+      <form onSubmit={soumettre} className="space-y-6">
+        {/* Le rôle en premier : il décide de l'espace d'atterrissage, et le
+            demander après le mot de passe donnerait l'impression d'une
+            question accessoire. */}
+        <ChoixRole
+          valeur={role}
+          surChangement={setRole}
+          erreur={erreur === t("role.obligatoire") ? erreur : undefined}
+        />
+
+        <Champ
+          libelle={t("prenom")}
+          name="prenom"
+          autoComplete="given-name"
+          required
+          maxLength={80}
+        />
+
         <Champ
           libelle={t("courriel")}
           name="email"
@@ -93,13 +135,13 @@ export function FormulaireInscription() {
           type="submit"
           taille="grand"
           pleineLargeur
-          disabled={!assezLong}
+          disabled={!assezLong || role === null || enCours}
         >
-          {t("action")}
+          {enCours ? t("creation") : t("action")}
         </Bouton>
 
-        <p aria-live="polite" className="min-h-5 text-sm text-attention">
-          {message}
+        <p aria-live="polite" role="status" className="min-h-5 text-sm text-danger">
+          {erreur}
         </p>
       </form>
     </div>

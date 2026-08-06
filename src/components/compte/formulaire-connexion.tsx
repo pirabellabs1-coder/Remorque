@@ -1,29 +1,49 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 import { BoutonsFournisseurs } from "@/components/compte/boutons-fournisseurs";
 import { Bouton } from "@/components/ui/bouton";
 import { Champ, Separateur } from "@/components/ui/champ";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { connecter } from "@/server/authentification/actions";
 
 /**
  * Formulaire de connexion.
  *
- * L'authentification n'est pas encore branchée : elle attend la base et
- * `better-auth`. Plutôt que de simuler une réussite, la soumission affiche un
- * message explicite. Un écran qui fait semblant de fonctionner coûte plus cher
- * à déboguer en recette qu'un écran qui dit ce qu'il en est.
+ * Un seul message d'erreur, quelle que soit la cause. Distinguer « adresse
+ * inconnue » de « mot de passe faux » permettrait d'énumérer les comptes de la
+ * plateforme — exactement ce que cherche une attaque par bourrage
+ * d'identifiants.
  */
 export function FormulaireConnexion() {
   const t = useTranslations("compte.connexion");
   const tCommun = useTranslations("compte");
+  const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
+  const [enCours, demarrer] = useTransition();
 
   function soumettre(evenement: React.FormEvent<HTMLFormElement>) {
     evenement.preventDefault();
-    setMessage(tCommun("nonBranche"));
+    setMessage(null);
+
+    const donnees = new FormData(evenement.currentTarget);
+
+    demarrer(async () => {
+      const resultat = await connecter(donnees);
+
+      if (resultat.ok) {
+        // `refresh` avant `push` : la coquille d'espace lit la session côté
+        // serveur, et sans rafraîchissement elle servirait la version mise en
+        // cache d'un visiteur non connecté.
+        router.refresh();
+        router.push(resultat.redirection as never);
+        return;
+      }
+
+      setMessage(t("echec"));
+    });
   }
 
   return (
@@ -58,13 +78,13 @@ export function FormulaireConnexion() {
           }
         />
 
-        <Bouton type="submit" taille="grand" pleineLargeur>
-          {t("action")}
+        <Bouton type="submit" taille="grand" pleineLargeur disabled={enCours}>
+          {enCours ? t("connexion") : t("action")}
         </Bouton>
 
         {/* `aria-live` : sans lui, le message n'existe que pour ceux qui le
             voient. */}
-        <p aria-live="polite" className="min-h-5 text-sm text-attention">
+        <p aria-live="polite" className="min-h-5 text-sm text-danger">
           {message}
         </p>
       </form>
