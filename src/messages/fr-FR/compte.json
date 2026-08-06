@@ -27,7 +27,8 @@
       "action": "Se connecter",
       "pasDeCompte": "Pas encore de compte ? <lien>Créer un compte</lien>",
       "echec": "Adresse ou mot de passe incorrect.",
-      "connexion": "Connexion…"
+      "connexion": "Connexion…",
+      "tropDeTentatives": "Trop de tentatives. Réessayez dans {minutes} minutes."
     },
     "inscription": {
       "metaTitre": "Créer un compte",

@@ -132,3 +132,38 @@ export const consentementInscription = pgTable(
   },
   (table) => [index("consentement_inscription_idx").on(table.utilisateurId)],
 );
+
+/**
+ * Tentatives de connexion.
+ *
+ * Consignées en base et non en mémoire : sur une plateforme sans serveur,
+ * chaque requête peut atterrir sur une instance différente, et un compteur en
+ * mémoire se réinitialiserait à chaque fois — c'est-à-dire ne déclencherait
+ * jamais.
+ *
+ * Les réussites y figurent aussi. Elles n'entrent dans aucun compteur, mais
+ * permettent à l'usager de reconnaître une connexion qu'il n'a pas faite, ce
+ * qui est la moitié utile d'un journal de sécurité.
+ *
+ * L'adresse électronique est conservée telle qu'elle a été saisie, même si
+ * aucun compte n'y correspond : les tentatives sur des adresses inexistantes
+ * sont précisément le signe d'un balayage.
+ */
+export const tentativeConnexion = pgTable(
+  "tentative_connexion",
+  {
+    id: id(),
+    courriel: text("courriel").notNull(),
+    adresseIp: text("adresse_ip"),
+    reussie: boolean("reussie").notNull().default(false),
+    creeLe: timestamp("cree_le", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    // Les deux index portent la date : les requêtes ne comptent jamais que sur
+    // une fenêtre glissante, jamais sur l'historique entier.
+    index("tentative_courriel_idx").on(table.courriel, table.creeLe),
+    index("tentative_ip_idx").on(table.adresseIp, table.creeLe),
+  ],
+);

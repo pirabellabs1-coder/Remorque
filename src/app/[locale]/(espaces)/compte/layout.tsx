@@ -17,10 +17,15 @@ export default async function Layout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  await exigerProfil(locale, "/compte", "locataire");
+  const compte = await exigerProfil(locale, "/compte", "locataire");
 
   return (
-    <CoquilleEspace espace="locataire" navigation={NAVIGATION_LOCATAIRE}>
+    <CoquilleEspace
+      espace="locataire"
+      navigation={NAVIGATION_LOCATAIRE}
+      nomCompte={[compte.prenom, compte.nom].filter(Boolean).join(" ")}
+      courrielCompte={compte.email}
+    >
       {children}
     </CoquilleEspace>
   );

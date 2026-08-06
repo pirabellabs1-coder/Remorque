@@ -42,7 +42,16 @@ export function FormulaireConnexion() {
         return;
       }
 
-      setMessage(t("echec"));
+      // Le blocage se dit en minutes : « réessayez dans 847 secondes » oblige
+      // à faire une division pour savoir s'il faut attendre ou aller boire un
+      // café.
+      setMessage(
+        resultat.cle === "tropDeTentatives"
+          ? t("tropDeTentatives", {
+              minutes: Math.max(1, Math.ceil((resultat.secondes ?? 60) / 60)),
+            })
+          : t("echec"),
+      );
     });
   }
 

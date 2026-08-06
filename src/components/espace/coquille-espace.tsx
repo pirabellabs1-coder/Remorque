@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 
 import { Icone } from "@/components/espace/icone";
+import { MenuCompte } from "@/components/espace/menu-compte";
 import type { GroupeEspace } from "@/components/espace/navigation-espace";
 import { useBarreRepliee } from "@/components/espace/preference-barre";
 import { Logo } from "@/components/navigation/logo";
@@ -27,10 +28,15 @@ export function CoquilleEspace({
   espace,
   navigation,
   children,
+  nomCompte,
+  courrielCompte,
 }: {
   espace: "locataire" | "loueur" | "admin";
   navigation: readonly GroupeEspace[];
   children: ReactNode;
+  /** Compte connecté, lu par la garde du layout et transmis ici. */
+  nomCompte: string;
+  courrielCompte: string;
 }) {
   const t = useTranslations("espaces");
   const chemin = usePathname();
@@ -205,6 +211,7 @@ export function CoquilleEspace({
                 >
                   {t("voirLeSite")}
                 </Link>
+                <MenuCompte nom={nomCompte} courriel={courrielCompte} />
               </div>
             </div>
           </header>

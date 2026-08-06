@@ -17,10 +17,15 @@ export default async function Layout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  await exigerAdministration(locale, "/admin");
+  const compte = await exigerAdministration(locale, "/admin");
 
   return (
-    <CoquilleEspace espace="admin" navigation={NAVIGATION_ADMIN}>
+    <CoquilleEspace
+      espace="admin"
+      navigation={NAVIGATION_ADMIN}
+      nomCompte={[compte.prenom, compte.nom].filter(Boolean).join(" ")}
+      courrielCompte={compte.email}
+    >
       {children}
     </CoquilleEspace>
   );

@@ -816,6 +816,10 @@
       "refusee": "Refusée",
       "expiree": "Expirée",
       "annulee": "Annulée"
+    },
+    "compte": {
+      "deconnexion": "Se déconnecter",
+      "deconnexionEnCours": "Déconnexion…"
     }
   }
 }

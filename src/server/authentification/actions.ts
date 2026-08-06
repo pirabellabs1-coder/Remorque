@@ -9,6 +9,11 @@ import { db } from "@/server/db";
 import { utilisateur } from "@/server/db/schema";
 
 import { creerCompte } from "./comptes";
+import {
+  consignerTentative,
+  reinitialiserTentatives,
+  tentativeAutorisee,
+} from "./limitation";
 import { authentifier, fermerSession, ouvrirSession } from "./session";
 
 /**
@@ -22,7 +27,7 @@ import { authentifier, fermerSession, ouvrirSession } from "./session";
 
 export type Resultat =
   | { ok: true; redirection: string }
-  | { ok: false; cle: string };
+  | { ok: false; cle: string; secondes?: number };
 
 const LONGUEUR_MINIMALE = 12;
 
@@ -76,16 +81,40 @@ export async function connecter(donnees: FormData): Promise<Resultat> {
 
   if (!analyse.success) return { ok: false, cle: "invalide" };
 
+  const enTetes = await headers();
+  const adresseIp =
+    enTetes.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined;
+
+  // Le contrôle passe **avant** la vérification du mot de passe : le calcul
+  // scrypt est précisément ce qu'il ne faut pas offrir à un attaquant, puisqu'il
+  // coûte autant au serveur qu'à lui.
+  const verdict = await tentativeAutorisee(analyse.data.email, adresseIp);
+  if (!verdict.autorise) {
+    return {
+      ok: false,
+      cle: "tropDeTentatives",
+      secondes: verdict.secondesAvant,
+    };
+  }
+
   const compte = await authentifier(analyse.data.email, analyse.data.motDePasse);
 
   // Un seul message pour « adresse inconnue » et « mot de passe faux ». Les
   // distinguer permettrait d'énumérer les comptes de la plateforme, ce qui est
   // exactement ce que cherche une attaque par bourrage d'identifiants.
-  if (!compte) return { ok: false, cle: "identifiantsRefuses" };
+  if (!compte) {
+    await consignerTentative(analyse.data.email, adresseIp, false);
+    return { ok: false, cle: "identifiantsRefuses" };
+  }
 
-  const enTetes = await headers();
+  await consignerTentative(analyse.data.email, adresseIp, true);
+  // Quelqu'un qui se trompe sept fois puis réussit resterait sinon à un essai
+  // du blocage pendant un quart d'heure — pour un compte dont il vient
+  // pourtant de prouver qu'il est le titulaire.
+  await reinitialiserTentatives(analyse.data.email);
+
   await ouvrirSession(compte, {
-    adresseIp: enTetes.get("x-forwarded-for")?.split(",")[0]?.trim() ?? undefined,
+    adresseIp,
     agentUtilisateur: enTetes.get("user-agent") ?? undefined,
   });
 

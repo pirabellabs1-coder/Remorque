@@ -6,6 +6,7 @@ import { Bouton } from "@/components/ui/bouton";
 import { Champ } from "@/components/ui/champ";
 import { BAREME_FR, type CategoriePermis } from "@/domain/compatibilite/permis";
 import { Link } from "@/i18n/navigation";
+import { compteConnecte } from "@/server/authentification/session";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -33,6 +34,11 @@ export default async function PageProfilLocataire({ params }: Props) {
 
   const t = await getTranslations("espaces.locataire.profil");
   const format = await getFormatter();
+
+  // Le compte réellement connecté, non un exemple : c'est son identité que la
+  // personne vient vérifier, et voir le nom de quelqu'un d'autre dans ses
+  // propres réglages est le genre de détail qui fait douter de tout le reste.
+  const compte = await compteConnecte();
 
   // Jeu d'essai, en attendant la base. Les valeurs sont celles d'un véhicule
   // familial courant, pour que la capacité calculée soit représentative.
@@ -90,13 +96,21 @@ export default async function PageProfilLocataire({ params }: Props) {
           </legend>
 
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
-            <Champ libelle={t("prenom")} name="prenom" defaultValue="Élodie" />
-            <Champ libelle={t("nom")} name="nom" defaultValue="Vasseur" />
+            <Champ
+              libelle={t("prenom")}
+              name="prenom"
+              defaultValue={compte?.prenom ?? ""}
+            />
+            <Champ
+              libelle={t("nom")}
+              name="nom"
+              defaultValue={compte?.nom ?? ""}
+            />
             <Champ
               libelle={t("courriel")}
               name="courriel"
               type="email"
-              defaultValue="elodie.vasseur@example.fr"
+              defaultValue={compte?.email ?? ""}
               className="sm:col-span-2"
             />
             <Champ

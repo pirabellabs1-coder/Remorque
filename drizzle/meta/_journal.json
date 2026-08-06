@@ -22,6 +22,13 @@
       "when": 1785987915367,
       "tag": "0002_authentification",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785997367698,
+      "tag": "0003_tentatives_connexion",
+      "breakpoints": true
     }
   ]
 }
