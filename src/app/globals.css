@@ -158,3 +158,53 @@
     }
   }
 }
+
+/*
+ * Animations du panneau d'inscription.
+ *
+ * Le panneau change de contenu — et de côté — quand on choisit son rôle. Un
+ * remplacement sec passerait inaperçu : c'est le mouvement qui signale qu'on a
+ * changé de parcours. La durée reste courte, le déplacement discret ; une
+ * animation qu'on remarque est une animation trop longue.
+ *
+ * `prefers-reduced-motion` supprime le déplacement et ne garde que le fondu.
+ * Le mouvement latéral est précisément ce qui déclenche les malaises chez les
+ * personnes sensibles au mouvement.
+ */
+@keyframes panneau-entree {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes argument-entree {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-panneau {
+  animation: panneau-entree 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-argument {
+  animation: argument-entree 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-panneau,
+  .animate-argument {
+    animation: none;
+    opacity: 1;
+  }
+}

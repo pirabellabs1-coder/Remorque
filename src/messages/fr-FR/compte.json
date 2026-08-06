@@ -63,7 +63,36 @@
       "nom": "Nom",
       "creation": "Création du compte…",
       "echec": "La création du compte a échoué. Réessayez dans un instant.",
-      "dejaUtilise": "Un compte existe déjà avec cette adresse. Connectez-vous."
+      "dejaUtilise": "Un compte existe déjà avec cette adresse. Connectez-vous.",
+      "motDePasseConfirmation": "Confirmez le mot de passe",
+      "motDePasseDifferent": "Les deux mots de passe ne correspondent pas.",
+      "motDePasseIdentique": "Les mots de passe correspondent.",
+      "panneau": {
+        "locataire": {
+          "surtitre": "Louer en confiance",
+          "titre": "Le bon matériel, près de chez vous, assuré pour la durée.",
+          "illustration": "Une remorque benne attelée à un véhicule, prête pour un chargement de gravats",
+          "a1": "Chaque location est couverte par notre assurance, sans démarche de votre part.",
+          "a2": "La caution est une empreinte bancaire : elle n’est jamais débitée sans motif.",
+          "a3": "Nous vérifions que votre permis autorise le matériel avant toute réservation."
+        },
+        "proprietaire": {
+          "surtitre": "Mettre en location",
+          "titre": "Votre remorque travaille pendant que vous ne l’utilisez pas.",
+          "illustration": "Un propriétaire remettant les clés et le faisceau d’une remorque plateau à un locataire",
+          "a1": "Vous fixez vos prix, vos dates et vos règles d’utilisation.",
+          "a2": "Le matériel est couvert pendant toute la location, dommages compris.",
+          "a3": "Le versement part automatiquement après la restitution, sans relance."
+        },
+        "lesDeux": {
+          "surtitre": "Les deux côtés",
+          "titre": "Un seul compte pour louer et pour mettre en location.",
+          "illustration": "Deux personnes réalisant l’état des lieux d’une remorque, l’une la photographiant avec son téléphone",
+          "a1": "Une bascule dans le menu suffit à passer d’un espace à l’autre.",
+          "a2": "Vos avis, votre identité vérifiée et vos documents sont partagés.",
+          "a3": "Ce que vous gagnez en louant peut financer ce que vous louez."
+        }
+      }
     }
   }
 }
