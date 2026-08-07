@@ -1,8 +1,10 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
+import { FormulaireEnregistre } from "@/components/espace/formulaire-enregistre";
 import { Bouton } from "@/components/ui/bouton";
 import { ENABLED_MARKETS, getMarket, MARKETS } from "@/config/markets";
+import { enregistrerPreferences, lirePreferences } from "@/server/compte/actions";
 import { syntheseLocataire } from "@/server/espaces/locataire";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -16,6 +18,11 @@ export default async function PageParametresLocataire({ params }: Props) {
 
   const t = await getTranslations("espaces.locataire.parametres");
   const synthese = await syntheseLocataire();
+
+  // Les réglages réellement enregistrés, complétés par les valeurs par défaut :
+  // afficher des cases cochées qui ne le sont pas en base ferait croire à une
+  // notification qu'on ne recevra jamais.
+  const preferences = await lirePreferences();
 
   // La suppression est refusée tant qu'une caution est immobilisée ou qu'une
   // location court : effacer le compte laisserait des fonds gelés sans
@@ -44,7 +51,7 @@ export default async function PageParametresLocataire({ params }: Props) {
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
-      <form className="mt-8 space-y-8">
+      <FormulaireEnregistre action={enregistrerPreferences} className="mt-8">
         {/* ---------- Notifications ---------- */}
         <fieldset className="rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte)">
           <legend className="px-2 text-[0.9375rem] font-semibold">
@@ -79,7 +86,7 @@ export default async function PageParametresLocataire({ params }: Props) {
                       <input
                         type="checkbox"
                         name={`${ligne.cle}-courriel`}
-                        defaultChecked={ligne.courriel}
+                        defaultChecked={preferences[`${ligne.cle}-courriel`] ?? ligne.courriel}
                         aria-label={`${t(ligne.cle as never)} — ${t("parCourriel")}`}
                         className="size-4 accent-[var(--accent)]"
                       />
@@ -88,7 +95,7 @@ export default async function PageParametresLocataire({ params }: Props) {
                       <input
                         type="checkbox"
                         name={`${ligne.cle}-sms`}
-                        defaultChecked={ligne.sms}
+                        defaultChecked={preferences[`${ligne.cle}-sms`] ?? ligne.sms}
                         aria-label={`${t(ligne.cle as never)} — ${t("parSms")}`}
                         className="size-4 accent-[var(--accent)]"
                       />
@@ -134,8 +141,7 @@ export default async function PageParametresLocataire({ params }: Props) {
           ) : null}
         </fieldset>
 
-        <Bouton type="submit">{t("enregistrer")}</Bouton>
-      </form>
+      </FormulaireEnregistre>
 
       {/* ---------- Confidentialité ---------- */}
       <section className="mt-12">

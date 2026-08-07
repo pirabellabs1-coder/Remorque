@@ -109,6 +109,19 @@ export const utilisateur = pgTable(
       mode: "date",
     }),
 
+    /**
+     * Préférences de notification et d'affichage.
+     *
+     * En JSON plutôt qu'en colonnes : ces réglages s'ajoutent et disparaissent
+     * au fil des fonctionnalités, et chacun vaudrait une migration. Rien de ce
+     * qui s'y trouve ne conditionne un calcul métier — c'est le critère qui
+     * permet de s'en remettre à un document plutôt qu'à un schéma.
+     */
+    preferences: jsonb("preferences")
+      .$type<Record<string, boolean | string>>()
+      .notNull()
+      .default({}),
+
     ...timestamps,
   },
   (table) => [
@@ -134,6 +147,8 @@ export const vehiculeTracteur = pgTable(
       .references(() => utilisateur.id, { onDelete: "cascade" }),
     marque: text("marque").notNull(),
     modele: text("modele").notNull(),
+    /** Plaque, pour que le loueur reconnaisse le véhicule à la remise. */
+    immatriculation: text("immatriculation"),
     /** Poids total autorisé en charge du véhicule, en kilogrammes. */
     ptacKg: integer("ptac_kg").notNull(),
     /** Poids tractable freiné / non freiné, en kilogrammes. */

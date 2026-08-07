@@ -1,8 +1,10 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
-import { Bouton } from "@/components/ui/bouton";
+import { FormulaireEnregistre } from "@/components/espace/formulaire-enregistre";
 import { Champ } from "@/components/ui/champ";
+import { compteConnecte } from "@/server/authentification/session";
+import { enregistrerIdentite } from "@/server/compte/actions";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -14,19 +16,33 @@ export default async function PageProfilLoueur({ params }: Props) {
 
   const t = await getTranslations("espaces.loueur.profil");
 
+  // Le compte réellement connecté : un profil prérempli avec le nom de
+  // quelqu'un d'autre invite à l'enregistrer tel quel.
+  const compte = await compteConnecte();
+
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
-      <form className="mt-8 space-y-8">
+      <FormulaireEnregistre action={enregistrerIdentite} className="mt-8">
         <fieldset className="rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte)">
           <legend className="px-2 text-[0.9375rem] font-semibold">
             {t("identite")}
           </legend>
 
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
-            <Champ libelle={t("prenom")} name="prenom" autoComplete="given-name" />
-            <Champ libelle={t("nom")} name="nom" autoComplete="family-name" />
+            <Champ
+              libelle={t("prenom")}
+              name="prenom"
+              autoComplete="given-name"
+              defaultValue={compte?.prenom ?? ""}
+            />
+            <Champ
+              libelle={t("nom")}
+              name="nom"
+              autoComplete="family-name"
+              defaultValue={compte?.nom ?? ""}
+            />
             <Champ
               libelle={t("courriel")}
               name="courriel"
@@ -86,8 +102,7 @@ export default async function PageProfilLoueur({ params }: Props) {
           </p>
         </fieldset>
 
-        <Bouton type="submit">{t("enregistrer")}</Bouton>
-      </form>
+      </FormulaireEnregistre>
     </div>
   );
 }

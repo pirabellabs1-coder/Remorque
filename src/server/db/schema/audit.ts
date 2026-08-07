@@ -115,3 +115,24 @@ export const ticketSupport = pgTable(
     index("ticket_support_demandeur_idx").on(table.demandeurId),
   ],
 );
+
+/**
+ * Réglages de la plateforme.
+ *
+ * Un magasin clé-valeur plutôt qu'une table à colonnes : ces réglages
+ * s'ajoutent au fil des fonctionnalités — délai de réponse, modération a
+ * priori, mode maintenance — et chacun vaudrait sinon une migration.
+ *
+ * Ce qui ne peut **pas** vivre ici : commission, TVA, plafond de caution,
+ * délai de libération. Ceux-là sont par pays, ils entrent dans des calculs
+ * monétaires, et la table `pays` les porte avec leur typage — règle 2. Un
+ * taux stocké en texte finirait tôt ou tard converti à la volée, et un
+ * `parseFloat` sur une commission est exactement ce que la règle 1 interdit.
+ */
+export const parametrePlateforme = pgTable("parametre_plateforme", {
+  cle: text("cle").primaryKey(),
+  valeur: text("valeur").notNull(),
+  /** Qui a changé quoi : le journal d'audit garde le détail, ceci le raccourci. */
+  modifiePar: text("modifie_par"),
+  ...timestamps,
+});

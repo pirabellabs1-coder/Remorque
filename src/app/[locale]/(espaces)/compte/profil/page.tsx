@@ -2,11 +2,16 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { Pastille } from "@/components/espace/tableau";
-import { Bouton } from "@/components/ui/bouton";
+import { FormulaireEnregistre } from "@/components/espace/formulaire-enregistre";
 import { Champ } from "@/components/ui/champ";
 import { BAREME_FR, type CategoriePermis } from "@/domain/compatibilite/permis";
 import { Link } from "@/i18n/navigation";
 import { compteConnecte } from "@/server/authentification/session";
+import {
+  enregistrerIdentite,
+  enregistrerVehicule,
+  lireVehicule,
+} from "@/server/compte/actions";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -40,16 +45,22 @@ export default async function PageProfilLocataire({ params }: Props) {
   // propres réglages est le genre de détail qui fait douter de tout le reste.
   const compte = await compteConnecte();
 
+  // Le véhicule déclaré, s'il existe. Les valeurs par défaut ne sont plus
+  // celles d'un exemple : un formulaire prérempli avec le véhicule de
+  // quelqu'un d'autre invite à l'enregistrer tel quel.
+  const vehiculeEnregistre = await lireVehicule();
+
   // Jeu d'essai, en attendant la base. Les valeurs sont celles d'un véhicule
   // familial courant, pour que la capacité calculée soit représentative.
   const permis: CategoriePermis = "B";
-  const vehicule = {
-    marque: "Peugeot",
-    modele: "5008",
-    immatriculation: "GF-482-KR",
-    ptacKg: 2_180,
-    tractableFreineKg: 1_500,
-    tractableNonFreineKg: 750,
+
+  const vehicule = vehiculeEnregistre ?? {
+    marque: "",
+    modele: "",
+    immatriculation: "",
+    ptacKg: 0,
+    tractableFreineKg: 0,
+    tractableNonFreineKg: 0,
     faisceauBroches: 13,
   };
 
@@ -88,7 +99,7 @@ export default async function PageProfilLocataire({ params }: Props) {
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
-      <form className="mt-8 space-y-8">
+      <FormulaireEnregistre action={enregistrerIdentite} className="mt-8">
         {/* ---------- Identité ---------- */}
         <fieldset className="rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte)">
           <legend className="px-2 text-[0.9375rem] font-semibold">
@@ -179,6 +190,9 @@ export default async function PageProfilLocataire({ params }: Props) {
           </div>
         </fieldset>
 
+      </FormulaireEnregistre>
+
+      <FormulaireEnregistre action={enregistrerVehicule} className="mt-8">
         {/* ---------- Véhicule ---------- */}
         <fieldset className="rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte)">
           <legend className="px-2 text-[0.9375rem] font-semibold">
@@ -202,7 +216,7 @@ export default async function PageProfilLocataire({ params }: Props) {
             <Champ
               libelle={t("immatriculation")}
               name="immatriculation"
-              defaultValue={vehicule.immatriculation}
+              defaultValue={vehicule.immatriculation ?? ""}
               className="sm:col-span-2"
             />
 
@@ -241,7 +255,7 @@ export default async function PageProfilLocataire({ params }: Props) {
               <select
                 id="faisceau"
                 name="faisceau"
-                defaultValue={vehicule.faisceauBroches}
+                defaultValue={vehicule.faisceauBroches ?? 13}
                 className={champ}
               >
                 <option value={7}>{t("faisceau7")}</option>
@@ -296,8 +310,7 @@ export default async function PageProfilLocataire({ params }: Props) {
           </Link>
         </section>
 
-        <Bouton type="submit">{t("enregistrer")}</Bouton>
-      </form>
+      </FormulaireEnregistre>
     </div>
   );
 }

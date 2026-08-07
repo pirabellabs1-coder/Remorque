@@ -29,6 +29,27 @@
       "when": 1785997367698,
       "tag": "0003_tentatives_connexion",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786110257039,
+      "tag": "0004_profil_et_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786110442966,
+      "tag": "0005_immatriculation",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786110739541,
+      "tag": "0006_parametres_plateforme",
+      "breakpoints": true
     }
   ]
 }

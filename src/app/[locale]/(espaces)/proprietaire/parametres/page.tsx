@@ -1,7 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
-import { Bouton } from "@/components/ui/bouton";
+import { FormulaireEnregistre } from "@/components/espace/formulaire-enregistre";
+import { enregistrerPreferences } from "@/server/compte/actions";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -27,7 +28,7 @@ export default async function PageParametresLoueur({ params }: Props) {
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
-      <form className="mt-8 space-y-8">
+      <FormulaireEnregistre action={enregistrerPreferences} className="mt-8">
         {/* ---------- Notifications ---------- */}
         <fieldset className="overflow-hidden rounded-carte border border-bordure bg-fond-eleve shadow-(--ombre-carte)">
           <legend className="sr-only">{t("notifications")}</legend>
@@ -125,8 +126,7 @@ export default async function PageParametresLoueur({ params }: Props) {
           </div>
         </fieldset>
 
-        <Bouton type="submit">{t("enregistrer")}</Bouton>
-      </form>
+      </FormulaireEnregistre>
 
       {/* ---------- Zone dangereuse ---------- */}
       <section className="mt-12 rounded-carte border border-danger/30 bg-danger/5 p-6">

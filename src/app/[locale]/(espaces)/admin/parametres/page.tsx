@@ -1,8 +1,12 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
-import { Bouton } from "@/components/ui/bouton";
+import { FormulaireEnregistre } from "@/components/espace/formulaire-enregistre";
 import { Champ } from "@/components/ui/champ";
+import {
+  enregistrerParametres,
+  lireParametres,
+} from "@/server/administration/parametres";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -14,6 +18,10 @@ export default async function PageParametresAdmin({ params }: Props) {
 
   const t = await getTranslations("espaces.admin.parametres");
 
+  // Les valeurs réellement enregistrées : un formulaire prérempli de valeurs
+  // codées en dur ferait croire à des réglages qui ne s'appliquent nulle part.
+  const reglages = await lireParametres();
+
   const champ =
     "mt-2 h-12 w-full rounded-champ border border-bordure bg-fond-eleve px-4 text-base text-texte";
 
@@ -21,7 +29,7 @@ export default async function PageParametresAdmin({ params }: Props) {
     <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
-      <form className="mt-8 space-y-8">
+      <FormulaireEnregistre action={enregistrerParametres} className="mt-8">
         <fieldset className="rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte)">
           <legend className="px-2 text-[0.9375rem] font-semibold">
             {t("general")}
@@ -31,14 +39,14 @@ export default async function PageParametresAdmin({ params }: Props) {
             <Champ
               libelle={t("nomPlateforme")}
               name="nomPlateforme"
-              defaultValue="FlexiTrailer"
+              defaultValue={reglages.nomPlateforme ?? "FlexiTrailer"}
               className="sm:col-span-2"
             />
             <Champ
               libelle={t("courrielContact")}
               name="courrielContact"
               type="email"
-              defaultValue="contact@flexitrailer.eu"
+              defaultValue={reglages.courrielContact ?? ""}
               className="sm:col-span-2"
             />
 
@@ -49,7 +57,7 @@ export default async function PageParametresAdmin({ params }: Props) {
               <select
                 id="delaiReponse"
                 name="delaiReponse"
-                defaultValue="24"
+                defaultValue={reglages.delaiReponse ?? "24"}
                 className={champ}
               >
                 <option value="12">{t("heures", { nombre: 12 })}</option>
@@ -65,7 +73,7 @@ export default async function PageParametresAdmin({ params }: Props) {
               <select
                 id="delaiAvis"
                 name="delaiAvis"
-                defaultValue="14"
+                defaultValue={reglages.delaiAvis ?? "14"}
                 className={champ}
               >
                 <option value="7">{t("jours", { nombre: 7 })}</option>
@@ -85,7 +93,7 @@ export default async function PageParametresAdmin({ params }: Props) {
             <input
               type="checkbox"
               name="moderationApriori"
-              defaultChecked
+              defaultChecked={reglages.moderationApriori !== "false"}
               className="mt-1 size-4 accent-[var(--accent)]"
             />
             <span>
@@ -100,15 +108,14 @@ export default async function PageParametresAdmin({ params }: Props) {
             <input
               type="checkbox"
               name="verificationObligatoire"
-              defaultChecked
+              defaultChecked={reglages.verificationObligatoire !== "false"}
               className="mt-1 size-4 accent-[var(--accent)]"
             />
             <span>{t("verificationObligatoire")}</span>
           </label>
         </fieldset>
 
-        <Bouton type="submit">{t("enregistrer")}</Bouton>
-      </form>
+      </FormulaireEnregistre>
 
       {/* Le mode maintenance coupe l'accès public : il a sa place à part, en
           bas, et signale clairement ce qu'il fait. */}

@@ -1,0 +1,1 @@
+ALTER TABLE "vehicule_tracteur" ADD COLUMN "immatriculation" text;

@@ -831,6 +831,19 @@
       "encaisser": "Encaisser",
       "confirmer": "Confirmer",
       "expirer": "Expirer"
+    },
+    "formulaire": {
+      "enregistrer": "Enregistrer",
+      "enregistrement": "Enregistrement…",
+      "enregistre": "Enregistré",
+      "nonEnregistre": "Modifications non enregistrées",
+      "erreurs": {
+        "invalide": "Certains champs sont mal renseignés.",
+        "vehiculeInvalide": "Vérifiez les masses saisies : elles doivent venir de votre carte grise.",
+        "massesInversees": "La masse non freinée ne peut pas dépasser la masse freinée.",
+        "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+        "echec": "L’enregistrement a échoué. Réessayez."
+      }
     }
   }
 }
