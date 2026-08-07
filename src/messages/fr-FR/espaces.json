@@ -820,6 +820,17 @@
     "compte": {
       "deconnexion": "Se déconnecter",
       "deconnexionEnCours": "Déconnexion…"
+    },
+    "actions": {
+      "accepter": "Accepter",
+      "refuser": "Refuser",
+      "annuler": "Annuler",
+      "cloturer": "Clôturer",
+      "restituer": "Marquer restituée",
+      "demarrer": "Marquer retirée",
+      "encaisser": "Encaisser",
+      "confirmer": "Confirmer",
+      "expirer": "Expirer"
     }
   }
 }

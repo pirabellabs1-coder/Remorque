@@ -1,13 +1,15 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, useTransition } from "react";
 
 import { Bouton } from "@/components/ui/bouton";
 import { PARTENAIRE_CONFIRME } from "@/config/assurance";
 import { calculerDevis, type BaremePays } from "@/domain/tarification/devis";
 import { PRIX_AFFICHE } from "@/lib/cn";
+import { Link, useRouter } from "@/i18n/navigation";
 import type { AnnonceDetail } from "@/server/annonces/catalogue";
+import { reserver } from "@/server/reservations/actions";
 
 function aujourdhui(): string {
   return new Date().toISOString().slice(0, 10);
@@ -35,16 +37,56 @@ function joursEntre(debut: string, fin: string): number {
 export function CarteReservation({
   annonce,
   bareme,
+  connecte,
 }: {
   annonce: AnnonceDetail;
   bareme: BaremePays;
+  /** Une personne non connectée voit un lien vers la connexion, pas un refus. */
+  connecte: boolean;
 }) {
   const t = useTranslations("annonce.reservation");
   const format = useFormatter();
   const identifiant = useId();
 
+  const router = useRouter();
   const [debut, setDebut] = useState("");
   const [fin, setFin] = useState("");
+  const [erreur, setErreur] = useState<string | null>(null);
+  const [reference, setReference] = useState<string | null>(null);
+  const [enCours, demarrer] = useTransition();
+
+  function envoyer(evenement: React.FormEvent<HTMLFormElement>) {
+    evenement.preventDefault();
+    setErreur(null);
+
+    const donnees = new FormData(evenement.currentTarget);
+
+    demarrer(async () => {
+      const resultat = await reserver(donnees);
+
+      if (resultat.ok) {
+        setReference(resultat.message ?? null);
+        // La demande apparaît aussitôt dans l'espace du locataire : sans
+        // rafraîchissement, il y arriverait sur une version en cache où elle
+        // n'existe pas encore.
+        router.refresh();
+        return;
+      }
+
+      // Les clés inconnues — motifs venus du domaine — retombent sur un
+      // message générique plutôt que d'afficher une clé brute.
+      const cles = [
+        "connexionRequise", "datesManquantes", "datePassee", "dureeInvalide",
+        "annonceIndisponible", "proprePropriete", "dureeTropCourte",
+        "dureeTropLongue", "indisponible",
+      ];
+      setErreur(
+        cles.includes(resultat.cle)
+          ? t(`erreurs.${resultat.cle}` as never)
+          : t("erreurs.echec"),
+      );
+    });
+  }
 
   const jours = debut && fin ? joursEntre(debut, fin) : 0;
 
@@ -149,19 +191,55 @@ export function CarteReservation({
         <p className="mt-5 text-sm text-texte-attenue">{t("choisirDates")}</p>
       )}
 
-      <Bouton
-        as="button"
-        type="button"
-        taille="grand"
-        pleineLargeur
-        disabled
-        className="mt-5"
-      >
-        {annonce.reservationInstantanee ? t("reserver") : t("demander")}
-      </Bouton>
-      <p className="mt-2 text-center text-xs text-texte-attenue">
-        {t("bientot")}
-      </p>
+      {reference ? (
+        /* Confirmation en place plutôt que redirection : la personne vient de
+           choisir des dates, et se retrouver ailleurs sans confirmation
+           explicite fait douter que la demande soit partie. */
+        <div className="mt-5 rounded-champ border border-succes/30 bg-succes/5 p-4 text-center">
+          <p className="text-[0.9375rem] font-medium text-succes">
+            {t("demandeEnvoyee", { numero: reference })}
+          </p>
+          <Link
+            href="/compte/reservations"
+            className="mt-2 inline-block text-sm font-medium text-accent hover:underline"
+          >
+            {t("voirDemande")}
+          </Link>
+        </div>
+      ) : connecte ? (
+        <form onSubmit={envoyer} className="mt-5">
+          <input type="hidden" name="annonceId" value={annonce.id} />
+          <input type="hidden" name="debut" value={debut} />
+          <input type="hidden" name="fin" value={fin} />
+
+          <Bouton
+            type="submit"
+            taille="grand"
+            pleineLargeur
+            disabled={jours === 0 || enCours}
+          >
+            {enCours
+              ? t("envoi")
+              : annonce.reservationInstantanee
+                ? t("reserver")
+                : t("demander")}
+          </Bouton>
+
+          <p aria-live="polite" role="status" className="mt-2 min-h-5 text-center text-sm text-danger">
+            {erreur}
+          </p>
+        </form>
+      ) : (
+        <Bouton
+          as={Link}
+          href="/connexion"
+          taille="grand"
+          pleineLargeur
+          className="mt-5"
+        >
+          {t("connexion")}
+        </Bouton>
+      )}
 
       <ul className="mt-5 space-y-1.5 border-t border-bordure pt-4 text-xs text-texte-attenue">
         <li>{t("caution", { montant: prixAffiche(annonce.caution) })}</li>

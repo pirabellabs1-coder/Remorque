@@ -62,5 +62,19 @@ export default defineConfig({
     // aux seconds : trois tests échouaient sur le seul délai, sans qu'aucune
     // assertion soit en cause.
     testTimeout: 30_000,
+    /**
+     * Un seul fichier à la fois.
+     *
+     * Les tests d'intégration partagent **une** base, et plusieurs d'entre eux
+     * affirment des totaux exacts — cent quarante réservations, deux cent vingt
+     * locataires. En parallèle, un fichier qui crée une réservation d'essai
+     * fait échouer celui qui compte, et le nettoyage du premier arrive après la
+     * lecture du second. Trois tests tombaient ainsi sans qu'aucun code soit en
+     * cause.
+     *
+     * Le parallélisme reste possible à l'intérieur d'un fichier : c'est entre
+     * fichiers que l'isolement manque.
+     */
+    fileParallelism: false,
   },
 });

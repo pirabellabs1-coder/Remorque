@@ -2,6 +2,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { ListeVide } from "@/components/espace/indicateurs";
+import { ActionsReservation } from "@/components/espace/actions-reservation";
 import { PastilleStatut } from "@/components/espace/statut";
 import { Link } from "@/i18n/navigation";
 import { cn, PRIX_AFFICHE } from "@/lib/cn";
@@ -155,6 +156,15 @@ export default async function PageReservations({ params, searchParams }: Props) 
                     </td>
                     <td className="px-5 py-4">
                       <PastilleStatut statut={reservation.statut} />
+                      {/* Les actions sous le statut : c'est là qu'on regarde
+                          pour savoir ce qu'il reste à faire. */}
+                      <div className="mt-2">
+                        <ActionsReservation
+                          reservationId={reservation.id}
+                          statut={reservation.statut}
+                          role="proprietaire"
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -189,6 +199,14 @@ export default async function PageReservations({ params, searchParams }: Props) 
                       currency: reservation.devise,
                     })}
                   </span>
+                </div>
+
+                <div className="mt-3">
+                  <ActionsReservation
+                    reservationId={reservation.id}
+                    statut={reservation.statut}
+                    role="proprietaire"
+                  />
                 </div>
               </li>
             ))}

@@ -634,13 +634,28 @@
       "total": "Total",
       "reserver": "Réserver",
       "demander": "Envoyer une demande",
-      "bientot": "Réservation bientôt disponible",
       "caution": "Caution de {montant}, non débitée",
       "annulation": {
         "souple": "Annulation gratuite jusqu'à 24 h avant le retrait",
         "moderee": "Annulation gratuite jusqu'à 3 jours avant le retrait",
         "stricte": "Annulation non remboursable à moins de 7 jours"
-      }
+      },
+      "envoi": "Envoi de la demande…",
+      "demandeEnvoyee": "Demande envoyée — référence {numero}",
+      "voirDemande": "Voir ma demande",
+      "erreurs": {
+        "connexionRequise": "Connectez-vous pour réserver.",
+        "datesManquantes": "Choisissez vos dates.",
+        "datePassee": "La date de départ est déjà passée.",
+        "dureeInvalide": "La date de retour doit suivre celle de départ.",
+        "annonceIndisponible": "Cette annonce n’est plus disponible.",
+        "proprePropriete": "Vous ne pouvez pas louer votre propre matériel.",
+        "dureeTropCourte": "La durée est inférieure au minimum demandé par le loueur.",
+        "dureeTropLongue": "La durée dépasse le maximum accepté par le loueur.",
+        "indisponible": "Ces dates sont déjà prises. Essayez d’autres dates.",
+        "echec": "La demande n’a pas pu être envoyée. Réessayez."
+      },
+      "connexion": "Se connecter pour réserver"
     },
     "chargeUtileValeur": "{kg, number} kg utiles",
     "chiffresCles": "En un coup d'œil",

@@ -2,6 +2,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { ListeVide } from "@/components/espace/indicateurs";
+import { ActionsReservation } from "@/components/espace/actions-reservation";
 import { PastilleStatut } from "@/components/espace/statut";
 import { Pastille } from "@/components/espace/tableau";
 import { Bouton } from "@/components/ui/bouton";
@@ -190,6 +191,14 @@ export default async function PageMesReservations({ params, searchParams }: Prop
                     <p className="mt-2 font-mono text-xs text-texte-attenue">
                       {reservation.reference}
                     </p>
+
+                    <div className="mt-3 sm:flex sm:justify-end">
+                      <ActionsReservation
+                        reservationId={reservation.id}
+                        statut={reservation.statut}
+                        role="locataire"
+                      />
+                    </div>
                   </div>
                 </div>
               </article>
