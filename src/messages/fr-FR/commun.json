@@ -29,7 +29,16 @@
     "proprietaires": "Propriétaires",
     "entreprise": "Entreprise",
     "legal": "Informations légales",
-    "droits": "© {annee} Remorque. Tous droits réservés."
+    "droits": "© {annee} Remorque. Tous droits réservés.",
+    "aPropos": "À propos",
+    "contact": "Contact",
+    "aide": "Aide",
+    "cgu": "Conditions générales d’utilisation",
+    "cgv": "Conditions générales de vente",
+    "confidentialite": "Politique de confidentialité",
+    "cookies": "Cookies et traceurs",
+    "mediation": "Médiation de la consommation",
+    "mentionsLegales": "Mentions légales"
   },
   "erreurs": {
     "titre": "Une erreur est survenue",

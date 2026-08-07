@@ -711,5 +711,639 @@
       "q3": "Où récupérer la remorque à {ville} ?",
       "r3": "Chez le propriétaire. Le quartier est indiqué sur l’annonce ; l’adresse exacte vous est communiquée après confirmation."
     }
+  },
+  "legal": {
+    "enBref": "L’essentiel",
+    "bref_avertissement": "Ce résumé n’a pas de valeur contractuelle. Seul le texte qui suit engage les parties.",
+    "sommaire": "Sommaire",
+    "versionCourte": "Version {version}",
+    "miseAJour": "Mise à jour le {date}",
+    "identiteManquante": "L’identité de l’éditeur n’est pas encore renseignée. Ce document est incomplet et ne peut pas être opposé en l’état.",
+    "editeurLigne": "Éditeur : {raisonSociale} — {adresse}",
+    "editeurAbsent": "Éditeur : à renseigner avant la mise en ligne.",
+    "mentions": {
+      "metaTitre": "Mentions légales",
+      "metaDescription": "Identité de l’éditeur, hébergement, propriété intellectuelle et contact.",
+      "surtitre": "Informations légales",
+      "titre": "Mentions légales",
+      "chapo": "Qui édite ce site, qui l’héberge, et à qui s’adresser. Ces informations sont exigées par l’article 6-III de la loi pour la confiance dans l’économie numérique.",
+      "articles": {
+        "editeur": {
+          "titre": "Éditeur du site",
+          "p1": "Le présent site est édité par la société dont l’identité figure ci-dessous. Toute demande relative au site peut lui être adressée par courrier électronique ou postal."
+        },
+        "hebergeur": {
+          "titre": "Hébergeur",
+          "p1": "Le site est hébergé par le prestataire indiqué ci-dessous. Les données sont stockées sur des serveurs situés dans l’Union européenne."
+        },
+        "propriete": {
+          "titre": "Propriété intellectuelle",
+          "p1": "La structure du site, ses textes, sa charte graphique et ses développements sont protégés par le droit d’auteur. Toute reproduction, même partielle, est soumise à autorisation écrite préalable.",
+          "p2": "Les photographies et descriptions des annonces demeurent la propriété de leurs auteurs. En les publiant, le propriétaire concède à la plateforme une licence d’usage limitée à l’affichage de son annonce et à la promotion du service."
+        },
+        "responsabilite": {
+          "titre": "Responsabilité éditoriale",
+          "p1": "La plateforme met en relation des particuliers et des professionnels. Elle n’est ni propriétaire ni loueur du matériel proposé, et n’intervient pas dans son entretien.",
+          "encadre": "Les descriptions, photographies et caractéristiques techniques des annonces sont fournies par leurs auteurs, qui en répondent. La plateforme les modère mais ne peut en garantir l’exactitude."
+        },
+        "liens": {
+          "titre": "Liens externes",
+          "p1": "Le site peut renvoyer vers des sites tiers, notamment ceux des autorités administratives et de l’assureur. Ces sites obéissent à leurs propres conditions ; l’éditeur n’en contrôle pas le contenu."
+        },
+        "contact": {
+          "titre": "Nous contacter",
+          "p1": "Pour toute question relative au site, à son contenu ou à son fonctionnement, écrivez-nous. Nous répondons sous deux jours ouvrés."
+        }
+      },
+      "cles": {
+        "editeur": {
+          "titre": "Un éditeur identifié",
+          "texte": "Raison sociale, siège et immatriculation figurent ci-dessous."
+        },
+        "hebergement": {
+          "titre": "Hébergement européen",
+          "texte": "Les données sont stockées sur des serveurs situés dans l’Union."
+        },
+        "contact": {
+          "titre": "Un contact direct",
+          "texte": "Une adresse électronique, une réponse sous deux jours ouvrés."
+        }
+      }
+    },
+    "cgu": {
+      "metaTitre": "Conditions générales d’utilisation",
+      "metaDescription": "Règles d’accès et d’usage de la plateforme : compte, contenus, modération, suspension.",
+      "surtitre": "Contrat",
+      "titre": "Conditions générales d’utilisation",
+      "chapo": "Ce qui vous est permis sur la plateforme, ce qui ne l’est pas, et ce qui se passe en cas de manquement. Ces conditions régissent l’usage du site ; la location elle-même relève des conditions de vente.",
+      "articles": {
+        "objet": {
+          "titre": "Objet",
+          "p1": "Les présentes conditions définissent les modalités d’accès et d’utilisation de la plateforme, quel que soit le moyen d’y accéder.",
+          "p2": "Leur acceptation est un préalable à la création d’un compte. Elle est recueillie de manière expresse et horodatée, et la version acceptée est conservée."
+        },
+        "definitions": {
+          "titre": "Définitions",
+          "plateforme": "Le site et les services de mise en relation qu’il propose.",
+          "proprietaire": "L’utilisateur qui publie une annonce et met du matériel à disposition.",
+          "locataire": "L’utilisateur qui réserve du matériel pour une durée déterminée.",
+          "annonce": "La description publiée d’un matériel, de ses caractéristiques et de son prix.",
+          "location": "Le contrat conclu entre un propriétaire et un locataire par l’intermédiaire de la plateforme."
+        },
+        "compte": {
+          "titre": "Compte utilisateur",
+          "p1": "La création d’un compte requiert une adresse électronique valide et un mot de passe. Les informations fournies doivent être exactes et tenues à jour.",
+          "p2": "Un compte est personnel. Son titulaire répond des actes accomplis depuis celui-ci et doit signaler sans délai tout usage qu’il n’aurait pas autorisé.",
+          "soustitre": "Vérification d’identité",
+          "p3": "La vérification de l’identité est exigée avant la première location. Elle protège les propriétaires, qui confient un bien de valeur, et conditionne l’accès à la réservation instantanée.",
+          "p4": "Un même compte peut porter les deux profils, locataire et propriétaire. L’ouverture du second ne crée pas de nouveau compte."
+        },
+        "usage": {
+          "titre": "Usage de la plateforme",
+          "p1": "L’utilisateur s’engage à un usage conforme à la loi et aux présentes conditions. Sont notamment interdits :",
+          "interdits": [
+            "publier une annonce pour un matériel dont on n’a pas la disposition ;",
+            "contourner la plateforme pour conclure une location hors de son intermédiation, une fois la mise en relation faite ;",
+            "publier des contenus mensongers, injurieux ou portant atteinte aux droits d’autrui ;",
+            "extraire massivement les données du site par un moyen automatisé ;",
+            "tenter d’accéder à un compte, un espace ou une donnée qui ne vous appartient pas."
+          ],
+          "encadre": "Le contournement de la plateforme prive le locataire de l’assurance et de la garantie de caution, et le propriétaire de tout recours en cas d’incident. C’est le manquement le plus fréquent et le plus dommageable."
+        },
+        "contenus": {
+          "titre": "Contenus publiés",
+          "p1": "Le propriétaire garantit détenir les droits sur les photographies qu’il publie et l’exactitude des caractéristiques qu’il déclare.",
+          "p2": "La plateforme modère les annonces avant publication. Elle peut refuser ou retirer une annonce non conforme, en motivant sa décision."
+        },
+        "moderation": {
+          "titre": "Modération et suspension",
+          "p1": "En cas de manquement, la plateforme peut, selon la gravité : demander une correction, retirer une annonce, suspendre un compte ou le clôturer.",
+          "p2": "Toute mesure administrative est consignée avec son auteur, sa date et son motif. L’utilisateur concerné en est informé et peut la contester.",
+          "encadre": "Une suspension ne libère pas des engagements en cours : une location réservée se poursuit, une caution immobilisée le reste jusqu’à son terme normal."
+        },
+        "disponibilite": {
+          "titre": "Disponibilité du service",
+          "p1": "La plateforme s’efforce d’assurer un accès continu, sans garantir l’absence d’interruption. Les interventions programmées sont annoncées à l’avance lorsque cela est possible."
+        },
+        "duree": {
+          "titre": "Durée et modification",
+          "p1": "Les présentes conditions s’appliquent tant que le compte existe. Toute modification substantielle est notifiée trente jours avant son entrée en vigueur.",
+          "p2": "L’utilisateur qui refuse les nouvelles conditions peut clôturer son compte sans frais, sous réserve d’avoir mené à leur terme les locations engagées."
+        },
+        "droit": {
+          "titre": "Droit applicable et différends",
+          "p1": "Les présentes conditions sont régies par le droit français. En cas de différend, une solution amiable est recherchée en premier lieu auprès de notre service d’assistance.",
+          "p2": "Le consommateur peut recourir gratuitement à un médiateur de la consommation. Les coordonnées du médiateur figurent sur la page dédiée."
+        }
+      },
+      "cles": {
+        "compte": {
+          "titre": "Un compte, deux profils",
+          "texte": "Louer et mettre en location depuis le même compte, sans en créer un second."
+        },
+        "moderation": {
+          "titre": "Modération motivée",
+          "texte": "Toute mesure est consignée, notifiée et contestable."
+        },
+        "contournement": {
+          "titre": "Ne contournez pas",
+          "texte": "Hors plateforme, ni assurance ni garantie de caution ne s’appliquent."
+        }
+      }
+    },
+    "cgv": {
+      "metaTitre": "Conditions générales de vente",
+      "metaDescription": "Prix, paiement, caution, annulation, assurance et responsabilité pour les locations.",
+      "surtitre": "Contrat",
+      "titre": "Conditions générales de vente",
+      "chapo": "Comment se forme une location, ce qu’elle coûte, ce que couvre l’assurance, et ce qui se passe quand quelque chose se passe mal.",
+      "articles": {
+        "formation": {
+          "titre": "Formation du contrat",
+          "p1": "La location est conclue entre le locataire et le propriétaire. La plateforme agit comme intermédiaire : elle encaisse, garantit et reverse, sans être partie au contrat de location.",
+          "p2": "Selon l’annonce, la réservation est instantanée ou soumise à l’acceptation du propriétaire. Dans le second cas, la demande expire si elle reste sans réponse au terme du délai indiqué.",
+          "p3": "Le contrat est formé au moment du paiement. Un récapitulatif est adressé aux deux parties."
+        },
+        "prix": {
+          "titre": "Prix et frais",
+          "p1": "Le prix journalier est fixé librement par le propriétaire. S’y ajoutent les frais de service de la plateforme et, le cas échéant, la prime d’assurance.",
+          "p2": "Tous les montants sont exprimés toutes taxes comprises, dans la devise du pays où se trouve le matériel. Le détail figure avant le paiement, sans exception.",
+          "encadre": "Aucun frais n’apparaît après le paiement. Le total affiché au moment de réserver est celui qui est débité."
+        },
+        "paiement": {
+          "titre": "Paiement",
+          "p1": "Le paiement s’effectue en ligne par carte bancaire, au moment de la réservation. Les données de carte sont traitées par notre prestataire de paiement et ne transitent pas par nos serveurs.",
+          "p2": "Le propriétaire est reversé après la restitution du matériel, une fois écoulé le délai de contestation prévu à l’article suivant."
+        },
+        "caution": {
+          "titre": "Caution",
+          "soustitre": "Une empreinte, non un débit",
+          "p1": "La caution prend la forme d’une empreinte bancaire : le montant est immobilisé sur la carte du locataire, mais n’est pas encaissé.",
+          "p2": "Elle est libérée après la restitution sans incident, à l’issue du délai fixé par le pays où se trouve le matériel.",
+          "encadre": "Un litige ou un sinistre ouvert suspend la libération de la caution comme le versement au propriétaire, jusqu’à ce que le dossier soit tranché.",
+          "p3": "Toute retenue est motivée, chiffrée et notifiée. Elle ne peut excéder le montant de l’empreinte ni le préjudice constaté."
+        },
+        "etatDesLieux": {
+          "titre": "État des lieux",
+          "p1": "Un état des lieux photographique est réalisé au départ et au retour. Il fait foi entre les parties en cas de désaccord sur l’état du matériel.",
+          "p2": "L’absence d’état des lieux au départ vaut présomption de bon état, au détriment de la partie qui ne l’a pas réalisé."
+        },
+        "annulation": {
+          "titre": "Annulation",
+          "p1": "Trois politiques d’annulation existent, choisies par le propriétaire et indiquées sur chaque annonce :",
+          "politiques": [
+            "souple — remboursement intégral jusqu’à vingt-quatre heures avant le départ ;",
+            "modérée — remboursement intégral jusqu’à trois jours avant le départ, puis de moitié ;",
+            "stricte — remboursement de moitié jusqu’à sept jours avant le départ, aucun ensuite."
+          ],
+          "p2": "Les frais de service sont remboursés dans tous les cas d’annulation par le propriétaire, ou d’indisponibilité du matériel à l’heure convenue.",
+          "soustitre": "Droit de rétractation",
+          "p3": "La location de biens à une date déterminée relève de l’exception prévue à l’article L.221-28 du code de la consommation : le droit de rétractation de quatorze jours ne s’applique pas. Les politiques d’annulation ci-dessus le remplacent."
+        },
+        "assurance": {
+          "titre": "Assurance",
+          "p1": "Chaque location est couverte pendant toute sa durée, sans démarche du locataire. La couverture porte sur les dommages au matériel loué et la responsabilité civile liée à son usage.",
+          "p2": "Restent exclus, notamment : la conduite sans permis valable, l’usage non conforme à la destination du matériel, la surcharge au-delà du poids autorisé, et la conduite sous l’empire d’un état alcoolique.",
+          "encadre": "La compatibilité entre votre permis, votre véhicule et le matériel est vérifiée avant la réservation. Une location conclue sur des déclarations inexactes n’est pas couverte."
+        },
+        "obligations": {
+          "titre": "Obligations des parties",
+          "soustitre": "Le propriétaire s’engage à",
+          "proprietaire": [
+            "remettre un matériel conforme à son annonce, en état de marche et de sécurité ;",
+            "fournir les documents obligatoires, dont la carte grise le cas échéant ;",
+            "être disponible aux heures convenues pour la remise et la reprise."
+          ],
+          "soustitre2": "Le locataire s’engage à",
+          "locataire": [
+            "détenir un permis en cours de validité autorisant la traction du matériel ;",
+            "respecter le poids total autorisé et les règles de chargement ;",
+            "restituer le matériel à la date convenue, dans l’état où il l’a reçu ;",
+            "signaler sans délai tout incident survenu pendant la location."
+          ]
+        },
+        "retard": {
+          "titre": "Retard de restitution",
+          "p1": "Tout retard est facturé au prorata du prix journalier, chaque jour entamé étant dû. Au-delà de quarante-huit heures sans nouvelle, le matériel est réputé non restitué et une procédure est engagée."
+        },
+        "litiges": {
+          "titre": "Litiges et sinistres",
+          "p1": "Un litige peut être ouvert par l’une ou l’autre partie dans les sept jours suivant la restitution. La plateforme instruit le dossier au vu des états des lieux et des pièces fournies.",
+          "p2": "Un sinistre est déclaré à l’assureur, qui statue selon les termes de la police. La plateforme accompagne la déclaration sans se substituer à l’assureur."
+        },
+        "mediation": {
+          "titre": "Médiation",
+          "p1": "Après une réclamation écrite restée sans solution, le consommateur peut saisir gratuitement le médiateur de la consommation dont les coordonnées figurent sur la page dédiée."
+        }
+      },
+      "cles": {
+        "caution": {
+          "titre": "La caution n’est pas débitée",
+          "texte": "C’est une empreinte bancaire, immobilisée puis libérée après restitution."
+        },
+        "assurance": {
+          "titre": "Assuré sans démarche",
+          "texte": "Chaque location est couverte pendant toute sa durée."
+        },
+        "transparence": {
+          "titre": "Aucun frais caché",
+          "texte": "Le total affiché au moment de réserver est celui qui est débité."
+        }
+      }
+    },
+    "confidentialite": {
+      "metaTitre": "Politique de confidentialité",
+      "metaDescription": "Données collectées, finalités, durées de conservation et exercice de vos droits.",
+      "surtitre": "Données personnelles",
+      "titre": "Politique de confidentialité",
+      "chapo": "Quelles données nous collectons, pourquoi, combien de temps nous les gardons, et comment reprendre la main dessus.",
+      "articles": {
+        "responsable": {
+          "titre": "Responsable du traitement",
+          "p1": "L’éditeur du site, dont l’identité figure dans les mentions légales, est responsable des traitements décrits ici."
+        },
+        "donnees": {
+          "titre": "Données collectées",
+          "soustitre": "À la création du compte",
+          "compte": [
+            "adresse électronique et mot de passe, sous forme d’empreinte irréversible ;",
+            "prénom, et nom lorsqu’il est nécessaire à l’établissement d’un contrat ;",
+            "profil choisi : locataire, propriétaire, ou les deux."
+          ],
+          "soustitre2": "Pour louer ou mettre en location",
+          "location": [
+            "pièce d’identité et permis de conduire, aux fins de vérification ;",
+            "caractéristiques du véhicule tracteur, pour établir la compatibilité ;",
+            "coordonnées bancaires, traitées par notre prestataire de paiement ;",
+            "photographies des états des lieux, au départ et au retour."
+          ],
+          "soustitre3": "Automatiquement",
+          "technique": [
+            "adresse IP et type de navigateur, pour la sécurité des connexions ;",
+            "tentatives de connexion, réussies ou non, pour détecter les intrusions."
+          ]
+        },
+        "finalites": {
+          "titre": "Pourquoi ces données",
+          "p1": "Chaque donnée sert une finalité déterminée, et n’est pas réutilisée pour une autre sans base légale :",
+          "entrees": [
+            "exécuter le contrat de location : identité, permis, véhicule, paiement ;",
+            "respecter une obligation légale : facturation, comptabilité, lutte contre la fraude ;",
+            "poursuivre un intérêt légitime : sécurité des comptes, prévention des impayés, amélioration du service ;",
+            "avec votre consentement : envoi d’offres et de nouveautés, révocable à tout moment."
+          ]
+        },
+        "duree": {
+          "titre": "Combien de temps",
+          "p1": "Les durées de conservation sont les suivantes :",
+          "entrees": [
+            "données de compte : pendant la vie du compte, puis trois ans après le dernier contact ;",
+            "pièces d’identité et permis : jusqu’à la fin de la vérification, puis supprimées ;",
+            "documents contractuels et factures : dix ans, conformément aux obligations comptables ;",
+            "états des lieux et photographies : cinq ans après la location, durée de prescription des litiges ;",
+            "journal des connexions : douze mois."
+          ]
+        },
+        "destinataires": {
+          "titre": "Qui y a accès",
+          "p1": "Vos données ne sont ni vendues ni cédées. Elles sont accessibles :",
+          "entrees": [
+            "à nos équipes, dans la stricte limite de leurs fonctions ;",
+            "à l’autre partie d’une location, pour les seules informations nécessaires à sa réalisation ;",
+            "à nos sous-traitants — hébergement, paiement, envoi de courriels — liés par contrat ;",
+            "à l’assureur, en cas de sinistre uniquement ;",
+            "aux autorités, sur réquisition régulière."
+          ],
+          "encadre": "Le propriétaire ne voit jamais votre nom complet ni vos coordonnées avant la confirmation de la réservation. La plateforme ne montre que ce qui est nécessaire, au moment où cela le devient."
+        },
+        "transferts": {
+          "titre": "Où sont stockées les données",
+          "p1": "Les données sont hébergées dans l’Union européenne. Lorsqu’un sous-traitant est établi hors de l’Union, le transfert est encadré par les clauses contractuelles types de la Commission européenne."
+        },
+        "droits": {
+          "titre": "Vos droits",
+          "p1": "Vous disposez des droits d’accès, de rectification, d’effacement, de limitation, d’opposition et de portabilité. Vous pouvez également définir des directives sur le sort de vos données après votre décès.",
+          "p2": "Ces droits s’exercent depuis vos paramètres, ou par courrier électronique. Nous répondons sous un mois.",
+          "encadre": "Le droit à l’effacement connaît des limites : une facture doit être conservée dix ans, et un compte portant une location en cours ou une caution immobilisée ne peut être supprimé avant leur terme.",
+          "p3": "En cas de désaccord, vous pouvez saisir la Commission nationale de l’informatique et des libertés."
+        },
+        "securite": {
+          "titre": "Sécurité",
+          "p1": "Les mots de passe sont stockés sous forme d’empreinte dérivée, jamais en clair. Les jetons de session le sont également : une fuite de la base ne permettrait pas d’usurper une session en cours.",
+          "p2": "Les échanges avec le site sont chiffrés. Les accès aux données sont journalisés et limités aux personnes qui en ont besoin."
+        },
+        "cookies": {
+          "titre": "Traceurs",
+          "p1": "Le détail des traceurs employés et le moyen de les refuser figurent sur la page qui leur est consacrée."
+        }
+      },
+      "cles": {
+        "minimum": {
+          "titre": "Le strict nécessaire",
+          "texte": "Chaque donnée sert une finalité déterminée, et pas une autre."
+        },
+        "europe": {
+          "titre": "Hébergement européen",
+          "texte": "Les données restent dans l’Union ; les transferts sont encadrés."
+        },
+        "maitrise": {
+          "titre": "Vous gardez la main",
+          "texte": "Accès, rectification, effacement et portabilité depuis vos paramètres."
+        }
+      }
+    },
+    "cookies": {
+      "metaTitre": "Gestion des traceurs",
+      "metaDescription": "Quels traceurs sont déposés, à quoi ils servent, et comment les refuser.",
+      "surtitre": "Traceurs",
+      "titre": "Cookies et traceurs",
+      "chapo": "Ce que nous déposons sur votre appareil, pourquoi, et comment le refuser sans perdre l’usage du site.",
+      "articles": {
+        "principe": {
+          "titre": "Notre principe",
+          "p1": "Le site fonctionne sans traceur publicitaire ni mesure d’audience cédée à un tiers. Seuls sont déposés les traceurs nécessaires au fonctionnement, qui ne requièrent pas de consentement.",
+          "encadre": "Aucune bannière ne vous demande d’accepter quoi que ce soit, parce qu’il n’y a rien à accepter. Si cela change, votre consentement sera recueilli avant tout dépôt."
+        },
+        "liste": {
+          "titre": "Traceurs déposés",
+          "session": "Maintient votre session ouverte entre deux pages. Sans lui, il faudrait se reconnecter à chaque clic. Durée : trente jours.",
+          "preference": "Conserve vos préférences d’affichage, comme le repli du menu latéral. Durée : un an.",
+          "securite": "Protège les formulaires contre la soumission frauduleuse depuis un autre site. Durée : la session."
+        },
+        "refus": {
+          "titre": "Refuser les traceurs",
+          "p1": "Votre navigateur permet de bloquer ou de supprimer les traceurs. Le refus des traceurs de session empêche la connexion : la partie publique du site reste consultable, les espaces personnels non."
+        },
+        "tiers": {
+          "titre": "Traceurs tiers",
+          "p1": "Aucun traceur tiers n’est déposé à ce jour. Le prestataire de paiement peut en déposer pendant la transaction, aux seules fins de prévention de la fraude ; ils relèvent de sa propre politique."
+        }
+      },
+      "cles": {
+        "aucun": {
+          "titre": "Aucun traceur publicitaire",
+          "texte": "Ni régie, ni revente, ni profilage."
+        },
+        "necessaire": {
+          "titre": "Le nécessaire seulement",
+          "texte": "Session, préférences d’affichage, sécurité des formulaires."
+        },
+        "refus": {
+          "titre": "Refus possible",
+          "texte": "Le site public reste consultable sans aucun traceur."
+        }
+      }
+    },
+    "mediation": {
+      "metaTitre": "Médiation de la consommation",
+      "metaDescription": "Comment saisir gratuitement un médiateur en cas de litige non résolu.",
+      "surtitre": "Recours",
+      "titre": "Médiation de la consommation",
+      "chapo": "Si notre réponse ne vous satisfait pas, un tiers indépendant peut être saisi gratuitement. Voici comment, et dans quel ordre.",
+      "articles": {
+        "avant": {
+          "titre": "D’abord, une réclamation écrite",
+          "p1": "La médiation ne peut être saisie qu’après une réclamation écrite adressée à notre service d’assistance et restée sans solution.",
+          "p2": "Écrivez-nous en indiquant la référence de votre location et la nature du désaccord. Nous répondons sous quinze jours.",
+          "encadre": "Conservez la trace de votre réclamation : le médiateur vous demandera de justifier de cette première démarche."
+        },
+        "saisine": {
+          "titre": "Saisir le médiateur",
+          "p1": "Passé un délai de deux mois sans solution, ou en cas de réponse insatisfaisante, vous pouvez saisir gratuitement le médiateur de la consommation dont nous relevons.",
+          "p2": "La saisine se fait par voie électronique ou postale. Elle est recevable dans l’année qui suit votre réclamation écrite."
+        },
+        "europeenne": {
+          "titre": "Plateforme européenne",
+          "p1": "Pour un litige transfrontalier au sein de l’Union européenne, la plateforme de règlement en ligne des litiges de la Commission européenne peut également être saisie."
+        },
+        "juridiction": {
+          "titre": "Voie judiciaire",
+          "p1": "Le recours à la médiation est facultatif et ne prive d’aucun droit. Vous conservez la faculté de saisir la juridiction compétente à tout moment."
+        }
+      },
+      "cles": {
+        "gratuit": {
+          "titre": "Gratuit pour vous",
+          "texte": "La médiation de la consommation est sans frais pour le consommateur."
+        },
+        "independant": {
+          "titre": "Un tiers indépendant",
+          "texte": "Le médiateur n’est ni juge ni partie ; il propose une solution."
+        },
+        "sansRenoncer": {
+          "titre": "Sans renoncer à rien",
+          "texte": "La voie judiciaire reste ouverte à tout moment."
+        }
+      }
+    },
+    "fiche": {
+      "editeur": "Éditeur",
+      "hebergeur": "Hébergeur",
+      "assureur": "Assureur",
+      "raisonSociale": "Raison sociale",
+      "formeJuridique": "Forme juridique",
+      "capital": "Capital social",
+      "siren": "SIREN",
+      "rcs": "RCS",
+      "tva": "TVA intracommunautaire",
+      "siege": "Siège social",
+      "courriel": "Adresse électronique",
+      "telephone": "Téléphone",
+      "directeur": "Directeur de la publication",
+      "nom": "Nom",
+      "site": "Site",
+      "police": "Numéro de police"
+    }
+  },
+  "contact": {
+    "metaTitre": "Nous contacter",
+    "metaDescription": "Assistance, réclamations, presse et partenariats : à qui écrire, et sous quel délai.",
+    "surtitre": "Assistance",
+    "titre": "Nous contacter",
+    "chapo": "Une question, un incident, une réclamation ? Voici à qui vous adresser, et sous quel délai nous répondons.",
+    "canaux": {
+      "titre": "Par quel canal",
+      "location": {
+        "titre": "Une location en cours",
+        "texte": "Passez par la messagerie de votre réservation : le dossier est déjà sous nos yeux, avec ses dates, son matériel et son état des lieux.",
+        "action": "Ouvrir mes réservations",
+        "delai": "Réponse sous 4 heures ouvrées"
+      },
+      "compte": {
+        "titre": "Votre compte",
+        "texte": "Connexion impossible, vérification d’identité, suppression de compte : écrivez-nous depuis l’adresse rattachée au compte.",
+        "action": "Écrire au support",
+        "delai": "Réponse sous 1 jour ouvré"
+      },
+      "reclamation": {
+        "titre": "Une réclamation",
+        "texte": "Un désaccord que le support n’a pas résolu. Indiquez la référence de la location et la nature du différend.",
+        "action": "Adresser une réclamation",
+        "delai": "Réponse sous 15 jours"
+      }
+    },
+    "autres": {
+      "titre": "Autres demandes",
+      "presse": {
+        "titre": "Presse",
+        "texte": "Interviews, éléments visuels, chiffres."
+      },
+      "partenariats": {
+        "titre": "Partenariats",
+        "texte": "Loueurs professionnels, assureurs, collectivités."
+      },
+      "securite": {
+        "titre": "Sécurité",
+        "texte": "Signalement de faille : réponse sous 72 heures, et aucune poursuite contre un signalement de bonne foi."
+      },
+      "donnees": {
+        "titre": "Données personnelles",
+        "texte": "Accès, rectification, effacement, portabilité."
+      }
+    },
+    "postal": {
+      "titre": "Par courrier",
+      "texte": "Pour les mises en demeure et les envois recommandés, écrivez au siège social.",
+      "lien": "Voir les mentions légales"
+    },
+    "urgence": {
+      "titre": "Un incident pendant une location",
+      "texte": "Accident, vol, panne immobilisante : déclarez l’incident depuis votre réservation. La déclaration horodatée conditionne la prise en charge par l’assurance."
+    }
+  },
+  "aide": {
+    "metaTitre": "Aide",
+    "metaDescription": "Les réponses aux questions les plus fréquentes sur la location, la caution, l’assurance et les permis.",
+    "surtitre": "Centre d’aide",
+    "titre": "Comment pouvons-nous aider ?",
+    "chapo": "Les questions qu’on nous pose le plus souvent, classées par moment du parcours.",
+    "sections": {
+      "avant": {
+        "titre": "Avant de réserver",
+        "q1": {
+          "q": "Ai-je le bon permis pour cette remorque ?",
+          "r": "Le permis B suffit tant que le poids total du véhicule et de la remorque ne dépasse pas 3 500 kg, ou que la remorque reste sous 750 kg. Au-delà, il faut un B96 ou un BE. Notre calculateur le vérifie pour votre véhicule précis."
+        },
+        "q2": {
+          "q": "Mon véhicule peut-il tracter ce matériel ?",
+          "r": "Deux limites s’appliquent : celle de votre permis, et celle du constructeur inscrite sur votre carte grise. C’est la plus basse qui compte. Renseignez votre véhicule dans votre profil et les annonces trop lourdes sont écartées d’office."
+        },
+        "q3": {
+          "q": "Le prix affiché est-il le prix final ?",
+          "r": "Oui. Le total inclut la location, les frais de service et l’assurance. Aucun frais n’apparaît après le paiement."
+        },
+        "q4": {
+          "q": "Puis-je annuler ?",
+          "r": "Cela dépend de la politique choisie par le propriétaire, indiquée sur chaque annonce : souple, modérée ou stricte. Les conditions exactes figurent dans nos conditions de vente."
+        }
+      },
+      "caution": {
+        "titre": "La caution",
+        "q1": {
+          "q": "La caution est-elle prélevée ?",
+          "r": "Non. C’est une empreinte bancaire : le montant est immobilisé sur votre carte, jamais encaissé. Vous ne le voyez pas débité, seulement indisponible."
+        },
+        "q2": {
+          "q": "Quand est-elle libérée ?",
+          "r": "Après la restitution sans incident, à l’issue du délai fixé par le pays — 72 heures en France. Votre banque peut mettre quelques jours de plus à rendre le montant disponible."
+        },
+        "q3": {
+          "q": "Peut-on me retenir une partie ?",
+          "r": "Seulement en cas de dommage constaté par l’état des lieux de retour, et toujours avec un motif chiffré et notifié. Vous pouvez contester : un litige ouvert suspend toute retenue jusqu’à ce qu’il soit tranché."
+        }
+      },
+      "pendant": {
+        "titre": "Pendant la location",
+        "q1": {
+          "q": "Que faire en cas d’accident ?",
+          "r": "Sécurisez les lieux, puis déclarez l’incident depuis votre réservation, photographies à l’appui. La déclaration horodatée conditionne la prise en charge."
+        },
+        "q2": {
+          "q": "Je vais rendre le matériel en retard",
+          "r": "Prévenez le propriétaire par la messagerie. Chaque jour entamé est facturé au prorata du prix journalier."
+        },
+        "q3": {
+          "q": "L’état des lieux est-il obligatoire ?",
+          "r": "Il n’est pas imposé, mais son absence au départ vaut présomption de bon état — au détriment de celui qui ne l’a pas fait. Cinq minutes qui évitent des semaines de discussion."
+        }
+      },
+      "proprietaire": {
+        "titre": "Mettre en location",
+        "q1": {
+          "q": "Combien puis-je gagner ?",
+          "r": "Cela dépend du matériel et de la ville. Une benne de 750 kg se loue couramment entre 30 et 45 € la journée. Le simulateur donne une estimation à partir de votre matériel."
+        },
+        "q2": {
+          "q": "Mon matériel est-il couvert ?",
+          "r": "Oui, pendant toute la durée de la location, dommages compris, sans démarche de votre part."
+        },
+        "q3": {
+          "q": "Quand suis-je payé ?",
+          "r": "Le versement part automatiquement après la restitution, une fois écoulé le délai de contestation. Aucune relance n’est nécessaire."
+        },
+        "q4": {
+          "q": "Puis-je refuser une demande ?",
+          "r": "Oui, sans avoir à vous justifier — sauf si vous avez activé la réservation instantanée, auquel cas la réservation est ferme dès le paiement."
+        }
+      }
+    },
+    "reste": {
+      "titre": "Vous n’avez pas trouvé ?",
+      "texte": "Notre équipe répond sous un jour ouvré, et sous quatre heures pour une location en cours.",
+      "action": "Nous contacter"
+    }
+  },
+  "aPropos": {
+    "metaTitre": "À propos",
+    "metaDescription": "Pourquoi cette plateforme existe, ce qu’elle fait, et ce qu’elle ne fera pas.",
+    "surtitre": "La plateforme",
+    "titre": "Une remorque dort onze mois sur douze",
+    "chapo": "Elle est garée, elle prend la place, elle vieillit. À dix kilomètres, quelqu’un en loue une pour la journée à un prix qu’il trouve élevé. Nous mettons les deux en relation.",
+    "chiffres": {
+      "titre": "Ce que cela change",
+      "usage": {
+        "valeur": "11 mois",
+        "libelle": "à l’arrêt",
+        "precision": "L’usage d’une remorque de particulier dépasse rarement quelques semaines par an."
+      },
+      "trajet": {
+        "valeur": "8 km",
+        "libelle": "pour la retirer",
+        "precision": "La distance moyenne entre particuliers, contre une vingtaine pour une agence."
+      },
+      "couverture": {
+        "valeur": "100 %",
+        "libelle": "des locations assurées",
+        "precision": "La couverture s’applique sans démarche, pendant toute la durée de la location."
+      }
+    },
+    "principes": {
+      "titre": "Nos partis pris",
+      "p1": {
+        "titre": "Le prix affiché est le prix payé",
+        "texte": "Frais de service et assurance sont inclus dans le total montré avant paiement. Aucune ligne n’apparaît ensuite."
+      },
+      "p2": {
+        "titre": "La caution n’est jamais un débit",
+        "texte": "C’est une empreinte bancaire : immobilisée, non encaissée, et libérée après la restitution."
+      },
+      "p3": {
+        "titre": "La compatibilité est vérifiée, non déclarée",
+        "texte": "Nous croisons votre permis, votre véhicule et le matériel avant la réservation. Une location impossible ne vous est pas proposée."
+      },
+      "p4": {
+        "titre": "Un litige gèle l’argent",
+        "texte": "Tant qu’un dossier est ouvert, ni la caution n’est libérée, ni le versement n’est envoyé. Personne n’est payé avant que ce soit tranché."
+      }
+    },
+    "perimetre": {
+      "titre": "Ce que nous ne faisons pas",
+      "texte": "Nous ne possédons aucun matériel, nous n’en entretenons aucun, et nous ne conduisons pas. Nous mettons en relation, nous assurons, nous encaissons et nous arbitrons. Le reste appartient aux deux parties."
+    },
+    "contact": {
+      "titre": "Une question ?",
+      "texte": "Nous répondons vite, et par des phrases entières.",
+      "action": "Nous contacter"
+    }
   }
 }

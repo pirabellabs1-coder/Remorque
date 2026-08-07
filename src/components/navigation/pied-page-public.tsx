@@ -64,16 +64,19 @@ export function PiedPagePublic() {
           <h2 className="text-sm font-semibold">{t("piedPage.entreprise")}</h2>
           <ul className="mt-3 space-y-2 text-sm text-texte-attenue">
             <li>
-              <Link href="/a-propos">À propos</Link>
+              <Link href="/a-propos">{t("piedPage.aPropos")}</Link>
             </li>
             <li>
               <Link href="/assurance">{t("navigation.assurance")}</Link>
             </li>
+            {/* Le lien vers le blog est retiré tant qu'aucun article n'existe.
+                Un lien qui mène nulle part use la confiance, et le
+                référencement le pénalise plus qu'une rubrique absente. */}
             <li>
-              <Link href="/blog">Blog</Link>
+              <Link href="/aide">{t("piedPage.aide")}</Link>
             </li>
             <li>
-              <Link href="/contact">Contact</Link>
+              <Link href="/contact">{t("piedPage.contact")}</Link>
             </li>
           </ul>
         </nav>
@@ -82,19 +85,22 @@ export function PiedPagePublic() {
           <h2 className="text-sm font-semibold">{t("piedPage.legal")}</h2>
           <ul className="mt-3 space-y-2 text-sm text-texte-attenue">
             <li>
-              <Link href="/cgu">Conditions générales d&apos;utilisation</Link>
+              <Link href="/cgu">{t("piedPage.cgu")}</Link>
             </li>
             <li>
-              <Link href="/cgv">Conditions générales de vente</Link>
+              <Link href="/cgv">{t("piedPage.cgv")}</Link>
             </li>
             <li>
-              <Link href="/confidentialite">Politique de confidentialité</Link>
+              <Link href="/confidentialite">{t("piedPage.confidentialite")}</Link>
             </li>
             <li>
-              <Link href="/mediation">Médiation de la consommation</Link>
+              <Link href="/mediation">{t("piedPage.mediation")}</Link>
             </li>
             <li>
-              <Link href="/mentions-legales">Mentions légales</Link>
+              <Link href="/cookies">{t("piedPage.cookies")}</Link>
+            </li>
+            <li>
+              <Link href="/mentions-legales">{t("piedPage.mentionsLegales")}</Link>
             </li>
           </ul>
         </nav>
