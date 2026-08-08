@@ -1,0 +1,263 @@
+# Recette du paiement Stripe
+
+Protocole à dérouler avant toute mise en service du règlement en ligne.
+
+Le code du paiement a été écrit et typé, ses règles de montants sont couvertes
+par des tests unitaires, mais **il n'a jamais vu un vrai paiement** : aucune clé
+Stripe n'était configurée sur le poste de développement. Ce document est ce qui
+manque entre « cela compile » et « cela encaisse ».
+
+## Ce que cette recette prouve — et ce qu'elle ne prouve pas
+
+Elle prouve que le chemin nominal fonctionne de bout en bout, que les chemins
+d'échec ne laissent pas d'écriture douteuse, et qu'un événement rejoué ou forgé
+ne déplace rien.
+
+Elle ne prouve rien sur le reversement au propriétaire (Stripe Connect), le
+débit d'une caution après dommage, ni la facture : ces trois-là ne sont pas
+écrits. Voir « Hors périmètre » en fin de document.
+
+## 1. Prérequis
+
+- Un compte Stripe en **mode test**. Aucune clé de production ne doit approcher
+  un poste de développement.
+- L'interface en ligne de commande Stripe (`stripe`), authentifiée par
+  `stripe login`.
+- La base de démonstration amorcée : `npm run db:demo`.
+
+## 2. Configuration
+
+Dans `.env.local` :
+
+```
+STRIPE_SECRET_KEY=sk_test_…
+STRIPE_WEBHOOK_SECRET=whsec_…
+```
+
+La clé secrète vient du tableau de bord Stripe (Développeurs → Clés d'API). Le
+secret du point d'entrée est **rendu par `stripe listen`** à l'étape suivante :
+celui du tableau de bord ne vaut que pour un point d'entrée déclaré sur une
+adresse publique.
+
+Vérification préalable, sans clé encore renseignée — c'est le comportement de
+repli, et il doit être constaté avant d'être remplacé :
+
+| Vérification | Attendu |
+|---|---|
+| Bouton « Régler la location » cliqué | « Le paiement en ligne n'est pas encore ouvert sur cette installation. » |
+| `POST /api/stripe/webhook` | **503**, aucune écriture |
+
+## 3. Tunnel des événements
+
+Dans un terminal séparé, laissé ouvert pendant toute la recette :
+
+```bash
+stripe listen --forward-to http://localhost:3000/api/stripe/webhook
+```
+
+Reporter le `whsec_…` affiché dans `.env.local`, puis **redémarrer le serveur de
+développement** — les variables d'environnement ne sont lues qu'au démarrage.
+
+Le port doit correspondre à celui du serveur (`npm run dev` affiche le sien ; il
+n'est pas toujours 3000 si le port est occupé).
+
+## 4. Mise en situation
+
+Le règlement n'est proposé que sur une réservation **acceptée**. Se connecter en
+loueur (`yanis@demonstration.flexitrailer.eu`, mot de passe
+`Demonstration2026!`), écran « Réservations », puis « Accepter » sur une demande
+du compte locataire de démonstration.
+
+À défaut, en base :
+
+```sql
+UPDATE reservation SET statut = 'acceptee', acceptee_le = now()
+WHERE numero = 'FT-2026-XXXX';
+```
+
+Noter l'identifiant de la réservation : toutes les vérifications s'y réfèrent.
+
+## 5. Scénarios
+
+Cartes de test Stripe — toutes avec une date future et n'importe quel
+cryptogramme.
+
+### S1 — Règlement nominal
+
+Carte `4242 4242 4242 4242`.
+
+1. Se connecter en locataire (`moi@demonstration.flexitrailer.eu`).
+2. Écran « Réservations » → « Régler la location ».
+3. Payer sur la page Stripe.
+
+| Vérification | Attendu |
+|---|---|
+| Redirection | `/compte/reservations?paiement=succes`, bandeau « Paiement reçu. Votre réservation est en cours de confirmation. » |
+| Terminal `stripe listen` | `checkout.session.completed` → `[200]` |
+| `reservation.statut` | `payee` |
+| Ligne `paiement` | une seule, `statut = 'capture'`, `montant` = `reservation.total_locataire`, `stripe_payment_intent_id` renseigné |
+| Ligne `caution` | créée, `statut = 'constituee'`, `stripe_payment_method_id` **renseigné** |
+| `reservation_transition` | une ligne `acceptee → payee`, `acteur = 'systeme'`, motif citant l'intention |
+| Notification | une ligne `gabarit = 'reservation.payee'` pour le propriétaire |
+
+```sql
+SELECT r.statut,
+       p.statut  AS paiement, p.montant, p.stripe_payment_intent_id,
+       c.statut  AS caution,  c.stripe_payment_method_id
+FROM reservation r
+LEFT JOIN paiement p ON p.reservation_id = r.id
+LEFT JOIN caution  c ON c.reservation_id = r.id
+WHERE r.id = '<identifiant>';
+```
+
+Le moyen de paiement enregistré sur la caution est le point le plus important
+de cette recette : **sans lui, la garantie de caution est un mot** — rien ne
+pourrait être débité en cas de dommage.
+
+Vérifier enfin le courriel enfilé :
+
+```bash
+npm run courriels
+```
+
+### S2 — Abandon
+
+Ouvrir le paiement, puis revenir en arrière sans payer.
+
+| Vérification | Attendu |
+|---|---|
+| Redirection | `?paiement=abandon`, message neutre |
+| `reservation.statut` | reste `acceptee` |
+| Lignes `paiement` / `caution` | **aucune** |
+
+### S3 — Authentification forte (3-D Secure)
+
+Carte `4000 0025 0000 3155`, puis valider l'authentification.
+
+Attendu : identique à S1. Une authentification refusée doit se comporter comme
+S4.
+
+### S4 — Carte refusée
+
+Carte `4000 0000 0000 0002`.
+
+| Vérification | Attendu |
+|---|---|
+| Page Stripe | refus affiché, l'usager reste sur place |
+| `reservation.statut` | reste `acceptee` |
+| Lignes `paiement` / `caution` | **aucune** |
+
+Le point à surveiller : aucun `checkout.session.completed` ne doit être reçu.
+Un refus n'est pas un paiement.
+
+### S5 — Rejeu d'événement (idempotence)
+
+Stripe rejoue les événements qu'il croit perdus, parfois des jours plus tard.
+
+```bash
+stripe events list --limit 5
+stripe events resend <evt_…>
+```
+
+| Vérification | Attendu |
+|---|---|
+| Réponse | `[200]` |
+| Lignes `paiement` | **toujours une seule** |
+| `reservation_transition` | **aucune nouvelle ligne** |
+
+```sql
+SELECT count(*) FROM paiement WHERE reservation_id = '<identifiant>';
+```
+
+C'est le scénario le plus facile à négliger et le plus coûteux à découvrir en
+production : un double comptage fausse la comptabilité et le reversement.
+
+### S6 — Signature invalide
+
+```bash
+curl -i -X POST http://localhost:3000/api/stripe/webhook \
+  -H "Content-Type: application/json" \
+  -H "stripe-signature: t=1,v1=faux" \
+  -d '{"type":"checkout.session.completed","data":{"object":{"metadata":{"reservationId":"<identifiant>"}}}}'
+```
+
+| Vérification | Attendu |
+|---|---|
+| Réponse | **400** |
+| Base | strictement inchangée |
+
+Le même appel sans en-tête `stripe-signature` doit également répondre 400. Sans
+cette garde, n'importe qui déclarerait un paiement qui n'a pas eu lieu.
+
+### S7 — Statut incompatible
+
+Depuis une réservation `demandee`, `payee` ou `cloturee`, appeler l'action de
+règlement (le bouton n'est pas affiché — le forcer depuis la console).
+
+Attendu : refus `statutIncompatible`, aucune session créée.
+
+### S8 — Dossier d'autrui
+
+Se connecter en locataire A, appeler le règlement avec l'identifiant d'une
+réservation du locataire B.
+
+Attendu : refus `interdit`. La garde est dans la clause SQL : le dossier n'est
+pas même rapporté du serveur.
+
+### S9 — Montants incohérents
+
+Introduire volontairement un écart, puis tenter le règlement :
+
+```sql
+UPDATE reservation SET frais_livraison = 500 WHERE id = '<identifiant>';
+```
+
+| Vérification | Attendu |
+|---|---|
+| Message | « Le détail des montants ne correspond pas au total de la réservation. Contactez-nous avant de régler. » |
+| Session Stripe | **aucune** |
+
+Rétablir ensuite (`frais_livraison = 0`). Ce refus est délibéré : mieux vaut ne
+rien encaisser qu'encaisser une somme que le locataire n'a pas acceptée.
+
+### S10 — Double clic
+
+Cliquer deux fois de suite sur « Régler la location ».
+
+Attendu : une seule session ouverte — la clé d'idempotence est
+`reglement-<identifiant de réservation>`.
+
+## 6. Résultat attendu qui surprendra : la réservation reste « payée »
+
+Après S1, la réservation **ne passe pas à « confirmée »**. C'est conforme à
+l'état actuel du code : la transition `confirmer` existe dans la machine à états
+mais rien ne l'émet encore. Elle suppose le contrat généré, l'attestation émise
+et le code de retrait communiqué.
+
+Ce n'est donc pas un défaut à consigner, mais un chantier à ouvrir. Le noter tel
+quel dans le compte rendu de recette.
+
+## 7. Hors périmètre
+
+Trois sujets ne sont pas écrits et ne peuvent pas être recettés :
+
+1. **Reversement au propriétaire** (Stripe Connect). La colonne
+   `utilisateur.stripe_compte_id` existe, aucun compte n'est créé ni alimenté.
+2. **Débit de la caution** après dommage constaté. Le moyen de paiement est
+   conservé (vérifié en S1), mais aucun code ne s'en sert.
+3. **Facture** (`facture.url`). La table existe, rien ne l'écrit.
+
+## 8. Nettoyage
+
+```sql
+DELETE FROM caution  WHERE reservation_id = '<identifiant>';
+DELETE FROM paiement WHERE reservation_id = '<identifiant>';
+DELETE FROM reservation_transition WHERE reservation_id = '<identifiant>';
+UPDATE reservation SET statut = 'demandee', acceptee_le = NULL, payee_le = NULL
+WHERE id = '<identifiant>';
+```
+
+Ou, plus simplement, réamorcer : `npm run db:demo`.
+
+Retirer enfin les clés de `.env.local` si le poste sert aussi à autre chose, et
+arrêter `stripe listen`.

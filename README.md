@@ -107,7 +107,7 @@ financière — sont testables isolément et servent de spécification de recett
 | 0 | Cadrage et conception | Document de cadrage v1.0 remis ; 10 décisions en attente (section 16) |
 | 1 | Socle technique | **En cours** — routage multi-marchés, jetons de design, modèle de données, machine à états |
 | 2 | Annonces et recherche | À venir |
-| 3 | Réservation et paiement | À venir |
+| 3 | Réservation et paiement | **En cours** — règlement Stripe écrit, à recetter : [docs/recette-stripe.md](docs/recette-stripe.md) |
 | 4 | Super administration | À venir |
 | 5 | Référencement et contenu | À venir |
 | 6 | Recette et lancement | À venir |
