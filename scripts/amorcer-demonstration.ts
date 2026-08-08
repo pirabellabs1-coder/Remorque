@@ -216,6 +216,11 @@ async function purger() {
       SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
     )
   `;
+  await sql`
+    DELETE FROM notification WHERE destinataire_id IN (
+      SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
+    )
+  `;
   for (const table of ["reversement", "caution", "paiement"]) {
     await sql.unsafe(`
       DELETE FROM ${table} WHERE reservation_id IN (

@@ -14,5 +14,6 @@ export * from "./annonce";
 export * from "./reservation";
 export * from "./finance";
 export * from "./location";
+export * from "./notification";
 export * from "./audit";
 export * from "./authentification";

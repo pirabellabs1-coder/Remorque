@@ -7,6 +7,7 @@ import { z } from "zod";
 import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
 import { conversation, message, reservation } from "@/server/db/schema";
+import { enfilerNotificationNouveauMessage } from "@/server/notifications/file";
 
 /**
  * Envoi d'un message.
@@ -120,6 +121,10 @@ export async function envoyerMessage(donnees: FormData): Promise<Reponse> {
       .update(conversation)
       .set({ dernierMessageLe: new Date(), modifieLe: new Date() })
       .where(eq(conversation.id, fil.id));
+
+    // L'autre partie est prévenue par courriel — dans la transaction, comme
+    // toute notification : un courriel sans message serait un fantôme.
+    await enfilerNotificationNouveauMessage(tx, dossier.id, moi.id);
   });
 
   revalidatePath("/[locale]/(espaces)", "layout");

@@ -57,6 +57,13 @@
       "when": 1786185291482,
       "tag": "0007_bouncy_dust",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786196156470,
+      "tag": "0008_first_riptide",
+      "breakpoints": true
     }
   ]
 }

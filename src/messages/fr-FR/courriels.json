@@ -1,0 +1,52 @@
+{
+  "courriels": {
+    "reservation": {
+      "demandee": {
+        "sujet": "Nouvelle demande de location — {annonceTitre}",
+        "corps": "Bonjour {prenom},\n\n{interlocuteur} souhaite louer « {annonceTitre} » ({reference}). Vous avez un délai limité pour répondre : passé ce délai, la demande expire d’elle-même.\n\nConnectez-vous à votre espace pour accepter ou refuser."
+      },
+      "acceptee": {
+        "sujet": "Votre demande est acceptée — {reference}",
+        "corps": "Bonjour {prenom},\n\nBonne nouvelle : votre demande de location « {annonceTitre} » ({reference}) a été acceptée. Il ne reste qu’à régler pour confirmer la réservation — l’empreinte de caution sera prise au même moment, sans débit."
+      },
+      "refusee": {
+        "sujet": "Votre demande n’a pas été retenue — {reference}",
+        "corps": "Bonjour {prenom},\n\nVotre demande de location « {annonceTitre} » ({reference}) a été refusée par le propriétaire. Aucun montant n’a été engagé. D’autres matériels comparables sont disponibles près de chez vous."
+      },
+      "expiree": {
+        "sujet": "Votre demande a expiré — {reference}",
+        "corps": "Bonjour {prenom},\n\nLe propriétaire n’a pas répondu dans le délai imparti : votre demande « {annonceTitre} » ({reference}) a expiré d’elle-même. Aucun montant n’a été engagé."
+      },
+      "payee": {
+        "sujet": "Réservation payée — {reference}",
+        "corps": "Bonjour {prenom},\n\nLe paiement de la location « {annonceTitre} » ({reference}) est encaissé. Le contrat et le code de retrait suivent dans la confirmation."
+      },
+      "confirmee": {
+        "sujet": "Réservation confirmée — {reference}",
+        "corps": "Bonjour {prenom},\n\nLa location « {annonceTitre} » ({reference}) est confirmée : contrat généré, attestation d’assurance émise. Pensez à l’état des lieux de départ au moment du retrait — il se signe sur place, par les deux parties."
+      },
+      "en_cours": {
+        "sujet": "Location démarrée — {reference}",
+        "corps": "Bonjour {prenom},\n\nL’état des lieux de départ est signé et la location « {annonceTitre} » ({reference}) a démarré. Bonne route."
+      },
+      "restituee": {
+        "sujet": "Matériel restitué — {reference}",
+        "corps": "Bonjour {prenom},\n\nL’état des lieux de retour est signé pour « {annonceTitre} » ({reference}). La clôture et la libération de la caution suivent leur cours."
+      },
+      "cloturee": {
+        "sujet": "Location clôturée — {reference}",
+        "corps": "Bonjour {prenom},\n\nLa location « {annonceTitre} » ({reference}) est clôturée. Côté locataire, la caution est libérée dans le délai prévu par le pays ; côté propriétaire, le reversement est envoyé. Vous pouvez déposer un avis pendant quatorze jours."
+      },
+      "annulee": {
+        "sujet": "Location annulée — {reference}",
+        "corps": "Bonjour {prenom},\n\nLa location « {annonceTitre} » ({reference}) a été annulée. Le remboursement suit la politique d’annulation de l’annonce, et aucune caution n’est retenue."
+      }
+    },
+    "messagerie": {
+      "nouveauMessage": {
+        "sujet": "Nouveau message de {interlocuteur} — {annonceTitre}",
+        "corps": "Bonjour {prenom},\n\n{interlocuteur} vous a écrit au sujet de « {annonceTitre} ». Répondez depuis votre espace : les échanges y restent rattachés au dossier de location, et les coordonnées y sont protégées."
+      }
+    }
+  }
+}

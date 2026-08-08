@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "courriels": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/expedier-courriels.ts",
     "db:demo": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/amorcer-demonstration.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

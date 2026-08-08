@@ -12,6 +12,7 @@ import {
   reversement,
   tarif,
 } from "@/server/db/schema";
+import { enfilerNotificationsReservation } from "@/server/notifications/file";
 
 /**
  * Création d'une demande de réservation.
@@ -183,6 +184,11 @@ export async function demanderReservation(entree: {
       commissionRetenue: devis.commissionProprietaire,
       prevuLe: fin,
     });
+
+    // Le propriétaire est prévenu qu'une demande l'attend — enfilé dans la
+    // même transaction : un courriel annonçant une demande qui n'a pas été
+    // écrite serait pire que pas de courriel du tout.
+    await enfilerNotificationsReservation(tx, nouvelle.id, "demandee");
 
     return nouvelle;
   });

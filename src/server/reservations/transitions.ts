@@ -10,6 +10,7 @@ import {
 } from "@/domain/reservation/machine";
 import { db } from "@/server/db";
 import { caution, reservation, reservationTransition, reversement } from "@/server/db/schema";
+import { enfilerNotificationsReservation } from "@/server/notifications/file";
 
 /**
  * Le seul chemin par lequel une réservation change d'état — règle 4.
@@ -136,6 +137,11 @@ export async function changerStatut(entree: {
       acteurId: entree.acteurId,
       motif: entree.motif,
     });
+
+    // Règle 4, dernier tiers : la transition déclenche ses notifications.
+    // Dans la transaction, pour qu'un courriel ne parte jamais annoncer un
+    // état qui n'a finalement pas été atteint.
+    await enfilerNotificationsReservation(tx, entree.reservationId, suivant);
 
     // Les mouvements d'argent suivent l'état, dans la même transaction : une
     // location annulée dont la caution resterait immobilisée est un appel au

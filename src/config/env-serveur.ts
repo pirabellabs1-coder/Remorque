@@ -38,6 +38,13 @@ const schemaServeur = z.object({
   STRIPE_SECRET_KEY: z.string().startsWith("sk_").optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
 
+  /**
+   * Expédition des courriels. Sans clé, les notifications restent en file
+   * d'attente — elles ne sont jamais marquées envoyées sans l'avoir été.
+   */
+  RESEND_API_KEY: z.string().startsWith("re_").optional(),
+  COURRIEL_EXPEDITEUR: z.string().email().optional(),
+
   S3_ENDPOINT: z.string().url().optional(),
   S3_BUCKET: z.string().optional(),
   S3_ACCESS_KEY_ID: z.string().optional(),
