@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
+import { FormulaireReponseAvis } from "@/components/espace/formulaire-reponse-avis";
 import { Barres } from "@/components/espace/graphique";
 import { ListeVide } from "@/components/espace/indicateurs";
 import { Etoiles } from "@/components/espace/statut";
@@ -93,7 +94,9 @@ export default async function PageAvis({ params }: Props) {
                       {entree.reponse}
                     </p>
                   </div>
-                ) : null}
+                ) : (
+                  <FormulaireReponseAvis avisId={entree.id} />
+                )}
               </li>
             ))}
           </ul>

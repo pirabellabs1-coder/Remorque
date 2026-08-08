@@ -405,6 +405,21 @@
         "etoiles": "{nombre, plural, =1 {1 étoile} other {# étoiles}}",
         "repondre": "Répondre",
         "votreReponse": "Votre réponse",
+        "reponse": {
+          "repondre": "Répondre à cet avis",
+          "titre": "Votre réponse",
+          "definitive": "Elle sera publiée sous l’avis, visible de tous, et ne pourra plus être modifiée.",
+          "exemple": "Merci pour votre retour. Le feu arrière a été remplacé depuis…",
+          "publier": "Publier la réponse",
+          "envoi": "Publication…",
+          "annuler": "Annuler",
+          "erreurs": {
+            "invalide": "La réponse est trop courte ou trop longue.",
+            "impossible": "Cet avis ne vous concerne pas, ou vous y avez déjà répondu.",
+            "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+            "echec": "La publication a échoué. Réessayez."
+          }
+        },
         "vide": {
           "titre": "Aucun avis reçu",
           "texte": "Les locataires peuvent déposer un avis dans les quatorze jours suivant la restitution."
