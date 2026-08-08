@@ -6,6 +6,7 @@ import { alias } from "drizzle-orm/pg-core";
 import type { StatutReservation } from "@/domain/reservation/machine";
 import type { db } from "@/server/db";
 import { annonce, notification, reservation, utilisateur } from "@/server/db/schema";
+import { destinatairesAcceptant } from "@/server/notifications/preferences";
 
 /**
  * Enfilage des notifications — moitié « écriture » de la boîte d'envoi.
@@ -152,6 +153,14 @@ export async function enfilerNotificationNouveauMessage(
 
   const destinataireId =
     auteurId === dossier.locataireId ? dossier.proprietaireId : dossier.locataireId;
+
+  // Le destinataire a pu couper les alertes de messagerie : elles rendent
+  // service sans rien décider, et se refusent donc légitimement.
+  const acceptant = await destinatairesAcceptant(
+    [destinataireId],
+    "messagerie.nouveauMessage",
+  );
+  if (acceptant.length === 0) return;
 
   await executeur.insert(notification).values({
     destinataireId,

@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -150,6 +150,10 @@ export async function enregistrerPreferences(donnees: FormData): Promise<Reponse
     "reservations-sms",
     "messagesNotif-courriel",
     "messagesNotif-sms",
+    // Les rappels — retrait de demain, demande qui expire, avis à écrire.
+    // Ils rendent service sans rien décider : les couper est légitime.
+    "rappels-courriel",
+    "rappels-sms",
     "cautions-courriel",
     "cautions-sms",
     "promotions-courriel",
@@ -159,9 +163,15 @@ export async function enregistrerPreferences(donnees: FormData): Promise<Reponse
   const preferences: Record<string, boolean> = {};
   for (const cle of CLES) preferences[cle] = donnees.get(cle) === "on";
 
+  // Fusion plutôt que remplacement : la colonne porte d'autres réglages que
+  // ceux de cet écran, et les écraser au passage effacerait des préférences
+  // que l'usager n'a jamais vues — donc jamais changées.
   await db
     .update(utilisateur)
-    .set({ preferences, modifieLe: new Date() })
+    .set({
+      preferences: sql`coalesce(${utilisateur.preferences}, '{}'::jsonb) || ${JSON.stringify(preferences)}::jsonb`,
+      modifieLe: new Date(),
+    })
     .where(eq(utilisateur.id, moi.id));
 
   revalidatePath("/[locale]/(espaces)", "layout");

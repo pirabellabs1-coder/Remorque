@@ -251,6 +251,22 @@ export default async function PageMesReservations({ params, searchParams }: Prop
                         statut={reservation.statut}
                         avecFacture
                       />
+
+                      {/* Le recours n'est proposé qu'une fois le matériel
+                          retiré : avant, il n'y a rien à contester. */}
+                      {["en_cours", "restituee", "cloturee"].includes(
+                        reservation.statut,
+                      ) ? (
+                        <Link
+                          href={{
+                            pathname: "/compte/litiges/[reservation]",
+                            params: { reservation: reservation.id },
+                          }}
+                          className="mt-2 inline-block text-sm text-texte-attenue underline-offset-4 transition-colors hover:text-danger hover:underline"
+                        >
+                          {t("litige")}
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
                 </div>

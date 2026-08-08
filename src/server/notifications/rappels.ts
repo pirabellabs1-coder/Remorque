@@ -5,6 +5,7 @@ import { and, eq, gte, lt, lte, sql } from "drizzle-orm";
 import { FENETRE_AVIS_JOURS } from "@/server/donnees-demo";
 import { db } from "@/server/db";
 import { annonce, avis, notification, reservation, utilisateur } from "@/server/db/schema";
+import { destinatairesAcceptant } from "@/server/notifications/preferences";
 
 /**
  * Rappels planifiés.
@@ -47,9 +48,19 @@ async function dejaEnvoye(rappel: Rappel): Promise<boolean> {
 }
 
 async function enfiler(rappels: Rappel[]): Promise<number> {
+  // Les rappels se coupent : on écarte d'emblée ceux qui n'en veulent pas
+  // plutôt que d'encombrer la file de courriels qui ne partiront jamais.
+  const acceptant = new Set(
+    await destinatairesAcceptant(
+      rappels.map((rappel) => rappel.destinataireId),
+      "rappel",
+    ),
+  );
+
   const aEcrire: Rappel[] = [];
 
   for (const rappel of rappels) {
+    if (!acceptant.has(rappel.destinataireId)) continue;
     if (await dejaEnvoye(rappel)) continue;
     aEcrire.push(rappel);
   }

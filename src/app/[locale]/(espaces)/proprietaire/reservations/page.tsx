@@ -185,6 +185,20 @@ export default async function PageReservations({ params, searchParams }: Props) 
                           reservationId={reservation.id}
                           statut={reservation.statut}
                         />
+
+                        {["en_cours", "restituee", "cloturee"].includes(
+                          reservation.statut,
+                        ) ? (
+                          <Link
+                            href={{
+                              pathname: "/proprietaire/litiges/[reservation]",
+                              params: { reservation: reservation.id },
+                            }}
+                            className="mt-2 inline-block text-sm text-texte-attenue underline-offset-4 transition-colors hover:text-danger hover:underline"
+                          >
+                            {t("litige")}
+                          </Link>
+                        ) : null}
                       </div>
                     </td>
                   </tr>

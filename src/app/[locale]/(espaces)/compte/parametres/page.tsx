@@ -43,6 +43,7 @@ export default async function PageParametresLocataire({ params }: Props) {
   const NOTIFICATIONS = [
     { cle: "reservations", courriel: true, sms: true },
     { cle: "messagesNotif", courriel: true, sms: false },
+    { cle: "rappels", courriel: true, sms: false },
     { cle: "cautions", courriel: true, sms: false },
     { cle: "promotions", courriel: false, sms: false },
   ] as const;

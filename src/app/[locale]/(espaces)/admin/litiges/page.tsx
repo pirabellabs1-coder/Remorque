@@ -3,6 +3,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { CarteIndicateur, ListeVide } from "@/components/espace/indicateurs";
 import { Cellule, Pastille, Tableau } from "@/components/espace/tableau";
+import { Link } from "@/i18n/navigation";
 import { PRIX_AFFICHE } from "@/lib/cn";
 import { listerLitiges, type Litige } from "@/server/espaces/administration";
 
@@ -85,7 +86,17 @@ export default async function PageLitiges({ params }: Props) {
                   scope="row"
                   className="px-5 py-3.5 text-left font-mono text-sm font-normal whitespace-nowrap"
                 >
-                  {litige.reference}
+                  {/* La référence mène au dossier : c'est par elle qu'on
+                      désigne un litige, donc par elle qu'on l'ouvre. */}
+                  <Link
+                    href={{
+                      pathname: "/admin/litiges/[litige]",
+                      params: { litige: litige.id },
+                    }}
+                    className="underline-offset-4 transition-colors hover:text-accent hover:underline"
+                  >
+                    {litige.reference}
+                  </Link>
                 </th>
                 <Cellule secondaire attenue className="font-mono text-sm">
                   {litige.reservationReference}

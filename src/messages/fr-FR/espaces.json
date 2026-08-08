@@ -68,7 +68,8 @@
           "titre": "Aucune réservation dans ce filtre",
           "texte": "Changez de filtre, ou cherchez une remorque près de chez vous pour votre prochain trajet.",
           "action": "Chercher une remorque"
-        }
+        },
+        "litige": "Signaler un litige"
       },
       "favoris": {
         "titre": "Favoris",
@@ -249,7 +250,8 @@
         "supprimerTexte": "La suppression est définitive. Elle est refusée tant qu’une location est en cours ou qu’une caution reste immobilisée.",
         "supprimerAction": "Supprimer mon compte",
         "enregistrer": "Enregistrer",
-        "marchesAvenir": "{nombre, plural, =1 {Un autre marché ouvrira lors des prochaines vagues.} other {# autres marchés ouvriront lors des prochaines vagues.}}"
+        "marchesAvenir": "{nombre, plural, =1 {Un autre marché ouvrira lors des prochaines vagues.} other {# autres marchés ouvriront lors des prochaines vagues.}}",
+        "rappels": "Rappels (retrait, avis à écrire)"
       }
     },
     "loueur": {
@@ -377,7 +379,8 @@
         "vide": {
           "titre": "Aucune réservation dans ce filtre",
           "texte": "Changez de filtre, ou publiez une annonce pour recevoir vos premières demandes."
-        }
+        },
+        "litige": "Signaler un litige"
       },
       "revenus": {
         "titre": "Revenus",
@@ -986,6 +989,67 @@
         "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
         "echec": "L’envoi a échoué. Réessayez."
       }
+    },
+    "litige": {
+      "titre": "Litige",
+      "retourReservations": "Mes réservations",
+      "retourListe": "Tous les litiges",
+      "reclamation": "Réclamation",
+      "motif": "Motif",
+      "ouvertLe": "Ouvert le",
+      "montantReclame": "Montant réclamé",
+      "montantPropose": "Montant proposé à l’amiable",
+      "decision": "Décision",
+      "montantAccorde": "Montant accordé",
+      "renduLe": "Rendue le",
+      "fondsGeles": "Caution et reversement immobilisés le temps de l’instruction.",
+      "closSansSuite": "Ce litige a été clos sans suite. Les fonds immobilisés ont repris leur cours.",
+      "champMontant": "Montant, en euros",
+      "champMotif": "Motif de la décision",
+      "motifAide": "Il sera communiqué aux deux parties et opposé à celle qui perd. Une décision sans motif est indéfendable.",
+      "confirmer": "Confirmer",
+      "annuler": "Annuler",
+      "statuts": {
+        "ouvert": "Litige ouvert",
+        "en_resolution_amiable": "Règlement à l’amiable proposé",
+        "en_arbitrage": "En arbitrage",
+        "resolu": "Tranché",
+        "clos_sans_suite": "Clos sans suite"
+      },
+      "actions": {
+        "proposer": "Proposer un règlement",
+        "escalader": "Demander l’arbitrage",
+        "trancher": "Trancher le litige",
+        "classer": "Classer sans suite",
+        "retirer": "Retirer ma réclamation"
+      },
+      "formulaire": {
+        "avertissement": "Ouvrir un litige immobilise la caution et le reversement des deux côtés jusqu’à la décision. N’ouvrez un dossier qu’après avoir tenté un accord par la messagerie.",
+        "motif": "Motif du litige",
+        "choisir": "Choisissez un motif",
+        "motifs": {
+          "dommage": "Dommage sur le matériel",
+          "retard": "Retard de restitution",
+          "non_conformite": "Matériel non conforme à l’annonce",
+          "annulation": "Désaccord sur une annulation",
+          "paiement": "Désaccord sur un montant"
+        },
+        "montant": "Montant réclamé",
+        "montantAide": "Au plus le montant de la caution, soit {plafond}. Au-delà, le recours n’est plus du ressort de la plateforme.",
+        "description": "Ce qui s’est passé",
+        "descriptionAide": "Faits, dates, et ce que vous demandez. L’état des lieux est joint d’office au dossier.",
+        "ouvrir": "Ouvrir le litige",
+        "ouverture": "Ouverture…",
+        "erreurs": {
+          "invalide": "Le formulaire est incomplet ou mal renseigné.",
+          "interdit": "Cette location ne vous concerne pas.",
+          "dejaOuvert": "Un litige est déjà ouvert sur cette location.",
+          "montantExcessif": "Le montant réclamé dépasse la caution.",
+          "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+          "echec": "L’ouverture a échoué. Réessayez."
+        }
+      },
+      "fondsDejaVerses": "Les fonds de cette location ont déjà été versés : le litige est instruit, mais rien ne peut être immobilisé."
     }
   }
 }
