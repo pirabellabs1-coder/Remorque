@@ -113,6 +113,34 @@ export async function enfilerNotificationsReservation(
   );
 }
 
+/**
+ * Prévient les deux parties d'un mouvement sur un litige.
+ *
+ * Les deux, sans exception : un litige où l'une apprendrait la décision et
+ * l'autre non serait une décision rendue à huis clos.
+ */
+export async function enfilerNotificationsLitige(
+  executeur: Executeur,
+  reservationId: string,
+  gabarit: "ouvert" | "proposition" | "arbitrage" | "resolu" | "classe",
+): Promise<void> {
+  const dossier = await chargerDossier(executeur, reservationId);
+  if (!dossier) return;
+
+  await executeur.insert(notification).values(
+    [dossier.locataireId, dossier.proprietaireId].map((destinataireId) => ({
+      destinataireId,
+      gabarit: `litige.${gabarit}`,
+      donnees: {
+        reference: dossier.numero,
+        annonceTitre: dossier.annonceTitre,
+        prenom: dossier.prenoms.get(destinataireId) ?? "",
+        interlocuteur: "",
+      },
+    })),
+  );
+}
+
 /** Un message reçu prévient l'autre partie — jamais son auteur. */
 export async function enfilerNotificationNouveauMessage(
   executeur: Executeur,

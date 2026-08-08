@@ -42,6 +42,42 @@
         "corps": "Bonjour {prenom},\n\nLa location « {annonceTitre} » ({reference}) a été annulée. Le remboursement suit la politique d’annulation de l’annonce, et aucune caution n’est retenue."
       }
     },
+    "litige": {
+      "ouvert": {
+        "sujet": "Litige ouvert sur la location {reference}",
+        "corps": "Bonjour {prenom},\n\nUn litige a été ouvert sur la location « {annonceTitre} » ({reference}). Les fonds sont immobilisés le temps de l’instruction : ni la caution n’est libérée, ni le reversement envoyé.\n\nConnectez-vous pour consulter le dossier et répondre. Un accord amiable reste possible à tout moment."
+      },
+      "proposition": {
+        "sujet": "Proposition de règlement — {reference}",
+        "corps": "Bonjour {prenom},\n\nUne proposition de règlement à l’amiable vous a été adressée pour la location « {annonceTitre} » ({reference}). Vous pouvez l’accepter ou demander l’arbitrage de la plateforme."
+      },
+      "arbitrage": {
+        "sujet": "Litige transmis à l’arbitrage — {reference}",
+        "corps": "Bonjour {prenom},\n\nFaute d’accord, le litige sur la location « {annonceTitre} » ({reference}) est transmis à la plateforme, qui tranchera au vu des pièces du dossier — état des lieux compris."
+      },
+      "resolu": {
+        "sujet": "Décision rendue — {reference}",
+        "corps": "Bonjour {prenom},\n\nLe litige sur la location « {annonceTitre} » ({reference}) est tranché. La décision et son motif figurent dans votre espace. Les fonds encore immobilisés reprennent leur cours."
+      },
+      "classe": {
+        "sujet": "Litige clos sans suite — {reference}",
+        "corps": "Bonjour {prenom},\n\nLe litige sur la location « {annonceTitre} » ({reference}) est clos sans suite. Les fonds immobilisés reprennent leur cours : la caution sera libérée et le reversement envoyé selon les délais habituels."
+      }
+    },
+    "rappel": {
+      "demandeExpire": {
+        "sujet": "Une demande attend votre réponse — {reference}",
+        "corps": "Bonjour {prenom},\n\n{interlocuteur} attend votre réponse pour « {annonceTitre} » ({reference}). Sans réponse de votre part, la demande expirera d’elle-même et la location vous échappera."
+      },
+      "retraitProche": {
+        "sujet": "Retrait demain — {reference}",
+        "corps": "Bonjour {prenom},\n\nLe retrait de « {annonceTitre} » ({reference}) a lieu demain. Pensez au code de retrait, visible dans votre espace, et à l’état des lieux de départ : il se signe sur place, par les deux parties."
+      },
+      "avisAecrire": {
+        "sujet": "Votre avis sur {annonceTitre}",
+        "corps": "Bonjour {prenom},\n\nVotre location « {annonceTitre} » ({reference}) est terminée. Votre avis aide les locataires suivants à choisir — et le loueur à s’améliorer. Vous avez quatorze jours pour le déposer."
+      }
+    },
     "messagerie": {
       "nouveauMessage": {
         "sujet": "Nouveau message de {interlocuteur} — {annonceTitre}",

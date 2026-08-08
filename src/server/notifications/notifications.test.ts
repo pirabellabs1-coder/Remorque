@@ -43,6 +43,26 @@ describe("notifications", () => {
     }
   });
 
+  it("rend chaque gabarit de litige sans clé manquante", async () => {
+    for (const etape of ["ouvert", "proposition", "arbitrage", "resolu", "classe"]) {
+      const rendu = await rendreCourriel(`litige.${etape}`, DONNEES);
+
+      expect(rendu.sujet).not.toContain("courriels.");
+      expect(rendu.corps).not.toContain("courriels.");
+      expect(rendu.corps).toContain(DONNEES.reference);
+    }
+  });
+
+  it("rend chaque rappel planifié sans clé manquante", async () => {
+    for (const rappel of ["demandeExpire", "retraitProche", "avisAecrire"]) {
+      const rendu = await rendreCourriel(`rappel.${rappel}`, DONNEES);
+
+      expect(rendu.sujet).not.toContain("courriels.");
+      expect(rendu.corps).not.toContain("courriels.");
+      expect(rendu.corps).toContain(DONNEES.prenom);
+    }
+  });
+
   it("rend le gabarit de nouveau message avec l'expéditeur nommé", async () => {
     const rendu = await rendreCourriel("messagerie.nouveauMessage", DONNEES);
     expect(rendu.sujet).toContain(DONNEES.interlocuteur);
