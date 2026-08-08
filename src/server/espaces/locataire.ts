@@ -10,6 +10,7 @@ import { db } from "@/server/db";
 import {
   annonce,
   caution,
+  paiement,
   avis as tableAvis,
   reservation,
   tarif,
@@ -40,10 +41,10 @@ import { nombreNonLus } from "@/server/messagerie/depot";
  * que lit l'espace loueur. Une location vue des deux côtés est la même ligne :
  * si le loueur la dit close, le locataire ne peut pas la voir en cours.
  *
- * Ce qui reste engendré ici, faute de table alimentée : l'état des cautions et
- * les favoris. Chacun est dérivé de données réelles et le dit à l'endroit où
- * il est construit. Les fils de discussion, eux, vivent désormais dans
- * `messagerie/depot.ts`, adossés aux tables `conversation` et `message`.
+ * Ce qui reste engendré ici, faute de table alimentée : les favoris, dérivés
+ * du catalogue réel, et qui le disent à l'endroit où ils sont construits. Les
+ * fils de discussion vivent dans `messagerie/depot.ts`, le relevé lit les
+ * tables `paiement` et `caution`.
  */
 
 export type EtatCaution =
@@ -152,15 +153,6 @@ export type SyntheseLocataire = {
   devise: string;
 };
 
-
-/**
- * Moyens de paiement du jeu d'essai.
- *
- * Volontairement peu variés : un particulier paie presque toujours avec la
- * même carte. Un relevé où chaque location porterait un moyen différent ne
- * serait reconnu comme le sien par personne.
- */
-const MOYENS = ["Visa ••4218", "Mastercard ••7731", "Visa ••4218", "Visa ••4218"];
 
 /**
  * Le compte connecté.
@@ -412,7 +404,12 @@ export async function avisAecrire(): Promise<AvisAecrire[]> {
 }
 
 /**
- * Relevé des mouvements.
+ * Relevé des mouvements, lu dans les tables `paiement` et `caution`.
+ *
+ * Le relevé était jusqu'ici fabriqué depuis les réservations, avec des moyens
+ * de paiement inventés : l'écran pouvait contredire la comptabilité, ce qui
+ * est la seule chose qu'un relevé n'a pas le droit de faire. Chaque ligne
+ * vient désormais d'un mouvement enregistré — montant, moyen, date de capture.
  *
  * La caution y figure comme une ligne distincte de la location, avec son état,
  * parce que c'est exactement la confusion qu'il faut lever : l'une est débitée,
@@ -420,54 +417,90 @@ export async function avisAecrire(): Promise<AvisAecrire[]> {
  * la somme, produirait le malentendu que cet écran existe pour éviter.
  */
 export async function mesPaiements(): Promise<LignePaiement[]> {
-  const lignes: LignePaiement[] = [];
+  const moi = await compteCourant();
+  if (!moi) return [];
 
-  for (const entree of await mesReservations()) {
-    if (["demandee", "refusee", "expiree"].includes(entree.statut)) continue;
+  const maintenant = aujourdhui();
 
-    const moyen = MOYENS[entree.reference.charCodeAt(8) % MOYENS.length];
+  const lignes = await db
+    .select({
+      id: paiement.id,
+      reference: reservation.numero,
+      annonceTitre: annonce.titre,
+      statutReservation: reservation.statut,
+      montant: paiement.montant,
+      montantRembourse: paiement.montantRembourse,
+      devise: paiement.devise,
+      moyen: paiement.moyenPaiement,
+      autoriseLe: paiement.autoriseLe,
+      captureLe: paiement.captureLe,
+      creeLe: paiement.creeLe,
+      cautionMontant: caution.montant,
+      cautionStatut: caution.statut,
+      cautionLiberationPrevueLe: caution.liberationPrevueLe,
+      cautionCreeLe: caution.creeLe,
+    })
+    .from(paiement)
+    .innerJoin(reservation, eq(reservation.id, paiement.reservationId))
+    .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
+    .leftJoin(caution, eq(caution.reservationId, reservation.id))
+    .where(eq(reservation.locataireId, moi));
 
-    lignes.push({
-      id: `${entree.id}-loc`,
-      reference: entree.reference,
-      annonceTitre: entree.annonceTitre,
-      date: entree.debut,
+  const releve: LignePaiement[] = [];
+
+  for (const ligne of lignes) {
+    const moyen = ligne.moyen ?? "";
+    const dateDebit = ligne.captureLe ?? ligne.autoriseLe ?? ligne.creeLe;
+
+    releve.push({
+      id: `${ligne.id}-loc`,
+      reference: ligne.reference,
+      annonceTitre: ligne.annonceTitre,
+      date: dateDebit,
       nature: "location",
-      montant: entree.montantTotal,
-      devise: entree.devise,
+      montant: ligne.montant,
+      devise: ligne.devise,
       moyen,
       cautionEtat: null,
     });
 
-    if (entree.statut === "annulee") {
-      lignes.push({
-        id: `${entree.id}-remb`,
-        reference: entree.reference,
-        annonceTitre: entree.annonceTitre,
-        date: entree.debut,
+    if (ligne.montantRembourse > 0) {
+      releve.push({
+        id: `${ligne.id}-remb`,
+        reference: ligne.reference,
+        annonceTitre: ligne.annonceTitre,
+        date: dateDebit,
         nature: "remboursement",
-        montant: entree.montantTotal,
-        devise: entree.devise,
+        montant: ligne.montantRembourse,
+        devise: ligne.devise,
         moyen,
         cautionEtat: null,
       });
-      continue;
     }
 
-    lignes.push({
-      id: `${entree.id}-cau`,
-      reference: entree.reference,
-      annonceTitre: entree.annonceTitre,
-      date: entree.debut,
-      nature: "caution",
-      montant: entree.caution,
-      devise: entree.devise,
-      moyen,
-      cautionEtat: entree.cautionEtat,
-    });
+    // Une location annulée n'immobilise rien : sa ligne de caution existe en
+    // base — libérée d'office — mais un relevé qui la montrerait ferait
+    // croire à une empreinte qui n'a jamais été prise.
+    if (ligne.cautionStatut !== null && ligne.statutReservation !== "annulee") {
+      releve.push({
+        id: `${ligne.id}-cau`,
+        reference: ligne.reference,
+        annonceTitre: ligne.annonceTitre,
+        date: ligne.cautionCreeLe ?? dateDebit,
+        nature: "caution",
+        montant: ligne.cautionMontant ?? 0,
+        devise: ligne.devise,
+        moyen,
+        cautionEtat: etatCaution(
+          ligne.cautionStatut,
+          ligne.cautionLiberationPrevueLe,
+          maintenant,
+        ),
+      });
+    }
   }
 
-  return lignes.sort((a, b) => b.date.getTime() - a.date.getTime());
+  return releve.sort((a, b) => b.date.getTime() - a.date.getTime());
 }
 
 /**
