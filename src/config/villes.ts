@@ -29,6 +29,30 @@
 export type CodePays = (typeof PAYS)[number];
 
 /**
+ * Nom des pays, pour les phrases qui les nomment.
+ *
+ * Le code ISO suffit aux machines ; « Aller sur BE » ne se dit pas à un
+ * visiteur. Ces noms ne sont pas dans les fichiers de traduction parce
+ * qu'ils sont indexés par un code de configuration, non par une clé de
+ * message — les traduire viendra avec le premier marché non francophone.
+ */
+const NOMS_PAYS: Record<string, string> = {
+  BE: "Belgique",
+  FR: "France",
+  LU: "Luxembourg",
+  CH: "Suisse",
+  NL: "Pays-Bas",
+  DE: "Allemagne",
+  IT: "Italie",
+  ES: "Espagne",
+  PT: "Portugal",
+};
+
+export function nomDuPays(code: string): string {
+  return NOMS_PAYS[code] ?? code;
+}
+
+/**
  * La ville appartient-elle au pays servi par ce marché ?
  *
  * Une page de ville n'a de sens que sur le marché de son pays. Rendue

@@ -2,9 +2,12 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
+import { BandeauMarche } from "@/components/navigation/bandeau-marche";
 import { EnTetePublic } from "@/components/navigation/en-tete-public";
 import { PiedPagePublic } from "@/components/navigation/pied-page-public";
-import type { Market } from "@/config/markets";
+import { getMarket, type Market } from "@/config/markets";
+import { nomDuPays } from "@/config/villes";
+import { marcheSuggere } from "@/server/marches/suggestion";
 import { Link } from "@/i18n/navigation";
 import { chargerTraductionsClient } from "@/i18n/messages";
 import { enMaintenance } from "@/server/administration/parametres";
@@ -57,8 +60,21 @@ export default async function LayoutPublic({
     );
   }
 
+  // Le pays du visiteur ne correspond pas toujours au marché servi. On le lui
+  // signale sans rien décider à sa place — voir `marches/suggestion.ts`.
+  const suggere = await marcheSuggere(locale as Market);
+
   return (
     <NextIntlClientProvider messages={messages}>
+      {suggere ? (
+        <BandeauMarche
+          courant={locale}
+          suggere={suggere}
+          paysSuggere={nomDuPays(getMarket(suggere).country)}
+          prefixeCourant={getMarket(locale as Market).pathPrefix ?? ""}
+          prefixeSuggere={getMarket(suggere).pathPrefix ?? ""}
+        />
+      ) : null}
       <EnTetePublic />
       {children}
       <PiedPagePublic />

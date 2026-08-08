@@ -219,14 +219,33 @@ export const chercher = cache(async function chercher(options: {
   categorieSlug?: string;
   tri?: TriRecherche;
   limite?: number;
+  /** Position réelle du visiteur, quand il l'a autorisée. */
+  longitude?: number;
+  latitude?: number;
+  /** Rayon de recherche autour de cette position, en kilomètres. */
+  rayonKm?: number;
 }): Promise<LigneResume[]> {
-  const { villeSlug, categorieSlug, tri = "pertinence", limite } = options;
+  const {
+    villeSlug,
+    categorieSlug,
+    tri = "pertinence",
+    limite,
+    longitude,
+    latitude,
+    rayonKm,
+  } = options;
 
-  // Le point de référence est le centre de la ville cherchée.
+  // Le point de référence est la position du visiteur quand il l'a donnée,
+  // sinon le centre de la ville cherchée. La position réelle prime : elle dit
+  // « je suis ici », là où la ville dit seulement « je cherche par là ».
+  const positionDonnee = longitude !== undefined && latitude !== undefined;
   const ville = villeSlug ? trouverVille(villeSlug) : undefined;
-  const distance = ville
-    ? distanceDepuis(ville.longitude, ville.latitude)
-    : AUCUNE_DISTANCE();
+
+  const distance = positionDonnee
+    ? distanceDepuis(longitude, latitude)
+    : ville
+      ? distanceDepuis(ville.longitude, ville.latitude)
+      : AUCUNE_DISTANCE();
 
   const tarifBase = tarifsDe();
   const photo = photosDe();
@@ -238,6 +257,20 @@ export const chercher = cache(async function chercher(options: {
   if (villeSlug) conditions.push(eq(annonce.villeSlug, villeSlug));
   if (categorieSlug) conditions.push(eq(categorie.slug, categorieSlug));
 
+  // Rayon autour de la position réelle. `ST_DWithin` sur la projection
+  // `::geography` est ce qui emploie l'index géographique — un filtre écrit
+  // avec `ST_Distance(...) < x` obligerait à calculer la distance de chaque
+  // annonce du pays avant de la rejeter.
+  if (positionDonnee && rayonKm !== undefined) {
+    conditions.push(
+      sql`st_dwithin(
+        ${annonce.position}::geography,
+        st_setsrid(st_makepoint(${longitude}, ${latitude}), 4326)::geography,
+        ${Math.round(rayonKm * 1000)}
+      )`,
+    );
+  }
+
   const requete = db
     .select(colonnesResume(distance, tarifBase, photo, notes))
     .from(annonce)
@@ -246,7 +279,7 @@ export const chercher = cache(async function chercher(options: {
     .leftJoin(photo, eq(photo.annonceId, annonce.id))
     .leftJoin(notes, eq(notes.annonceId, annonce.id))
     .where(and(...conditions))
-    .orderBy(ordonner(tri, distance, Boolean(ville), tarifBase, notes));
+    .orderBy(ordonner(tri, distance, Boolean(ville) || positionDonnee, tarifBase, notes));
 
   const lignes = limite ? await requete.limit(limite) : await requete;
   return lignes as LigneResume[];

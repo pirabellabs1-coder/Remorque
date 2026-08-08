@@ -374,7 +374,34 @@ export type CriteresRecherche = {
   ville?: string;
   categorie?: string;
   tri?: TriRecherche;
+  /** Position du visiteur et rayon, quand il a autorisé la géolocalisation. */
+  longitude?: number;
+  latitude?: number;
+  rayonKm?: number;
 };
+
+/** Rayons proposés, en kilomètres. Au-delà, on ne va plus chercher une remorque. */
+export const RAYONS = [10, 25, 50, 100] as const;
+export const RAYON_PAR_DEFAUT = 25;
+
+/**
+ * Des coordonnées utilisables, ou rien.
+ *
+ * Elles viennent de l'adresse et sont donc à la portée du premier venu :
+ * hors des bornes terrestres, elles feraient calculer PostGIS pour rien.
+ */
+export function positionValide(
+  longitude: unknown,
+  latitude: unknown,
+): { longitude: number; latitude: number } | null {
+  const lon = Number(longitude);
+  const lat = Number(latitude);
+
+  if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+  if (lon < -180 || lon > 180 || lat < -90 || lat > 90) return null;
+
+  return { longitude: lon, latitude: lat };
+}
 
 export const TRIS = ["pertinence", "distance", "prix", "note"] as const;
 export type TriRecherche = (typeof TRIS)[number];
@@ -417,12 +444,16 @@ const altDe = (slug: string) =>
 export async function rechercherAnnonces(
   criteres: CriteresRecherche,
 ): Promise<ResultatRecherche> {
-  const { ville, categorie, tri = "pertinence" } = criteres;
+  const { ville, categorie, tri = "pertinence", longitude, latitude, rayonKm } =
+    criteres;
 
   const lignes = await chercher({
     villeSlug: ville ? normaliserVille(ville) : undefined,
     categorieSlug: categorie,
     tri,
+    longitude,
+    latitude,
+    rayonKm,
   });
 
   const annonces = lignes.map((ligne) => versResume(ligne, altDe(ligne.categorie)));

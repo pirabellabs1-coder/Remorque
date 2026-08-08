@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { BoutonAutourDeMoi } from "@/components/annonce/bouton-autour-de-moi";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
@@ -8,7 +9,14 @@ import type { Market } from "@/config/markets";
 import { Link } from "@/i18n/navigation";
 import { metadonneesPage } from "@/lib/metadonnees";
 import { cn } from "@/lib/cn";
-import { TRIS, estTri, rechercherAnnonces } from "@/server/annonces/catalogue";
+import {
+  RAYON_PAR_DEFAUT,
+  RAYONS,
+  TRIS,
+  estTri,
+  positionValide,
+  rechercherAnnonces,
+} from "@/server/annonces/catalogue";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -43,11 +51,25 @@ export default async function PageRecherche({ params, searchParams }: Props) {
   const triDemande = lire(parametres.tri);
   const tri = estTri(triDemande) ? triDemande : "pertinence";
 
+  // Position du visiteur, si elle est présente et vraisemblable. Elle arrive
+  // par l'adresse et n'est donc pas digne de confiance : on la valide comme
+  // n'importe quelle saisie.
+  const position = positionValide(lire(parametres.lon), lire(parametres.lat));
+  const rayonDemande = Number(lire(parametres.rayon));
+  const rayonKm = (RAYONS as readonly number[]).includes(rayonDemande)
+    ? rayonDemande
+    : RAYON_PAR_DEFAUT;
+
   const categorie = CATEGORIES.find((entree) => entree.slug === slugCategorie);
   const { annonces, total } = await rechercherAnnonces({
     ville,
     categorie: categorie?.slug,
-    tri,
+    // Une position réelle ordonne par distance : c'est ce qu'on demande en
+    // cliquant « autour de moi ».
+    tri: position && triDemande === undefined ? "distance" : tri,
+    longitude: position?.longitude,
+    latitude: position?.latitude,
+    rayonKm: position ? rayonKm : undefined,
   });
 
   const titre = categorie
@@ -64,6 +86,13 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     if (ville) requete.ville = ville;
     if (slugCategorie) requete.categorie = slugCategorie;
     if (tri !== "pertinence") requete.tri = tri;
+    // La position suit les changements de filtre : la perdre en cliquant sur
+    // une catégorie obligerait à la redemander, et donc à réautoriser.
+    if (position) {
+      requete.lon = String(position.longitude);
+      requete.lat = String(position.latitude);
+      requete.rayon = String(rayonKm);
+    }
 
     for (const [cle, valeur] of Object.entries(modifications)) {
       if (valeur === undefined) delete requete[cle];
@@ -80,6 +109,36 @@ export default async function PageRecherche({ params, searchParams }: Props) {
           {/* Le champ rappelle la recherche en cours : le visiteur affine, il
               ne repart pas de zéro. */}
           <FormulaireRecherche variante="nu" valeurInitiale={ville ?? ""} />
+
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <BoutonAutourDeMoi rayonKm={RAYON_PAR_DEFAUT} />
+
+            {/* Le rayon ne s'affiche qu'une fois la position connue : proposer
+                « dans 25 km » de nulle part n'a pas de sens. */}
+            {position ? (
+              <ul className="flex flex-wrap gap-2">
+                {RAYONS.map((valeur) => (
+                  <li key={valeur}>
+                    <Link
+                      href={{
+                        pathname: "/recherche",
+                        query: avec({ rayon: String(valeur) }),
+                      }}
+                      aria-current={valeur === rayonKm ? "page" : undefined}
+                      className={cn(
+                        "inline-flex rounded-full border px-3 py-1 text-sm transition-colors",
+                        valeur === rayonKm
+                          ? "border-accent bg-accent text-accent-contraste"
+                          : "border-bordure hover:border-accent",
+                      )}
+                    >
+                      {t("rayon", { km: valeur })}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
         </div>
       </div>
 

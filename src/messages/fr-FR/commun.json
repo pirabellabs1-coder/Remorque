@@ -10,7 +10,13 @@
     "parJour": "{montant} / jour",
     "distance": "à {km} km",
     "aPartirDe": "à partir de {montant}",
-    "signature": "La location de remorques, en toute flexibilité"
+    "signature": "La location de remorques, en toute flexibilité",
+    "marche": {
+      "titre": "Choix du pays",
+      "proposition": "Vous semblez être en {pays}. Nous y avons un catalogue et des conditions propres.",
+      "aller": "Voir la {pays}",
+      "rester": "Rester ici"
+    }
   },
   "navigation": {
     "louer": "Louer une remorque",
