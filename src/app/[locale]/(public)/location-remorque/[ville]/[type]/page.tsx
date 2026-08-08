@@ -5,8 +5,8 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { ContenuLocal } from "@/components/local/contenu-local";
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
-import { MARKETS, type Market } from "@/config/markets";
-import { VILLES, trouverVille, type CodePays } from "@/config/villes";
+import { getMarket, MARKETS, type Market } from "@/config/markets";
+import { VILLES, trouverVille, villeDuPays, type CodePays } from "@/config/villes";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { PRIX_AFFICHE } from "@/lib/cn";
@@ -35,26 +35,36 @@ type Props = {
 const PAYS_PRE_GENERES: readonly CodePays[] = ["BE", "FR"];
 
 export function generateStaticParams() {
-  const villes = VILLES.filter((ville) =>
-    PAYS_PRE_GENERES.includes(ville.pays),
-  );
+  return routing.locales.flatMap((locale) => {
+    // Deux filtres se composent : le pays du marché, et les pays retenus pour
+    // la pré-génération. Une ville d'un autre pays rendrait un 404.
+    const paysServi = getMarket(locale).country;
+    const villes = VILLES.filter(
+      (ville) =>
+        ville.pays === paysServi && PAYS_PRE_GENERES.includes(ville.pays),
+    );
 
-  return routing.locales.flatMap((locale) =>
-    villes.flatMap((ville) =>
+    return villes.flatMap((ville) =>
       CATEGORIES.map((categorie) => ({
         locale,
         ville: ville.slug,
         type: categorie.slug,
       })),
-    ),
-  );
+    );
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, ville: slugVille, type } = await params;
   const ville = trouverVille(slugVille);
   const categorie = CATEGORIES.find((entree) => entree.slug === type);
-  if (!ville || !categorie) return {};
+  if (
+    !ville ||
+    !categorie ||
+    !villeDuPays(ville.slug, getMarket(locale as Market).country)
+  ) {
+    return {};
+  }
 
   const t = await getTranslations({ locale, namespace: "pageLocale" });
   const format = await getFormatter({ locale });
@@ -106,6 +116,9 @@ export default async function PageVilleCategorie({ params }: Props) {
   const ville = trouverVille(slugVille);
   const categorie = CATEGORIES.find((entree) => entree.slug === type);
   if (!ville || !categorie) notFound();
+
+  // Même règle que la page de ville : hors de son marché, elle n'existe pas.
+  if (!villeDuPays(ville.slug, getMarket(locale as Market).country)) notFound();
 
   return (
     <ContenuLocal

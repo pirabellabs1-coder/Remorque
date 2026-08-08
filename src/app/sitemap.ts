@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
-import { ENABLED_MARKETS, type Market } from "@/config/markets";
+import { ENABLED_MARKETS, getMarket, type Market } from "@/config/markets";
 import { VILLES } from "@/config/villes";
 import { getPathname } from "@/i18n/navigation";
 import { pathnames } from "@/i18n/routing";
@@ -41,11 +41,17 @@ const EXCLUES = new Set<string>([
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = clientEnv.NEXT_PUBLIC_SITE_URL;
   const adresse = (chemin: string) => new URL(chemin, base).toString();
-  const annonces = await listerAdressesAnnonces();
 
   const entrees: MetadataRoute.Sitemap = [];
 
   for (const locale of ENABLED_MARKETS as Market[]) {
+    // Chaque marché n'annonce que ce qu'il sert : déclarer une fiche belge sur
+    // le plan de site français ferait indexer une adresse qui rend un 404, et
+    // les moteurs le comptent contre le domaine entier.
+    const paysDuMarche = getMarket(locale).country;
+    const annonces = await listerAdressesAnnonces(locale);
+    const villes = VILLES.filter((ville) => ville.pays === paysDuMarche);
+
     for (const href of ADRESSES_STATIQUES) {
       if (EXCLUES.has(href)) continue;
       entrees.push({
@@ -55,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    for (const ville of VILLES) {
+    for (const ville of villes) {
       entrees.push({
         url: adresse(
           getPathname({

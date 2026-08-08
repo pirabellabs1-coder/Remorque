@@ -12,10 +12,15 @@ import {
   annoncePhoto,
   avis,
   categorie,
+  pays,
   reservation,
   tarif,
   utilisateur,
 } from "@/server/db/schema";
+
+// Chemin absolu, et non relatif : c'est ce qui permet au banc d'essai de
+// substituer le module de marché, comme il substitue celui de session.
+import { annonceDuMarche } from "@/server/annonces/marche";
 
 import type { AnnonceResume, TriRecherche } from "./catalogue";
 
@@ -227,7 +232,9 @@ export const chercher = cache(async function chercher(options: {
   const photo = photosDe();
   const notes = notesDes();
 
-  const conditions = [eq(annonce.statut, "publiee")];
+  // Le marché servi borne le catalogue : une annonce belge n'a rien à faire
+  // dans une recherche française — règle 7.
+  const conditions = [eq(annonce.statut, "publiee"), await annonceDuMarche()];
   if (villeSlug) conditions.push(eq(annonce.villeSlug, villeSlug));
   if (categorieSlug) conditions.push(eq(categorie.slug, categorieSlug));
 
@@ -313,6 +320,9 @@ export const detail = cache(async function detail(
     .where(
       and(
         eq(annonce.statut, "publiee"),
+        // Hors de son marché, la fiche n'existe pas : l'appelant rendra un 404
+        // plutôt qu'une annonce dont le barème affiché ne s'appliquerait pas.
+        await annonceDuMarche(),
         eq(annonce.villeSlug, villeSlug),
         eq(annonce.slug, slug),
       ),
@@ -356,20 +366,32 @@ export const compterParVille = cache(async function compterParVille(): Promise<
       nombre: sql<number>`count(*)::int`,
     })
     .from(annonce)
-    .where(eq(annonce.statut, "publiee"))
+    .where(and(eq(annonce.statut, "publiee"), await annonceDuMarche()))
     .groupBy(annonce.villeSlug);
 
   return new Map(lignes.map((ligne) => [ligne.villeSlug, ligne.nombre]));
 });
 
-/** Adresses des fiches publiées, pour le plan de site et la pré-génération. */
-export async function adresses(): Promise<{ ville: string; slug: string }[]> {
-  const lignes = await db
-    .select({ ville: annonce.villeSlug, slug: annonce.slug })
+/**
+ * Adresses des fiches publiées, pour le plan de site et la pré-génération.
+ *
+ * Le pays est rendu avec l'adresse plutôt que filtré : `generateStaticParams`
+ * s'exécute hors d'une requête et n'a donc pas de marché courant. C'est
+ * l'appelant qui répartit les adresses entre les marchés — il est le seul à
+ * savoir lequel il pré-génère.
+ */
+export async function adresses(): Promise<
+  { ville: string; slug: string; pays: string }[]
+> {
+  return db
+    .select({
+      ville: annonce.villeSlug,
+      slug: annonce.slug,
+      pays: pays.code,
+    })
     .from(annonce)
+    .innerJoin(pays, eq(pays.id, annonce.paysId))
     .where(eq(annonce.statut, "publiee"));
-
-  return lignes;
 }
 
 export async function detailParAnnonce(annonceId: string) {

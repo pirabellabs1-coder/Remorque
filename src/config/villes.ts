@@ -29,6 +29,19 @@
 export type CodePays = (typeof PAYS)[number];
 
 /**
+ * La ville appartient-elle au pays servi par ce marché ?
+ *
+ * Une page de ville n'a de sens que sur le marché de son pays. Rendue
+ * ailleurs, elle affiche un catalogue vide — le catalogue étant lui-même
+ * borné au pays — et fait concurrence à sa jumelle dans les moteurs : deux
+ * adresses, le même sujet, dont l'une sans annonce.
+ */
+export function villeDuPays(villeSlug: string, codePays: string): boolean {
+  const ville = VILLES.find((entree) => entree.slug === villeSlug);
+  return ville?.pays === codePays;
+}
+
+/**
  * Ordre d'ouverture des marchés. Il suit la séquence de la section 10, la
  * Belgique passant en tête à la demande du client.
  */

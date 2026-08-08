@@ -4,8 +4,8 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { ContenuLocal } from "@/components/local/contenu-local";
 import { clientEnv } from "@/config/env-client";
-import { MARKETS, type Market } from "@/config/markets";
-import { VILLES, trouverVille, zoneDe } from "@/config/villes";
+import { getMarket, MARKETS, type Market } from "@/config/markets";
+import { VILLES, trouverVille, villeDuPays, zoneDe } from "@/config/villes";
 import { getPathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { PRIX_AFFICHE } from "@/lib/cn";
@@ -22,15 +22,23 @@ type Props = { params: Promise<{ locale: string; ville: string }> };
  * référencement local — soit 60 à 80 % du trafic attendu — ne fonctionne pas.
  */
 export function generateStaticParams() {
+  // Chaque marché ne pré-génère que les villes de son pays : les autres
+  // rendent un 404 et n'ont donc rien à construire.
   return routing.locales.flatMap((locale) =>
-    VILLES.map((ville) => ({ locale, ville: ville.slug })),
+    VILLES.filter((ville) => ville.pays === getMarket(locale).country).map(
+      (ville) => ({ locale, ville: ville.slug }),
+    ),
   );
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, ville: slug } = await params;
   const ville = trouverVille(slug);
-  if (!ville) return {};
+  // Hors marché, la page rend un 404 : lui composer un titre riche ferait
+  // afficher « Location de remorque à Bruxelles » sur une page introuvable.
+  if (!ville || !villeDuPays(ville.slug, getMarket(locale as Market).country)) {
+    return {};
+  }
 
   const t = await getTranslations({ locale, namespace: "pageLocale" });
   const format = await getFormatter({ locale });
@@ -72,6 +80,10 @@ export default async function PageVille({ params }: Props) {
 
   const ville = trouverVille(slug);
   if (!ville) notFound();
+
+  // Bruxelles n'existe pas sur le marché français : la page y serait vide, et
+  // ferait concurrence à la belge sur le même sujet — règle 7.
+  if (!villeDuPays(ville.slug, getMarket(locale as Market).country)) notFound();
 
   return <ContenuLocal locale={locale as Market} ville={ville} />;
 }

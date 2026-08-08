@@ -19,12 +19,18 @@ export const MARKETS = {
     enabled: true,
     wave: 1,
   },
+  /**
+   * Ouvert : c'est le marché que le client a demandé en tête (section 10, et
+   * ordre du tableau `PAYS` dans `config/villes.ts`). Il partage la langue du
+   * marché de référence et lui emprunte donc ses textes — seuls ses barèmes,
+   * lus en base, lui sont propres.
+   */
   "fr-BE": {
     country: "BE",
     language: "fr",
     currency: "EUR",
     pathPrefix: "/be",
-    enabled: false,
+    enabled: true,
     wave: 2,
   },
   "fr-CH": {

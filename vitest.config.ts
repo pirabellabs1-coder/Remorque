@@ -45,6 +45,12 @@ export default defineConfig({
       "@/server/authentification/session": fileURLToPath(
         new URL("./test/session.ts", import.meta.url),
       ),
+      // Même raison, autre module : le catalogue est borné au pays du marché
+      // servi, et le marché se lit dans la requête en cours. Hors requête, il
+      // n'y en a pas — on substitue celui de la démonstration.
+      "@/server/annonces/marche": fileURLToPath(
+        new URL("./test/marche.ts", import.meta.url),
+      ),
       "@": fileURLToPath(new URL("./src", import.meta.url)),
       // `server-only` lève une erreur dès qu'il est importé hors du rendu
       // serveur de Next.js. Les tests exécutent pourtant bien du code serveur :
@@ -62,6 +68,13 @@ export default defineConfig({
     // aux seconds : trois tests échouaient sur le seul délai, sans qu'aucune
     // assertion soit en cause.
     testTimeout: 30_000,
+    /**
+     * Les crochets ont le même besoin que les tests, et gardaient le défaut de
+     * dix secondes. Un `beforeAll` qui pose l'état d'une réservation enchaîne
+     * cinq écritures jusqu'à Stockholm : il tombait sur le seul délai, en
+     * signalant un échec de suite entière là où rien n'était en cause.
+     */
+    hookTimeout: 30_000,
     /**
      * Un seul fichier à la fois.
      *

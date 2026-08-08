@@ -1,4 +1,4 @@
-import type { Market } from "@/config/markets";
+import { ALL_MARKETS, DEFAULT_MARKET, MARKETS, type Market } from "@/config/markets";
 
 /**
  * Découpage des traductions par espace applicatif.
@@ -29,8 +29,47 @@ export type Espace = (typeof ESPACES)[number];
 
 export type Messages = Record<string, unknown>;
 
+/**
+ * Marché dont un autre emprunte les textes, faute d'en avoir de propres.
+ *
+ * Un marché est un couple pays × langue : la Belgique francophone et la France
+ * partagent la langue et n'ont donc presque rien à traduire — ce qui les
+ * sépare tient dans une poignée de mentions légales et de barèmes, et ces
+ * derniers vivent en base. Dupliquer huit fichiers pour changer trois phrases
+ * garantirait qu'ils divergent : une correction appliquée d'un côté, oubliée
+ * de l'autre.
+ *
+ * Le marché n'a donc à porter que ses différences ; le reste est emprunté au
+ * premier marché ouvert qui parle la même langue.
+ */
+function marcheDeRepli(locale: Market): Market | null {
+  const langue = MARKETS[locale].language;
+
+  return (
+    ALL_MARKETS.find(
+      (candidat) =>
+        candidat !== locale &&
+        MARKETS[candidat].language === langue &&
+        candidat === DEFAULT_MARKET,
+    ) ??
+    ALL_MARKETS.find(
+      (candidat) => candidat !== locale && MARKETS[candidat].language === langue,
+    ) ??
+    null
+  );
+}
+
 async function charger(locale: Market, espace: Espace): Promise<Messages> {
-  return (await import(`../messages/${locale}/${espace}.json`)).default;
+  try {
+    return (await import(`../messages/${locale}/${espace}.json`)).default;
+  } catch {
+    const repli = marcheDeRepli(locale);
+    // Sans repli possible, l'absence est une vraie erreur de configuration :
+    // on la laisse remonter plutôt que de rendre une interface vide de textes.
+    if (!repli) throw new Error(`Traductions introuvables : ${locale}/${espace}`);
+
+    return (await import(`../messages/${repli}/${espace}.json`)).default;
+  }
 }
 
 /** Toutes les traductions — pour le rendu serveur, qui n'a aucun coût réseau. */

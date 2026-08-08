@@ -16,7 +16,7 @@ import { Illustration } from "@/components/ui/illustration";
 import { BAREME_PAR_DEFAUT } from "@/config/baremes";
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
-import type { Market } from "@/config/markets";
+import { ENABLED_MARKETS, type Market } from "@/config/markets";
 import { BAREME_FR } from "@/domain/compatibilite/permis";
 import { getPathname, Link } from "@/i18n/navigation";
 import { avisDeLannonce } from "@/server/annonces/avis";
@@ -31,8 +31,22 @@ type Props = {
   params: Promise<{ locale: string; ville: string; slug: string }>;
 };
 
+/**
+ * Une fiche n'est pré-générée que sur le marché de son pays : ailleurs, elle
+ * rend un 404, et la construire d'avance ne ferait que fabriquer des pages
+ * mortes que les moteurs signaleraient comme introuvables.
+ */
 export async function generateStaticParams() {
-  return listerAdressesAnnonces();
+  const parMarche = await Promise.all(
+    ENABLED_MARKETS.map(async (locale) =>
+      (await listerAdressesAnnonces(locale)).map((adresse) => ({
+        locale,
+        ...adresse,
+      })),
+    ),
+  );
+
+  return parMarche.flat();
 }
 
 export async function generateMetadata({ params }: Props) {

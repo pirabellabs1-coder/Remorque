@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { CATEGORIES, type SlugCategorie } from "@/config/categories";
+import type { Market } from "@/config/markets";
 
 
 
@@ -60,6 +61,8 @@ export type AnnonceDetail = AnnonceResume & {
   /** Quartier affiché avant confirmation ; l'adresse exacte reste masquée. */
   quartier: string;
 };
+
+import { paysDuMarche } from "@/server/annonces/marche";
 
 import {
   adresses,
@@ -506,7 +509,21 @@ export const trouverAnnonce = cache(async function trouverAnnonce(
   };
 });
 
-/** Adresses des fiches, pour la pré-génération et le plan de site. */
-export async function listerAdressesAnnonces() {
-  return adresses();
+/**
+ * Adresses des fiches, pour la pré-génération et le plan de site.
+ *
+ * Restreintes au marché demandé quand il l'est. `generateStaticParams` tourne
+ * hors requête et doit donc dire explicitement lequel il pré-génère : sans ce
+ * filtre, chaque marché pré-générerait les fiches de tous les autres, qui
+ * rendraient ensuite un 404 — des pages construites pour rien, et signalées
+ * comme introuvables aux moteurs.
+ */
+export async function listerAdressesAnnonces(marche?: Market) {
+  const toutes = await adresses();
+  if (!marche) return toutes.map(({ ville, slug }) => ({ ville, slug }));
+
+  const code = paysDuMarche(marche);
+  return toutes
+    .filter((adresse) => adresse.pays === code)
+    .map(({ ville, slug }) => ({ ville, slug }));
 }
