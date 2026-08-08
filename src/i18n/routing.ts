@@ -76,6 +76,8 @@ export const pathnames = {
   "/proprietaire/calendrier": "/proprietaire/calendrier",
   "/proprietaire/reservations": "/proprietaire/reservations",
   "/proprietaire/etats-des-lieux": "/proprietaire/etats-des-lieux",
+  "/proprietaire/etats-des-lieux/[reservation]/[type]":
+    "/proprietaire/etats-des-lieux/[reservation]/[type]",
   "/proprietaire/messages": "/proprietaire/messages",
   "/proprietaire/messages/[id]": "/proprietaire/messages/[id]",
   "/proprietaire/revenus": "/proprietaire/revenus",

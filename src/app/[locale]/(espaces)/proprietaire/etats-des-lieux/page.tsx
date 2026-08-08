@@ -4,6 +4,7 @@ import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { Icone } from "@/components/espace/icone";
 import { ListeVide } from "@/components/espace/indicateurs";
 import { Bouton } from "@/components/ui/bouton";
+import { Link } from "@/i18n/navigation";
 import {
   constatsAfaire,
   mesConstats,
@@ -79,7 +80,15 @@ export default async function PageEtatsDesLieux({ params }: Props) {
                   </p>
                 </div>
 
-                <Bouton taille="petit" variante="secondaire">
+                <Bouton
+                  as={Link}
+                  href={{
+                    pathname: "/proprietaire/etats-des-lieux/[reservation]/[type]",
+                    params: { reservation: entree.reservationId, type: entree.type },
+                  }}
+                  taille="petit"
+                  variante="secondaire"
+                >
                   {t("faire")}
                 </Bouton>
               </li>
@@ -93,41 +102,46 @@ export default async function PageEtatsDesLieux({ params }: Props) {
           <h2 className="text-[1.0625rem] font-semibold">{t("realises")}</h2>
           <ul className="mt-4 divide-y divide-bordure overflow-hidden rounded-carte border border-bordure bg-fond-eleve">
             {realises.map((constat) => (
-              <li
-                key={constat.id}
-                className="flex items-center gap-4 px-5 py-3"
-              >
-                {/* Une réserve au constat distingue une restitution sans
-                    histoire d'un dossier qui peut devenir un litige. */}
-                <span
-                  aria-hidden
-                  className={
-                    constat.reserve ? "shrink-0 text-attention" : "shrink-0 text-succes"
-                  }
+              <li key={constat.id}>
+                <Link
+                  href={{
+                    pathname: "/proprietaire/etats-des-lieux/[reservation]/[type]",
+                    params: { reservation: constat.reservationId, type: constat.type },
+                  }}
+                  className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-fond-doux"
                 >
-                  <svg viewBox="0 0 24 24" className="size-5" fill="none">
-                    <path
-                      d="m5 13 4 4L19 7"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-                <p className="min-w-0 flex-1 truncate text-[0.9375rem]">
-                  {constat.annonceTitre}
-                  <span className="ml-2 text-sm text-texte-attenue">
-                    {moment(constat.type)}
+                  {/* Une réserve au constat distingue une restitution sans
+                      histoire d'un dossier qui peut devenir un litige. */}
+                  <span
+                    aria-hidden
+                    className={
+                      constat.reserve ? "shrink-0 text-attention" : "shrink-0 text-succes"
+                    }
+                  >
+                    <svg viewBox="0 0 24 24" className="size-5" fill="none">
+                      <path
+                        d="m5 13 4 4L19 7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </span>
-                </p>
-                <p className="shrink-0 text-sm text-texte-attenue">
-                  {format.dateTime(constat.date, {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </p>
+                  <p className="min-w-0 flex-1 truncate text-[0.9375rem]">
+                    {constat.annonceTitre}
+                    <span className="ml-2 text-sm text-texte-attenue">
+                      {moment(constat.type)}
+                    </span>
+                  </p>
+                  <p className="shrink-0 text-sm text-texte-attenue">
+                    {format.dateTime(constat.date, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                </Link>
               </li>
             ))}
           </ul>

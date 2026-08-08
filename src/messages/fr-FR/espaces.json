@@ -405,6 +405,50 @@
         "vide": {
           "titre": "Aucun état des lieux à réaliser",
           "texte": "Un état des lieux vous sera demandé au départ et au retour de chaque location."
+        },
+        "formulaire": {
+          "titreDepart": "État des lieux de départ",
+          "titreRetour": "État des lieux de retour",
+          "controles": "Points de contrôle",
+          "points": {
+            "feux": "Feux et signalisation",
+            "pneus": "Pneus",
+            "attelage": "Attelage et chaînes de sécurité",
+            "chassis": "Châssis et structure",
+            "baches": "Bâches et ridelles"
+          },
+          "conforme": "Conforme",
+          "defaut": "Défaut",
+          "observations": "Observations",
+          "kilometrage": "Kilométrage (facultatif)",
+          "commentaire": "Commentaire",
+          "commentaireAide": "Rayure, accessoire manquant, propreté…",
+          "signatures": "Signatures",
+          "signaturesAide": "Le constat se signe sur place, sur cet appareil, par les deux parties. Une fois enregistré, il fait foi et ne peut plus être modifié.",
+          "signatureLocataire": "Le locataire a examiné les points ci-dessus avec moi et signe ce constat.",
+          "signatureProprietaire": "Je certifie l’exactitude de ce constat et je le signe.",
+          "enregistrer": "Signer et enregistrer le constat",
+          "enregistrement": "Enregistrement…",
+          "incomplet": "Examinez chaque point de contrôle avant de signer.",
+          "reservesDepart": "Réserves déjà notées au départ : {points}. Un défaut présent à l’aller n’est pas un dommage du locataire.",
+          "erreurs": {
+            "invalide": "Le constat est incomplet ou mal renseigné.",
+            "interdit": "Cette location ne vous appartient pas.",
+            "statutIncompatible": "Le statut de la location ne permet plus ce constat.",
+            "dejaRealise": "Ce constat a déjà été signé : il ne peut pas être refait.",
+            "departManquant": "Réalisez d’abord l’état des lieux de départ.",
+            "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+            "echec": "L’enregistrement a échoué. Réessayez."
+          }
+        },
+        "detail": {
+          "retourListe": "Tous les états des lieux",
+          "reserve": "Constat avec réserve",
+          "sansReserve": "Sans réserve",
+          "kilometrage": "Kilométrage relevé : {valeur} km",
+          "signeLocataire": "Signé par le locataire",
+          "signeProprietaire": "Signé par le propriétaire",
+          "finalise": "Constat finalisé le {date}. Il fait foi entre les parties."
         }
       },
       "messages": {
