@@ -60,8 +60,8 @@ export default async function PageAvisLocataire({ params }: Props) {
                 <Bouton
                   as={Link}
                   href={{
-                    pathname: "/remorque/[ville]/[slug]",
-                    params: { ville: entree.villeSlug, slug: entree.slug },
+                    pathname: "/compte/avis/[reservation]",
+                    params: { reservation: entree.reservationId },
                   }}
                   taille="petit"
                   variante="secondaire"

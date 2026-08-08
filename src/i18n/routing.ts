@@ -68,6 +68,7 @@ export const pathnames = {
   "/compte/paiements": "/compte/paiements",
   "/compte/profil": "/compte/profil",
   "/compte/avis": "/compte/avis",
+  "/compte/avis/[reservation]": "/compte/avis/[reservation]",
   "/compte/parametres": "/compte/parametres",
 
   /* --- Espace loueur ---------------------------------------------------- */

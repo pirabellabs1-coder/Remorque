@@ -147,6 +147,33 @@
         "vide": {
           "titre": "Aucun avis publié",
           "texte": "Après chaque location terminée, vous pourrez noter le matériel et l’accueil. Vos avis aident les locataires suivants."
+        },
+        "formulaire": {
+          "titre": "Écrire un avis",
+          "retour": "Tous les avis",
+          "note": "Votre note",
+          "etoiles": "{nombre, plural, =1 {1 étoile} other {# étoiles}}",
+          "niveaux": {
+            "1": "Très décevant",
+            "2": "Décevant",
+            "3": "Correct",
+            "4": "Bien",
+            "5": "Excellent"
+          },
+          "commentaire": "Votre avis",
+          "commentaireAide": "L’état du matériel, l’accueil, la facilité de retrait — ce que le prochain locataire aimerait savoir. Vingt caractères au minimum.",
+          "publier": "Publier l’avis",
+          "envoi": "Publication…",
+          "noteManquante": "Choisissez une note avant de publier.",
+          "erreurs": {
+            "invalide": "L’avis est trop court ou mal renseigné.",
+            "interdit": "Cette location ne vous concerne pas.",
+            "nonCloturee": "La location n’est pas encore terminée.",
+            "fenetreFermee": "Le délai de dépôt de quatorze jours est écoulé.",
+            "dejaDepose": "Vous avez déjà publié un avis pour cette location.",
+            "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+            "echec": "La publication a échoué. Réessayez."
+          }
         }
       },
       "profil": {
