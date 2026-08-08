@@ -475,7 +475,8 @@
           "kilometrage": "Kilométrage relevé : {valeur} km",
           "signeLocataire": "Signé par le locataire",
           "signeProprietaire": "Signé par le propriétaire",
-          "finalise": "Constat finalisé le {date}. Il fait foi entre les parties."
+          "finalise": "Constat finalisé le {date}. Il fait foi entre les parties.",
+          "telecharger": "Télécharger le constat (PDF)"
         }
       },
       "messages": {
@@ -908,6 +909,11 @@
       "encaisser": "Encaisser",
       "confirmer": "Confirmer",
       "expirer": "Expirer"
+    },
+    "documents": {
+      "contrat": "Contrat de location",
+      "attestation": "Attestation d’assurance",
+      "constat": "État des lieux"
     },
     "formulaire": {
       "enregistrer": "Enregistrer",

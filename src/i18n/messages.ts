@@ -18,9 +18,11 @@ export const ESPACES = [
   "reservation",
   "compte",
   "espaces",
-  // Gabarits des courriels sortants : rendus côté serveur uniquement, jamais
-  // transmis au navigateur — aucun espace client ne doit les demander.
+  // Gabarits des courriels sortants et des documents PDF : rendus côté serveur
+  // uniquement, jamais transmis au navigateur — aucun espace client ne doit les
+  // demander.
   "courriels",
+  "documents",
 ] as const;
 
 export type Espace = (typeof ESPACES)[number];

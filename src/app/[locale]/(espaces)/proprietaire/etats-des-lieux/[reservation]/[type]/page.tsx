@@ -84,7 +84,12 @@ export default async function PageConstat({ params }: Props) {
       ) : null}
 
       {constat ? (
-        <DetailConstat constat={constat} format={format} t={t} />
+        <DetailConstat
+          constat={constat}
+          reservationId={reservation.id}
+          format={format}
+          t={t}
+        />
       ) : saisissable ? (
         <FormulaireConstat reservationId={reservation.id} type={type} />
       ) : (
@@ -100,10 +105,12 @@ export default async function PageConstat({ params }: Props) {
 
 function DetailConstat({
   constat,
+  reservationId,
   format,
   t,
 }: {
   constat: ConstatDetail;
+  reservationId: string;
   format: Awaited<ReturnType<typeof getFormatter>>;
   t: Awaited<ReturnType<typeof getTranslations<"espaces.loueur.etatsDesLieux">>>;
 }) {
@@ -184,9 +191,21 @@ function DetailConstat({
         </dl>
 
         {constat.finaliseLe ? (
-          <p className="mt-4 border-t border-bordure pt-3 text-sm text-texte-attenue">
-            {t("detail.finalise", { date: date(constat.finaliseLe) })}
-          </p>
+          <div className="mt-4 border-t border-bordure pt-3">
+            <p className="text-sm text-texte-attenue">
+              {t("detail.finalise", { date: date(constat.finaliseLe) })}
+            </p>
+            {/* La pièce téléchargeable : c'est elle qu'on joint à une
+                déclaration de sinistre ou qu'on produit en litige. */}
+            <a
+              href={`/api/documents/constat/${reservationId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block text-sm font-medium text-accent underline-offset-4 hover:underline"
+            >
+              {t("detail.telecharger")}
+            </a>
+          </div>
         ) : null}
       </section>
     </div>

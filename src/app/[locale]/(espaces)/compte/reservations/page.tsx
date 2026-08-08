@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
+import { DocumentsLocation } from "@/components/espace/documents-location";
 import { ListeVide } from "@/components/espace/indicateurs";
 import { ActionsReservation } from "@/components/espace/actions-reservation";
 import { PastilleStatut } from "@/components/espace/statut";
@@ -197,6 +198,13 @@ export default async function PageMesReservations({ params, searchParams }: Prop
                         reservationId={reservation.id}
                         statut={reservation.statut}
                         role="locataire"
+                      />
+                    </div>
+
+                    <div className="sm:flex sm:justify-end">
+                      <DocumentsLocation
+                        reservationId={reservation.id}
+                        statut={reservation.statut}
                       />
                     </div>
                   </div>

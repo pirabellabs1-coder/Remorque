@@ -1,0 +1,75 @@
+{
+  "documents": {
+    "commun": {
+      "reference": "Référence {numero}",
+      "editeLe": "Document édité le {date} par {plateforme}.",
+      "identiteIncomplete": "Éditeur non renseigné : ce document est un modèle et n’a pas de valeur contractuelle tant que l’identité de l’éditeur n’est pas publiée.",
+      "parties": "Parties",
+      "locataire": "Locataire",
+      "proprietaire": "Propriétaire",
+      "materiel": "Matériel",
+      "designation": "Désignation",
+      "ville": "Ville de retrait",
+      "ptac": "PTAC",
+      "chargeUtile": "Charge utile",
+      "periode": "Période",
+      "duree": "Durée",
+      "jours": "{nombre, plural, =1 {1 jour} other {# jours}}",
+      "du": "Du",
+      "au": "Au",
+      "kg": "{valeur} kg",
+      "nonRenseigne": "Non renseigné"
+    },
+    "contrat": {
+      "titre": "Contrat de location",
+      "sousTitre": "Location de matériel entre particuliers, intermédiée par {plateforme}",
+      "montants": "Montants",
+      "loyer": "Loyer",
+      "fraisService": "Frais de service",
+      "total": "Total réglé par le locataire",
+      "caution": "Caution (empreinte, non débitée)",
+      "conditions": "Conditions",
+      "conditionsTexte": "Le locataire s’engage à restituer le matériel à la date convenue, dans l’état constaté au départ. L’état des lieux contradictoire, signé des deux parties au départ et au retour, fait foi entre elles. En l’absence d’état des lieux de départ, le matériel est présumé avoir été remis en bon état.",
+      "cautionTexte": "La caution fait l’objet d’une empreinte bancaire : le montant est immobilisé sur le moyen de paiement du locataire, jamais débité, et libéré après la restitution dans le délai prévu par le pays de la location. Un litige ou un sinistre ouvert suspend cette libération.",
+      "assuranceTexte": "La location est couverte par l’assurance souscrite par la plateforme pour la durée indiquée ci-dessus. Le contournement de la plateforme — paiement direct, échange de coordonnées hors messagerie — prive les deux parties de cette couverture et de la garantie de caution.",
+      "signatures": "Signatures",
+      "signaturesTexte": "Le présent contrat est accepté par voie électronique lors de la confirmation de la réservation. La confirmation vaut signature des deux parties.",
+      "confirmeLe": "Confirmé le {date}",
+      "nonConfirme": "Réservation non encore confirmée : ce document est provisoire."
+    },
+    "attestation": {
+      "titre": "Attestation d’assurance",
+      "sousTitre": "Couverture de la location {numero}",
+      "assureur": "Assureur",
+      "couverture": "Couverture",
+      "couvertureTexte": "Le matériel désigné ci-dessus est assuré pour la durée de la location indiquée, dans les conditions du contrat souscrit par la plateforme auprès de son partenaire pour le pays de la location.",
+      "portee": "Portée",
+      "porteeTexte": "L’attestation couvre la période de location et le seul matériel désigné. Elle ne se substitue pas à l’assurance du véhicule tracteur, qui reste à la charge du conducteur.",
+      "assureurManquant": "Aucun partenaire d’assurance n’est renseigné pour ce pays : cette attestation est un modèle et n’engage aucun assureur.",
+      "pays": "Pays de la location"
+    },
+    "constat": {
+      "titre": "État des lieux",
+      "sousTitre": "Constats contradictoires de la location {numero}",
+      "depart": "Constat de départ",
+      "retour": "Constat de retour",
+      "points": {
+        "feux": "Feux et signalisation",
+        "pneus": "Pneus",
+        "attelage": "Attelage et chaînes de sécurité",
+        "chassis": "Châssis et structure",
+        "baches": "Bâches et ridelles"
+      },
+      "conforme": "Conforme",
+      "defaut": "Défaut",
+      "kilometrage": "Kilométrage relevé",
+      "commentaire": "Observations",
+      "signeLocataire": "Signé par le locataire",
+      "signeProprietaire": "Signé par le propriétaire",
+      "nonSigne": "Non signé",
+      "aucun": "Aucun état des lieux n’a encore été signé pour cette location.",
+      "manqueDepart": "Aucun constat de départ n’a été signé : le matériel est présumé avoir été remis en bon état.",
+      "valeurTexte": "Les deux constats se lisent l’un par rapport à l’autre : un défaut relevé au départ n’est pas imputable au locataire."
+    }
+  }
+}

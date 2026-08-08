@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
+import { DocumentsLocation } from "@/components/espace/documents-location";
 import { ListeVide } from "@/components/espace/indicateurs";
 import { ActionsReservation } from "@/components/espace/actions-reservation";
 import { PastilleStatut } from "@/components/espace/statut";
@@ -164,6 +165,10 @@ export default async function PageReservations({ params, searchParams }: Props) 
                           statut={reservation.statut}
                           role="proprietaire"
                         />
+                        <DocumentsLocation
+                          reservationId={reservation.id}
+                          statut={reservation.statut}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -206,6 +211,10 @@ export default async function PageReservations({ params, searchParams }: Props) 
                     reservationId={reservation.id}
                     statut={reservation.statut}
                     role="proprietaire"
+                  />
+                  <DocumentsLocation
+                    reservationId={reservation.id}
+                    statut={reservation.statut}
                   />
                 </div>
               </li>
