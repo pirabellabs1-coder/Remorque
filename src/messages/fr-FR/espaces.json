@@ -925,6 +925,21 @@
       "confirmer": "Confirmer",
       "expirer": "Expirer"
     },
+    "paiement": {
+      "payer": "Régler la location",
+      "ouverture": "Ouverture du paiement…",
+      "succes": "Paiement reçu. Votre réservation est en cours de confirmation.",
+      "abandon": "Paiement abandonné. Votre réservation reste en attente de règlement.",
+      "erreurs": {
+        "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+        "interdit": "Cette réservation ne vous appartient pas.",
+        "statutIncompatible": "Cette réservation n’est pas en attente de règlement.",
+        "paiementIndisponible": "Le paiement en ligne n’est pas encore ouvert sur cette installation.",
+        "totalIncoherent": "Le détail des montants ne correspond pas au total de la réservation. Contactez-nous avant de régler.",
+        "totalNul": "Cette réservation n’a aucun montant à régler.",
+        "echec": "L’ouverture du paiement a échoué. Réessayez."
+      }
+    },
     "documents": {
       "contrat": "Contrat de location",
       "attestation": "Attestation d’assurance",

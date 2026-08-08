@@ -1,5 +1,6 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { BoutonPayer } from "@/components/espace/bouton-payer";
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { DocumentsLocation } from "@/components/espace/documents-location";
 import { ListeVide } from "@/components/espace/indicateurs";
@@ -14,7 +15,7 @@ import { mesReservations } from "@/server/espaces/locataire";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ filtre?: string }>;
+  searchParams: Promise<{ filtre?: string; paiement?: string }>;
 };
 
 export const metadata = { robots: { index: false, follow: false } };
@@ -40,11 +41,12 @@ export default async function PageMesReservations({ params, searchParams }: Prop
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { filtre } = await searchParams;
+  const { filtre, paiement } = await searchParams;
   const actif: ClefFiltre =
     filtre && filtre in FILTRES ? (filtre as ClefFiltre) : "toutes";
 
   const t = await getTranslations("espaces.locataire.reservations");
+  const tPaiement = await getTranslations("espaces.paiement");
   const tCautions = await getTranslations("espaces.locataire.paiements.cautions");
   const format = await getFormatter();
 
@@ -68,6 +70,23 @@ export default async function PageMesReservations({ params, searchParams }: Prop
         titre={t("titre")}
         sousTitre={t("chapo", { nombre: toutes.length })}
       />
+
+      {/* Retour du prestataire de paiement. Le message dit ce qui est en
+          cours, non ce qui est acquis : la réservation ne devient payée que
+          lorsque Stripe nous l'a signé, ce qui prend parfois une seconde de
+          plus que le retour du navigateur. */}
+      {paiement === "succes" || paiement === "abandon" ? (
+        <p
+          role="status"
+          className={
+            paiement === "succes"
+              ? "mt-6 rounded-carte border border-succes/40 bg-succes/10 p-4 text-[0.9375rem]"
+              : "mt-6 rounded-carte border border-bordure bg-fond-eleve p-4 text-[0.9375rem] text-texte-attenue"
+          }
+        >
+          {paiement === "succes" ? tPaiement("succes") : tPaiement("abandon")}
+        </p>
+      ) : null}
 
       {/* Onglets de filtre — de simples liens, donc partageables, ouvrables
           dans un nouvel onglet et fonctionnels sans JavaScript. */}
@@ -192,6 +211,14 @@ export default async function PageMesReservations({ params, searchParams }: Prop
                     <p className="mt-2 font-mono text-xs text-texte-attenue">
                       {reservation.reference}
                     </p>
+
+                    {/* Le règlement est l'action attendue sur une demande
+                        acceptée : elle passe donc avant l'annulation. */}
+                    {reservation.statut === "acceptee" ? (
+                      <div className="mt-3 sm:flex sm:justify-end">
+                        <BoutonPayer reservationId={reservation.id} />
+                      </div>
+                    ) : null}
 
                     <div className="mt-3 sm:flex sm:justify-end">
                       <ActionsReservation
