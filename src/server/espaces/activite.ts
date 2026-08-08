@@ -61,6 +61,8 @@ export type Reservation = {
   netProprietaire: number;
   caution: number;
   devise: string;
+  /** Code à quatre chiffres à faire dire au locataire au retrait. */
+  codeRetrait: string | null;
   instantanee: boolean;
 };
 
@@ -116,6 +118,7 @@ export const listerReservations = cache(async (): Promise<Reservation[]> => {
       netProprietaire: reservation.montantReverse,
       caution: reservation.caution,
       devise: reservation.devise,
+      codeRetrait: reservation.codeRetrait,
       instantanee: annonce.reservationInstantanee,
     })
     .from(reservation)

@@ -74,6 +74,8 @@ export type MaReservation = {
   devise: string;
   /** Un avis a-t-il déjà été déposé pour cette location ? */
   avisDepose: boolean;
+  /** Code à quatre chiffres échangé de vive voix au retrait. Nul avant confirmation. */
+  codeRetrait: string | null;
   photo: string;
 };
 
@@ -235,6 +237,7 @@ export const mesReservations = cache(async (): Promise<MaReservation[]> => {
       montantTotal: reservation.totalLocataire,
       caution: reservation.caution,
       devise: reservation.devise,
+      codeRetrait: reservation.codeRetrait,
       photo: sql<string | null>`(
         select p.url from annonce_photo p
         where p.annonce_id = ${annonce.id}

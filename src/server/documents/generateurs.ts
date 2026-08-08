@@ -9,6 +9,7 @@ import { chargerToutesLesTraductions } from "@/i18n/messages";
 
 import { Composeur } from "./composer";
 import type { ConstatDocument, DossierDocument } from "./depot";
+import type { FactureDocument } from "./facture";
 
 /**
  * Les trois documents de la plateforme.
@@ -220,6 +221,72 @@ export async function attestationAssurance(
 
   pied(composeur, dossier, t, date);
   return composeur.rendre(`${t("attestation.titre")} ${dossier.numero}`);
+}
+
+export async function facturePdf(
+  document: FactureDocument,
+  locale: Market = DEFAULT_MARKET,
+): Promise<Uint8Array> {
+  const { t, date, montant } = await outils(locale);
+  const composeur = await Composeur.creer();
+
+  composeur.enTete(
+    t("facture.titre"),
+    t("facture.sousTitre", { numero: document.numero }),
+  );
+
+  composeur
+    .espace(4)
+    .paragraphe(t("facture.emiseLe", { date: date(document.emiseLe) }), {
+      attenue: true,
+    })
+    .espace()
+    .titre(t("facture.client"))
+    .lignes([
+      [t("commun.locataire"), document.destinataireNom],
+      [t("commun.reference", { numero: document.reference }), document.annonceTitre],
+    ])
+    .espace()
+    .titre(t("facture.detail"))
+    .lignes(
+      document.lignes.map(
+        (ligne) =>
+          [
+            t(`facture.${ligne.cle}`),
+            montant(ligne.montantTtc, document.devise),
+          ] as const,
+      ),
+    )
+    .espace()
+    .separateur()
+    .titre(t("facture.totaux"))
+    .lignes([
+      [t("facture.totalHt"), montant(document.montantHt, document.devise)],
+      [
+        // Le taux est en points de base : 2000 se lit « 20 % ».
+        t("facture.tva", { taux: document.tauxTvaBp / 100 }),
+        montant(document.montantTva, document.devise),
+      ],
+      [t("facture.totalTtc"), montant(document.montantTtc, document.devise)],
+    ])
+    .espace()
+    .titre(t("facture.regimeTitre"))
+    .paragraphe(t("facture.regimeTexte"))
+    .espace(6)
+    .paragraphe(t("facture.conservation"), { attenue: true });
+
+  if (!identiteComplete()) {
+    composeur.espace(16).paragraphe(t("commun.identiteIncomplete"), { attenue: true });
+  }
+
+  composeur.pied(
+    `${document.numero} — ${t("commun.editeLe", {
+      date: date(new Date()),
+      plateforme: ENTREPRISE.raisonSociale || PLATEFORME,
+    })}`,
+  );
+
+  return composeur.rendre(`${t("facture.titre")} ${document.numero}`);
 }
 
 export async function constatPdf(

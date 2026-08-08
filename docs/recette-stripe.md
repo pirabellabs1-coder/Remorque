@@ -227,33 +227,86 @@ Cliquer deux fois de suite sur « Régler la location ».
 Attendu : une seule session ouverte — la clé d'idempotence est
 `reglement-<identifiant de réservation>`.
 
-## 6. Résultat attendu qui surprendra : la réservation reste « payée »
+## 6. Confirmation, code de retrait et reçu
 
-Après S1, la réservation **ne passe pas à « confirmée »**. C'est conforme à
-l'état actuel du code : la transition `confirmer` existe dans la machine à états
-mais rien ne l'émet encore. Elle suppose le contrat généré, l'attestation émise
-et le code de retrait communiqué.
+La confirmation s'enchaîne au paiement, dans le même événement. Après S1 :
 
-Ce n'est donc pas un défaut à consigner, mais un chantier à ouvrir. Le noter tel
-quel dans le compte rendu de recette.
-
-## 7. Hors périmètre
-
-Trois sujets ne sont pas écrits et ne peuvent pas être recettés :
-
-1. **Reversement au propriétaire** (Stripe Connect). La colonne
-   `utilisateur.stripe_compte_id` existe, aucun compte n'est créé ni alimenté.
-2. **Débit de la caution** après dommage constaté. Le moyen de paiement est
-   conservé (vérifié en S1), mais aucun code ne s'en sert.
-3. **Facture** (`facture.url`). La table existe, rien ne l'écrit.
-
-## 8. Nettoyage
+| Vérification | Attendu |
+|---|---|
+| `reservation.statut` | `confirmee` |
+| `reservation.code_retrait` | quatre chiffres, zéros de tête compris (`0042` est valide) |
+| `reservation.contrat_url` / `attestation_assurance_url` | adresses `/api/documents/…` |
+| Ligne `facture` | une seule, `type = 'recu_locataire'`, numéro `FA-<année>-00001` |
+| Écran locataire | le code s'affiche sous la référence |
+| Écran loueur | le même code, colonne « Statut » |
+| Documents proposés | contrat, attestation **et reçu** côté locataire ; sans le reçu côté loueur |
 
 ```sql
+SELECT r.statut, r.code_retrait, f.numero, f.montant_ht, f.montant_tva, f.montant_ttc
+FROM reservation r LEFT JOIN facture f ON f.reservation_id = r.id
+WHERE r.id = '<identifiant>';
+```
+
+Contrôle fiscal du reçu : `montant_ht + montant_tva = montant_ttc`, et la taxe
+ne porte **que sur les frais de service** — le loyer est perçu par un
+particulier. Avec 70,00 € de loyer et 8,40 € de frais à 20 % : 1,40 € de taxe,
+et non 13,07 €.
+
+Le code de retrait ne part par aucun courriel : il s'échange de vive voix devant
+le matériel. Vérifier qu'il n'apparaît pas dans `npm run courriels`.
+
+## 7. Débit de caution après dommage
+
+Réservé à l'administration. Depuis un compte administrateur, sur une location
+restituée dont le constat de retour porte une réserve.
+
+| Scénario | Attendu |
+|---|---|
+| Montant supérieur à la caution | refus `plafondDepasse`, aucun prélèvement |
+| Motif de moins de dix caractères | refus `invalide` |
+| Caution déjà libérée | refus `dejaLiberee` |
+| Débit valide | `caution.montant_debite` mis à jour, statut `debitee_partiellement` ou `retenue`, ligne au journal d'audit avec l'état avant et après |
+| Double clic | un seul prélèvement — clé d'idempotence `caution-<id>-<montant>` |
+| Carte expirée ou authentification exigée | refus `debitRefuse`, **aucune écriture** |
+
+La libération, elle, doit être refusée tant qu'un litige ou un sinistre est
+ouvert (`fondsGeles`) — règle 6.
+
+## 8. Reversement au propriétaire (Connect)
+
+| Scénario | Attendu |
+|---|---|
+| Écran « Revenus » sans compte | « Aucun compte de reversement » et bouton d'ouverture |
+| Ouverture | redirection vers l'inscription Stripe ; aucune coordonnée bancaire saisie sur nos pages |
+| Retour d'inscription incomplète | « Compte de reversement incomplet », bouton « Terminer l'inscription » |
+| Inscription terminée | « Compte de reversement actif » |
+| Clôture d'une location | le reversement reste **`planifie`** — il n'est pas marqué payé tant que rien n'est viré |
+| Envoi avec dossier ouvert | statut `gele`, motif inscrit, aucun virement |
+| Envoi nominal | statut `envoye`, `stripe_transfer_id` renseigné |
+| Second envoi | sans effet — un seul virement |
+
+Comptes de test Connect : utiliser le numéro de test `000 123 4567` et les
+valeurs proposées par Stripe pendant l'inscription.
+
+## 9. Hors périmètre
+
+- **Remboursement** d'un locataire après annulation ou arbitrage : la colonne
+  `paiement.montant_rembourse` existe, aucun code ne la remplit depuis Stripe.
+- **Contestation bancaire** (`statut = 'conteste'`) : aucun événement
+  `charge.dispute.created` n'est traité.
+- **Facture de commission** au propriétaire : seul le reçu du locataire est
+  émis.
+
+## 10. Nettoyage
+
+```sql
+DELETE FROM facture  WHERE reservation_id = '<identifiant>';
 DELETE FROM caution  WHERE reservation_id = '<identifiant>';
 DELETE FROM paiement WHERE reservation_id = '<identifiant>';
 DELETE FROM reservation_transition WHERE reservation_id = '<identifiant>';
-UPDATE reservation SET statut = 'demandee', acceptee_le = NULL, payee_le = NULL
+UPDATE reservation SET statut = 'demandee', acceptee_le = NULL, payee_le = NULL,
+  confirmee_le = NULL, code_retrait = NULL, contrat_url = NULL,
+  attestation_assurance_url = NULL
 WHERE id = '<identifiant>';
 ```
 

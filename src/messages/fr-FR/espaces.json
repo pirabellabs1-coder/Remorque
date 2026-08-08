@@ -63,6 +63,7 @@
         "statut": "Statut",
         "duree": "{nombre, plural, =1 {1 jour} other {# jours}}",
         "voirAnnonce": "Voir l’annonce",
+        "codeRetrait": "Code de retrait",
         "vide": {
           "titre": "Aucune réservation dans ce filtre",
           "texte": "Changez de filtre, ou cherchez une remorque près de chez vous pour votre prochain trajet.",
@@ -367,6 +368,7 @@
         "terminees": "Terminées",
         "reference": "Référence",
         "locataire": "Locataire",
+        "codeRetrait": "Code de retrait",
         "materiel": "Matériel",
         "dates": "Dates",
         "montant": "Net perçu",
@@ -424,6 +426,17 @@
           "titre": "Aucun avis reçu",
           "texte": "Les locataires peuvent déposer un avis dans les quatorze jours suivant la restitution."
         }
+      },
+      "reversement": {
+        "absent": "Aucun compte de reversement",
+        "incomplet": "Compte de reversement incomplet",
+        "actif": "Compte de reversement actif",
+        "indisponible": "Les reversements ne sont pas encore ouverts sur cette installation.",
+        "aide": "Vos coordonnées bancaires sont saisies chez notre prestataire de paiement, jamais sur nos pages. Sans ce compte, vos locations restent encaissées mais ne peuvent pas vous être virées.",
+        "ouvrir": "Ouvrir mon compte",
+        "reprendre": "Terminer l’inscription",
+        "ouverture": "Ouverture…",
+        "echec": "L’ouverture a échoué. Réessayez."
       },
       "calendrier": {
         "titre": "Calendrier",
@@ -943,7 +956,8 @@
     "documents": {
       "contrat": "Contrat de location",
       "attestation": "Attestation d’assurance",
-      "constat": "État des lieux"
+      "constat": "État des lieux",
+      "facture": "Reçu de paiement"
     },
     "formulaire": {
       "enregistrer": "Enregistrer",

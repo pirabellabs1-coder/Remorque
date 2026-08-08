@@ -5,6 +5,7 @@ import { serverEnv } from "@/config/env-serveur";
 import { db } from "@/server/db";
 import { caution, paiement, reservation } from "@/server/db/schema";
 import { stripe, webhookConfigure } from "@/server/paiements/stripe";
+import { confirmerReservation } from "@/server/reservations/confirmation";
 import { changerStatut } from "@/server/reservations/transitions";
 
 /**
@@ -93,12 +94,21 @@ async function encaisser(session: Stripe.Checkout.Session): Promise<void> {
 
   // La transition crée la caution et déclenche les notifications — un seul
   // chemin pour changer d'état, règle 4.
-  await changerStatut({
+  const encaissement = await changerStatut({
     reservationId: dossier.id,
     evenement: "encaisser",
     acteur: "systeme",
     motif: `Paiement encaissé (${intention})`,
   });
+
+  // Puis la confirmation, dans la foulée : rien d'autre n'est attendu du
+  // locataire, et laisser la réservation à « payée » l'obligerait à revenir
+  // voir si quelque chose a bougé. Elle est distincte de l'encaissement
+  // parce qu'elle peut échouer seule — et qu'un paiement encaissé doit le
+  // rester même si l'émission des pièces achoppe.
+  if (encaissement.ok) {
+    await confirmerReservation(dossier.id);
+  }
 
   // Le moyen de paiement conservé porte l'empreinte de caution : sans lui, on
   // ne pourrait pas débiter en cas de dommage, et la garantie serait un mot.

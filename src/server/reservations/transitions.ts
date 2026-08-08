@@ -187,9 +187,15 @@ export async function changerStatut(entree: {
     if (suivant === "cloturee") {
       // Le gel a déjà été vérifié par le domaine : arriver ici signifie
       // qu'aucun dossier n'est ouvert.
+      //
+      // Le reversement reste **planifié** et n'est pas marqué payé : tant que
+      // le virement n'a pas été accepté par le prestataire, écrire « payé »
+      // ferait dire à l'écran du propriétaire que son argent est parti alors
+      // qu'il ne l'est pas. C'est `envoyerReversement` qui fait le virement,
+      // et lui seul qui inscrit son identifiant.
       await tx
         .update(reversement)
-        .set({ statut: "paye", envoyeLe: new Date() })
+        .set({ prevuLe: new Date() })
         .where(
           and(
             eq(reversement.reservationId, entree.reservationId),

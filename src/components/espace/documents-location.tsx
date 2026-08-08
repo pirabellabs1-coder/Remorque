@@ -14,9 +14,12 @@ import { getTranslations } from "next-intl/server";
 export async function DocumentsLocation({
   reservationId,
   statut,
+  avecFacture = false,
 }: {
   reservationId: string;
   statut: string;
+  /** Le reçu ne s'affiche que du côté qui l'a réglé. */
+  avecFacture?: boolean;
 }) {
   const t = await getTranslations("espaces.documents");
 
@@ -30,6 +33,7 @@ export async function DocumentsLocation({
   const documents = [
     { type: "contrat", libelle: t("contrat") },
     { type: "attestation", libelle: t("attestation") },
+    ...(avecFacture ? [{ type: "facture", libelle: t("facture") }] : []),
     ...(constatDisponible
       ? [{ type: "constat", libelle: t("constat") }]
       : []),

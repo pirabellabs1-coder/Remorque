@@ -157,6 +157,22 @@ export default async function PageReservations({ params, searchParams }: Props) 
                     </td>
                     <td className="px-5 py-4">
                       <PastilleStatut statut={reservation.statut} />
+
+                      {/* Le code que le locataire doit annoncer au retrait.
+                          Le loueur le lit ici et le compare : c'est ce qui
+                          atteste qu'il remet le matériel à la bonne personne. */}
+                      {reservation.codeRetrait &&
+                      reservation.statut === "confirmee" ? (
+                        <p className="mt-1.5 text-sm">
+                          <span className="text-texte-attenue">
+                            {t("codeRetrait")}{" "}
+                          </span>
+                          <span className="font-mono font-bold tracking-[0.2em]">
+                            {reservation.codeRetrait}
+                          </span>
+                        </p>
+                      ) : null}
+
                       {/* Les actions sous le statut : c'est là qu'on regarde
                           pour savoir ce qu'il reste à faire. */}
                       <div className="mt-2">

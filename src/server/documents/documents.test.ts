@@ -8,6 +8,7 @@ import {
   attestationAssurance,
   constatPdf,
   contratDeLocation,
+  facturePdf,
 } from "./generateurs";
 
 /**
@@ -159,6 +160,35 @@ describe("documents PDF", () => {
   it("engendre un constat même sans aucun état des lieux signé", async () => {
     const pdf = await constatPdf(DOSSIER, []);
     expect(estPdf(pdf)).toBe(true);
+  });
+
+  it("engendre un reçu où hors taxe plus taxe font le total réglé", async () => {
+    const pdf = await facturePdf({
+      numero: "FA-2026-00001",
+      emiseLe: new Date("2026-08-20T10:00:00Z"),
+      devise: "EUR",
+      montantHt: 7700,
+      montantTva: 140,
+      montantTtc: 7840,
+      tauxTvaBp: 2000,
+      lignes: [
+        { cle: "loyer", montantTtc: 7000, montantTva: 0 },
+        { cle: "fraisService", montantTtc: 840, montantTva: 140 },
+      ],
+      reference: DOSSIER.numero,
+      annonceTitre: DOSSIER.annonceTitre,
+      destinataireNom: DOSSIER.locataireNom,
+    });
+
+    expect(estPdf(pdf)).toBe(true);
+
+    const texte = texteDuPdf(pdf);
+    expect(texte).not.toContain("documents.");
+    expect(texte).toContain("FA-2026-00001");
+    // Le taux est stocké en points de base et doit se lire « 20 % ».
+    expect(texte).toContain("20");
+    expect(texte).toContain("77,00");
+    expect(texte).toContain("78,40");
   });
 
   it("engendre un contrat sur une réservation non confirmée", async () => {

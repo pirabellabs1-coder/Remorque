@@ -1,9 +1,11 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { CompteReversement } from "@/components/espace/compte-reversement";
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { Anneau, Barres, Courbe } from "@/components/espace/graphique";
 import { CarteIndicateur } from "@/components/espace/indicateurs";
 import { PRIX_AFFICHE } from "@/lib/cn";
+import { etatCompteReversement } from "@/server/paiements/reversement";
 import {
   revenusParAnnonce,
   revenusParMois,
@@ -53,6 +55,10 @@ export default async function PageRevenus({ params }: Props) {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
+
+      {/* Sans compte de reversement, aucun virement n'est possible : la
+          question passe donc avant les chiffres, puisqu'elle les conditionne. */}
+      <CompteReversement etat={await etatCompteReversement()} />
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <CarteIndicateur libelle={t("brut")} valeur={montant(totaux.brut)} />

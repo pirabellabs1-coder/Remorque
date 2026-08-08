@@ -48,6 +48,22 @@
       "assureurManquant": "Aucun partenaire d’assurance n’est renseigné pour ce pays : cette attestation est un modèle et n’engage aucun assureur.",
       "pays": "Pays de la location"
     },
+    "facture": {
+      "titre": "Reçu de location",
+      "sousTitre": "Facture {numero}",
+      "emiseLe": "Émise le {date}",
+      "client": "Client",
+      "detail": "Détail",
+      "loyer": "Location du matériel",
+      "fraisService": "Frais de service de la plateforme",
+      "totaux": "Totaux",
+      "totalHt": "Total hors taxe",
+      "tva": "TVA ({taux} %)",
+      "totalTtc": "Total réglé",
+      "regimeTitre": "Régime applicable",
+      "regimeTexte": "La location est consentie par un particulier : le loyer n’est pas soumis à la TVA. Seuls les frais de service, rémunération de la plateforme, en supportent.",
+      "conservation": "Ce reçu vaut justificatif de paiement. Conservez-le : il vous sera demandé en cas de réclamation."
+    },
     "constat": {
       "titre": "État des lieux",
       "sousTitre": "Constats contradictoires de la location {numero}",

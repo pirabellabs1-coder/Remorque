@@ -212,6 +212,23 @@ export default async function PageMesReservations({ params, searchParams }: Prop
                       {reservation.reference}
                     </p>
 
+                    {/* Le code de retrait ne voyage pas par courriel : il
+                        s'échange de vive voix devant le matériel, et sa seule
+                        utilité est d'attester qu'on est devant la bonne
+                        personne. Il n'apparaît donc que là où l'on est
+                        authentifié, et seulement quand il sert encore. */}
+                    {reservation.codeRetrait &&
+                    ["confirmee", "en_cours"].includes(reservation.statut) ? (
+                      <p className="mt-2 text-sm">
+                        <span className="text-texte-attenue">
+                          {t("codeRetrait")}{" "}
+                        </span>
+                        <span className="font-mono text-base font-bold tracking-[0.2em]">
+                          {reservation.codeRetrait}
+                        </span>
+                      </p>
+                    ) : null}
+
                     {/* Le règlement est l'action attendue sur une demande
                         acceptée : elle passe donc avant l'annulation. */}
                     {reservation.statut === "acceptee" ? (
@@ -232,6 +249,7 @@ export default async function PageMesReservations({ params, searchParams }: Prop
                       <DocumentsLocation
                         reservationId={reservation.id}
                         statut={reservation.statut}
+                        avecFacture
                       />
                     </div>
                   </div>

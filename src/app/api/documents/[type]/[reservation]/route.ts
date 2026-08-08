@@ -1,9 +1,12 @@
 import { DEFAULT_MARKET, ENABLED_MARKETS, type Market } from "@/config/markets";
+import { compteConnecte } from "@/server/authentification/session";
 import { constatsDuDossier, dossierDocument } from "@/server/documents/depot";
+import { factureDuDossier } from "@/server/documents/facture";
 import {
   attestationAssurance,
   constatPdf,
   contratDeLocation,
+  facturePdf,
 } from "@/server/documents/generateurs";
 
 /**
@@ -19,7 +22,7 @@ import {
  * dernier recours.
  */
 
-const TYPES = ["contrat", "attestation", "constat"] as const;
+const TYPES = ["contrat", "attestation", "constat", "facture"] as const;
 type TypeDocument = (typeof TYPES)[number];
 
 function estType(valeur: string): valeur is TypeDocument {
@@ -50,6 +53,16 @@ export async function GET(
 
   const locale = langueDemandee(new URL(requete.url));
 
+  // Le reçu n'existe que si une facture a été émise, et seulement pour son
+  // destinataire : le propriétaire, lui, n'a pas à lire le reçu du locataire.
+  if (type === "facture") {
+    const moi = await compteConnecte();
+    const document = moi ? await factureDuDossier(reservation, moi.id) : null;
+    if (!document) return new Response(null, { status: 404 });
+
+    return reponsePdf(await facturePdf(document, locale), `facture-${document.numero}`);
+  }
+
   const pdf =
     type === "contrat"
       ? await contratDeLocation(dossier, locale)
@@ -57,12 +70,14 @@ export async function GET(
         ? await attestationAssurance(dossier, locale)
         : await constatPdf(dossier, await constatsDuDossier(reservation), locale);
 
-  const nom = `${type}-${dossier.numero}.pdf`;
+  return reponsePdf(pdf, `${type}-${dossier.numero}`);
+}
 
+function reponsePdf(pdf: Uint8Array, nom: string): Response {
   return new Response(pdf as BodyInit, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${nom}"`,
+      "Content-Disposition": `inline; filename="${nom}.pdf"`,
       // Jamais mis en cache par un intermédiaire : le document nomme les
       // parties et porte des montants.
       "Cache-Control": "private, no-store",
