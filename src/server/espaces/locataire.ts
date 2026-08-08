@@ -10,22 +10,14 @@ import { db } from "@/server/db";
 import {
   annonce,
   caution,
+  favori,
   paiement,
   avis as tableAvis,
   reservation,
   tarif,
   utilisateur,
 } from "@/server/db/schema";
-import {
-  aujourdhui,
-  decalerJours,
-  FENETRE_AVIS_JOURS,
-  generateur,
-  GRAINES,
-  joursEntre,
-  tirerEntier,
-  VOLUMES,
-} from "@/server/donnees-demo";
+import { aujourdhui, FENETRE_AVIS_JOURS, joursEntre } from "@/server/donnees-demo";
 import { nombreNonLus } from "@/server/messagerie/depot";
 
 /**
@@ -41,10 +33,10 @@ import { nombreNonLus } from "@/server/messagerie/depot";
  * que lit l'espace loueur. Une location vue des deux côtés est la même ligne :
  * si le loueur la dit close, le locataire ne peut pas la voir en cours.
  *
- * Ce qui reste engendré ici, faute de table alimentée : les favoris, dérivés
- * du catalogue réel, et qui le disent à l'endroit où ils sont construits. Les
- * fils de discussion vivent dans `messagerie/depot.ts`, le relevé lit les
- * tables `paiement` et `caution`.
+ * Plus rien n'est engendré ici : les fils de discussion vivent dans
+ * `messagerie/depot.ts`, le relevé lit `paiement` et `caution`, les favoris
+ * lisent `favori`. Ce module n'est plus qu'un jeu de lectures restreintes au
+ * compte connecté.
  */
 
 export type EtatCaution =
@@ -504,27 +496,27 @@ export async function mesPaiements(): Promise<LignePaiement[]> {
 }
 
 /**
- * Favoris.
+ * Favoris, lus dans la table `favori`.
  *
- * La table n'existe pas encore : la liste est dérivée du catalogue réel, en
- * écartant ce que le compte a déjà loué — mettre en favori une remorque qu'on
- * vient de rendre n'aurait pas de sens. Le tirage est déterministe, donc stable
- * d'un rechargement à l'autre.
+ * La variation de prix compare le tarif courant au prix photographié à
+ * l'ajout : c'est la seule raison de revenir consulter sa liste, et donc ce
+ * que l'écran doit signaler.
  */
 export const mesFavoris = cache(async (): Promise<Favori[]> => {
-  const louees = new Set((await mesReservations()).map((entree) => entree.annonceId));
-  const hasard = generateur(GRAINES.locataire);
-  const maintenant = aujourdhui();
+  const moi = await compteCourant();
+  if (!moi) return [];
 
   const lignes = await db
     .select({
-      annonceId: annonce.id,
+      annonceId: favori.annonceId,
       titre: annonce.titre,
       slug: annonce.slug,
       villeSlug: annonce.villeSlug,
       ville: annonce.ville,
       devise: annonce.devise,
       prixJour: tarif.prixJour,
+      prixJourAjout: favori.prixJourAjout,
+      ajouteLe: favori.creeLe,
       photo: sql<string | null>`(
         select p.url from annonce_photo p
         where p.annonce_id = ${annonce.id} order by p.ordre limit 1
@@ -538,29 +530,18 @@ export const mesFavoris = cache(async (): Promise<Favori[]> => {
         where a.annonce_id = ${annonce.id} and a.publie_le is not null
       )`,
     })
-    .from(annonce)
+    .from(favori)
+    .innerJoin(annonce, eq(annonce.id, favori.annonceId))
     .leftJoin(tarif, eq(tarif.annonceId, annonce.id))
-    .where(eq(annonce.statut, "publiee"));
+    // Une annonce retirée du catalogue sort de la liste plutôt que d'y rester
+    // en lien mort : le favori survit en base et réapparaîtra si elle revient.
+    .where(sql`${favori.utilisateurId} = ${moi} and ${annonce.statut} = 'publiee'`)
+    .orderBy(desc(favori.creeLe));
 
-  const favoris: Favori[] = [];
+  return lignes.map((ligne) => {
+    const prixJour = ligne.prixJour ?? ligne.prixJourAjout;
 
-  for (const ligne of lignes) {
-    if (louees.has(ligne.annonceId)) continue;
-    if (favoris.length >= VOLUMES.favoris) break;
-
-    const prixJour = ligne.prixJour ?? 0;
-    const tirage = hasard();
-
-    // Une variation de prix depuis la mise en favori : c'est la seule raison de
-    // revenir consulter sa liste, et donc ce que l'écran doit signaler.
-    const variationPrix =
-      tirage < 0.25
-        ? -Math.round(prixJour * (0.05 + hasard() * 0.15))
-        : tirage < 0.45
-          ? Math.round(prixJour * (0.05 + hasard() * 0.12))
-          : 0;
-
-    favoris.push({
+    return {
       annonceId: ligne.annonceId,
       titre: ligne.titre,
       slug: ligne.slug,
@@ -571,12 +552,10 @@ export const mesFavoris = cache(async (): Promise<Favori[]> => {
       photo: ligne.photo ?? "",
       note: ligne.moyenne === null ? null : Number(ligne.moyenne),
       nombreAvis: ligne.nombreAvis,
-      ajouteLe: decalerJours(maintenant, -tirerEntier(hasard, 1, 180)),
-      variationPrix,
-    });
-  }
-
-  return favoris.sort((a, b) => b.ajouteLe.getTime() - a.ajouteLe.getTime());
+      ajouteLe: ligne.ajouteLe,
+      variationPrix: prixJour - ligne.prixJourAjout,
+    };
+  });
 });
 
 /** Chiffres de tête du tableau de bord. Aucun n'est inventé au rendu. */

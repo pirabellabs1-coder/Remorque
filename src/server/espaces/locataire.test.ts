@@ -181,12 +181,25 @@ describe("cohérence générale", () => {
     expect(synthese.enCours).toBe((await reservationsEnCours()).length);
   });
 
-  it("ne met jamais en favori une annonce déjà louée", async () => {
-    const louees = new Set(
-      (await mesReservations()).map((reservation) => reservation.annonceId),
+  /**
+   * Les favoris sont désormais choisis par l'usager : le jeu d'essai évite
+   * les annonces déjà louées, mais rien n'interdit d'épingler une remorque
+   * qu'on connaît — l'ancienne assertion décrivait une règle que le système
+   * n'impose pas. Restent les invariants que la table garantit vraiment.
+   */
+  it("liste chaque favori une seule fois, avec un prix cohérent", async () => {
+    const favoris = await mesFavoris();
+
+    expect(favoris.length).toBeGreaterThan(0);
+    expect(new Set(favoris.map((favori) => favori.annonceId)).size).toBe(
+      favoris.length,
     );
-    for (const favori of (await mesFavoris())) {
-      expect(louees.has(favori.annonceId)).toBe(false);
+
+    for (const favori of favoris) {
+      expect(favori.prixJour).toBeGreaterThan(0);
+      // Une variation plus grande que le prix lui-même signalerait un instantané
+      // corrompu — un prix photographié dans la mauvaise devise, par exemple.
+      expect(Math.abs(favori.variationPrix)).toBeLessThan(favori.prixJour);
     }
   });
 

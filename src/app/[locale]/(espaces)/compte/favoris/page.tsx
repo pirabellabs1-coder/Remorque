@@ -1,5 +1,6 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { RetirerFavori } from "@/components/annonce/retirer-favori";
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { ListeVide } from "@/components/espace/indicateurs";
 import { Bouton } from "@/components/ui/bouton";
@@ -127,15 +128,18 @@ export default async function PageFavoris({ params }: Props) {
                     </p>
                   ) : null}
 
-                  <p className="mt-auto pt-4 text-xs text-texte-attenue">
-                    {t("ajouteLe", {
-                      date: format.dateTime(favori.ajouteLe, {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      }),
-                    })}
-                  </p>
+                  <div className="mt-auto flex items-baseline justify-between gap-3 pt-4">
+                    <p className="text-xs text-texte-attenue">
+                      {t("ajouteLe", {
+                        date: format.dateTime(favori.ajouteLe, {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        }),
+                      })}
+                    </p>
+                    <RetirerFavori annonceId={favori.annonceId} />
+                  </div>
                 </div>
               </article>
             </li>

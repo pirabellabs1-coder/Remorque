@@ -224,6 +224,34 @@ export const tarif = pgTable(
 );
 
 /**
+ * Favoris (M03) : le locataire épingle une annonce pour la retrouver.
+ *
+ * Le prix du jour est photographié à l'ajout : c'est ce qui permet d'afficher
+ * « le prix a baissé depuis » — la seule raison de revenir consulter sa liste.
+ * Le recalculer depuis l'historique tarifaire serait plus exact et dix fois
+ * plus coûteux, pour une information qui n'est qu'une incitation.
+ */
+export const favori = pgTable(
+  "favori",
+  {
+    id: id(),
+    utilisateurId: reference("utilisateur_id")
+      .notNull()
+      .references(() => utilisateur.id, { onDelete: "cascade" }),
+    annonceId: reference("annonce_id")
+      .notNull()
+      .references(() => annonce.id, { onDelete: "cascade" }),
+    /** Prix par jour au moment de l'ajout, en centimes. */
+    prixJourAjout: montant("prix_jour_ajout").notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("favori_unique").on(table.utilisateurId, table.annonceId),
+    index("favori_utilisateur_idx").on(table.utilisateurId),
+  ],
+);
+
+/**
  * Blocages de calendrier : indisponibilités saisies par le propriétaire,
  * importées par iCal (M04) ou posées automatiquement par le délai de
  * préparation. Les réservations confirmées bloquent via la table `reservation`.

@@ -595,6 +595,8 @@
     "metaTitre": "{titre} à louer à {ville}",
     "metaDescription": "{titre} disponible à la location à {ville}. {kg} kg de charge utile, assurance comprise, caution non débitée.",
     "instantanee": "Réservation instantanée",
+    "favoriAjouter": "Ajouter aux favoris",
+    "favoriRetirer": "Retirer des favoris",
     "parJour": "/ jour",
     "distance": "{km, number} km",
     "kg": "{kg, number} kg",

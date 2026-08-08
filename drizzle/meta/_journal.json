@@ -50,6 +50,13 @@
       "when": 1786110739541,
       "tag": "0006_parametres_plateforme",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786185291482,
+      "tag": "0007_bouncy_dust",
+      "breakpoints": true
     }
   ]
 }

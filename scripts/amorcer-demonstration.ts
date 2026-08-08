@@ -60,6 +60,7 @@ import {
   caution,
   conversation,
   etatDesLieux,
+  favori,
   identifiant,
   journalAudit,
   litige,
@@ -207,6 +208,11 @@ async function purger() {
   `;
   await sql`
     DELETE FROM conversation WHERE locataire_id IN (
+      SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
+    )
+  `;
+  await sql`
+    DELETE FROM favori WHERE utilisateur_id IN (
       SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
     )
   `;
@@ -1086,6 +1092,43 @@ async function amorcer() {
     await db.insert(message).values(valeursMessages);
   }
 
+  /* ------------------------------------------------------------- Favoris -- */
+  //
+  // Les favoris du compte de démonstration : des annonces qu'il n'a jamais
+  // louées — épingler une remorque qu'on vient de rendre n'a pas de sens.
+  // Le prix est photographié à l'ajout, parfois différent du tarif courant :
+  // la variation affichée est la seule raison de revenir consulter la liste.
+  const annoncesLouees = new Set(
+    contexte
+      .filter((source) => source.locataireId === compteDemo.id)
+      .map((source) => source.annonceId),
+  );
+
+  const valeursFavoris = [];
+
+  for (const entree of annoncesInserees) {
+    if (valeursFavoris.length >= VOLUMES.favoris) break;
+    if (entree.proprietaireId === compteDemo.id) continue;
+    if (annoncesLouees.has(entree.id)) continue;
+
+    const tirage = hasard();
+    const ecart =
+      tirage < 0.35
+        ? Math.round(entree.prixJour * 0.1)
+        : tirage < 0.55
+          ? -Math.round(entree.prixJour * 0.08)
+          : 0;
+
+    valeursFavoris.push({
+      utilisateurId: compteDemo.id,
+      annonceId: entree.id,
+      prixJourAjout: entree.prixJour + ecart,
+      creeLe: decalerJours(maintenant, -tirerEntier(hasard, 1, 180)),
+    });
+  }
+
+  if (valeursFavoris.length > 0) await db.insert(favori).values(valeursFavoris);
+
   /* --------------------------------------------------- Accès de démonstration -- */
   //
   // Sans mot de passe, les comptes de démonstration ne servent à rien depuis
@@ -1167,6 +1210,7 @@ async function amorcer() {
   console.log(`  conversations ${await compter("conversation")}`);
   console.log(`  messages      ${await compter("message")}`);
   console.log(`  états des lieux ${await compter("etat_des_lieux")}`);
+  console.log(`  favoris       ${await compter("favori")}`);
   console.log("");
   console.log("Comptes de démonstration — mot de passe : " + MOT_DE_PASSE_DEMO);
   console.log(`  locataire             moi${DOMAINE_DEMO}`);

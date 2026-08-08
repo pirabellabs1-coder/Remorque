@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
+import { BoutonFavori } from "@/components/annonce/bouton-favori";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { CarteReservation } from "@/components/annonce/carte-reservation";
 import {
@@ -200,11 +201,12 @@ export default async function PageAnnonce({ params }: Props) {
         </ol>
       </nav>
 
-      <header className="mt-4">
-        <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-          {annonce.titre}
-        </h1>
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-texte-attenue">
+      <header className="mt-4 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+            {annonce.titre}
+          </h1>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-texte-attenue">
           {annonce.note !== null ? (
             <span className="flex items-center gap-1.5">
               <Etoiles note={Math.round(annonce.note)} />
@@ -222,7 +224,10 @@ export default async function PageAnnonce({ params }: Props) {
               {t("instantanee")}
             </span>
           ) : null}
+          </div>
         </div>
+
+        <BoutonFavori annonceId={annonce.id} />
       </header>
 
       <Illustration
