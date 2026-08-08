@@ -364,8 +364,20 @@ export const listerAudit = cache(async (): Promise<EntreeAudit[]> => {
     .orderBy(desc(journalAudit.creeLe))
     .limit(200);
 
-  const valeur = (donnee: Record<string, unknown> | null) =>
-    donnee && typeof donnee.valeur === "string" ? donnee.valeur : null;
+  // L'état avant/après est un objet libre : `{ valeur: "15,00 %" }` pour le
+  // jeu d'essai, `{ maintenance: "true" }` ou plusieurs clés pour les actions
+  // réelles. Ne lire que `valeur` faisait afficher « — » sur toute action
+  // véritable — le journal existait, mais ne montrait plus rien.
+  const valeur = (donnee: Record<string, unknown> | null) => {
+    if (!donnee) return null;
+    if (typeof donnee.valeur === "string") return donnee.valeur;
+
+    const paires = Object.entries(donnee)
+      .filter(([, contenu]) => contenu !== null && typeof contenu !== "object")
+      .map(([cle, contenu]) => `${cle} : ${String(contenu)}`);
+
+    return paires.length > 0 ? paires.join(", ") : null;
+  };
 
   return lignes.map((ligne) => ({
     id: ligne.id,

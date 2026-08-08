@@ -1360,5 +1360,10 @@
       "texte": "Nous répondons vite, et par des phrases entières.",
       "action": "Nous contacter"
     }
+  },
+  "maintenance": {
+    "titre": "Nous revenons très vite",
+    "texte": "Le site est en maintenance pour une courte durée. Les réservations en cours ne sont pas affectées et les espaces connectés restent accessibles.",
+    "espace": "Accéder à mon espace"
   }
 }

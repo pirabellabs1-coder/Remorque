@@ -22,10 +22,10 @@ import {
   generateur,
   GRAINES,
   joursEntre,
-  MESSAGES_FIL,
   tirerEntier,
   VOLUMES,
 } from "@/server/donnees-demo";
+import { nombreNonLus } from "@/server/messagerie/depot";
 
 /**
  * Activité du locataire, lue en base.
@@ -40,9 +40,10 @@ import {
  * que lit l'espace loueur. Une location vue des deux côtés est la même ligne :
  * si le loueur la dit close, le locataire ne peut pas la voir en cours.
  *
- * Ce qui reste engendré ici, faute de table alimentée : l'état des cautions,
- * les favoris et les fils de discussion. Chacun est dérivé de données réelles
- * et le dit à l'endroit où il est construit.
+ * Ce qui reste engendré ici, faute de table alimentée : l'état des cautions et
+ * les favoris. Chacun est dérivé de données réelles et le dit à l'endroit où
+ * il est construit. Les fils de discussion, eux, vivent désormais dans
+ * `messagerie/depot.ts`, adossés aux tables `conversation` et `message`.
  */
 
 export type EtatCaution =
@@ -136,18 +137,6 @@ export type AvisAecrire = {
   finLe: Date;
   /** Jours restants avant la fermeture du dépôt d'avis. */
   joursRestants: number;
-};
-
-export type FilLocataire = {
-  id: string;
-  proprietaire: string;
-  annonceTitre: string;
-  reference: string;
-  dernierMessage: string;
-  /** L'auteur du dernier message : savoir si la balle est dans notre camp. */
-  deMoi: boolean;
-  date: Date;
-  nonLus: number;
 };
 
 export type SyntheseLocataire = {
@@ -557,42 +546,12 @@ export const mesFavoris = cache(async (): Promise<Favori[]> => {
   return favoris.sort((a, b) => b.ajouteLe.getTime() - a.ajouteLe.getTime());
 });
 
-/**
- * Fils de discussion, un par location engagée.
- *
- * La messagerie n'a pas de table alimentée : les interlocuteurs, les matériels
- * et les références sont vrais, les textes sont des amorces. C'est l'écran qui
- * est incomplet, non les données qui seraient fausses.
- */
-export async function mesFils(): Promise<FilLocataire[]> {
-  const reservations = await mesReservations();
-
-  return reservations
-    .filter((entree) => entree.statut !== "expiree")
-    .slice(0, 10)
-    .map((entree, index) => {
-      const amorce = MESSAGES_FIL[index % MESSAGES_FIL.length];
-      return {
-        id: `fl${index}`,
-        proprietaire: entree.proprietaire,
-        annonceTitre: entree.annonceTitre,
-        reference: entree.reference,
-        dernierMessage: amorce.texte,
-        deMoi: amorce.deMoi,
-        date: entree.debut,
-        // Seuls les messages reçus peuvent être non lus : compter les siens
-        // comme non lus est un bogue classique, et visible.
-        nonLus: !amorce.deMoi && index < 4 ? (index % 2) + 1 : 0,
-      };
-    });
-}
-
 /** Chiffres de tête du tableau de bord. Aucun n'est inventé au rendu. */
 export async function syntheseLocataire(): Promise<SyntheseLocataire> {
-  const [reservations, cautions, fils, aEcrire] = await Promise.all([
+  const [reservations, cautions, nonLus, aEcrire] = await Promise.all([
     mesReservations(),
     cautionsEnCours(),
-    mesFils(),
+    nombreNonLus(),
     avisAecrire(),
   ]);
 
@@ -612,7 +571,7 @@ export async function syntheseLocataire(): Promise<SyntheseLocataire> {
     terminees: reservations.filter((entree) => entree.statut === "cloturee").length,
     cautionsGelees: cautions.reduce((somme, entree) => somme + entree.caution, 0),
     cautionsNombre: cautions.length,
-    messagesNonLus: fils.reduce((somme, fil) => somme + fil.nonLus, 0),
+    messagesNonLus: nonLus,
     avisAecrire: aEcrire.length,
     totalDepense: depensees.reduce((somme, entree) => somme + entree.montantTotal, 0),
     devise: reservations[0]?.devise ?? "EUR",

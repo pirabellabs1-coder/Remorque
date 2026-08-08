@@ -8,7 +8,7 @@ import type { StatutReservation } from "@/domain/reservation/machine";
 import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
 import { annonce, avis as tableAvis, reservation, utilisateur } from "@/server/db/schema";
-import { MESSAGES_FIL, STATUTS_ENCAISSES } from "@/server/donnees-demo";
+import { STATUTS_ENCAISSES } from "@/server/donnees-demo";
 
 /**
  * Activité du loueur, lue en base.
@@ -73,15 +73,6 @@ export type Avis = {
   texte: string;
   date: Date;
   reponse: string | null;
-};
-
-export type Fil = {
-  id: string;
-  interlocuteur: string;
-  annonceTitre: string;
-  dernierMessage: string;
-  date: Date;
-  nonLus: number;
 };
 
 /**
@@ -351,25 +342,4 @@ export async function syntheseLoueur(): Promise<SyntheseLoueur> {
       tranchees.length > 0 ? (acceptees.length / tranchees.length) * 100 : null,
     devise: reservations[0]?.devise ?? "EUR",
   };
-}
-
-/**
- * Fils de discussion, dérivés des réservations les plus récentes.
- *
- * La messagerie n'a pas encore de table alimentée : les fils sont construits à
- * partir des réservations réelles, avec des amorces prises dans le jeu de
- * textes commun. Les interlocuteurs et les matériels sont vrais — c'est
- * l'écran qui est incomplet, non les données qui seraient fausses.
- */
-export async function listerFils(): Promise<Fil[]> {
-  const reservations = await listerReservations();
-
-  return reservations.slice(0, 12).map((entree, index) => ({
-    id: `f${index}`,
-    interlocuteur: entree.locataire,
-    annonceTitre: entree.annonceTitre,
-    dernierMessage: MESSAGES_FIL[index % MESSAGES_FIL.length].texte,
-    date: entree.debut,
-    nonLus: index < 3 ? (index % 2) + 1 : 0,
-  }));
 }

@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { listerAnnonces } from "@/server/annonces/depot";
 import { listerReservationsPlateforme } from "@/server/espaces/administration";
-import { listerAvis, listerFils, listerReservations } from "@/server/espaces/activite";
+import { listerAvis, listerReservations } from "@/server/espaces/activite";
 import { listerUtilisateurs } from "@/server/espaces/administration";
-import { mesFils, mesReservations } from "@/server/espaces/locataire";
+import { mesReservations } from "@/server/espaces/locataire";
+import { mesFils, messagesDuFil } from "@/server/messagerie/depot";
 
 import { generateur, GRAINES, tirerPondere } from "./graine";
 import { ANNUAIRE, composer } from "./personnes";
@@ -199,10 +200,17 @@ describe("textes partagés", () => {
 
   it("ne compte jamais ses propres messages comme non lus", async () => {
     // Le bogue classique de l'écran des messages, et il se voit tout de suite.
-    for (const fil of (await mesFils())) {
-      if (fil.deMoi) expect(fil.nonLus).toBe(0);
+    // Le compteur affiché sur un fil doit valoir exactement le nombre de
+    // messages reçus non lus — jamais les siens, jamais ceux d'un autre fil.
+    const fils = await mesFils();
+
+    for (const fil of fils.slice(0, 5)) {
+      const messages = await messagesDuFil(fil.id);
+      const attendus = messages.filter(
+        (message) => !message.deMoi && message.luLe === null,
+      ).length;
+      expect(fil.nonLus).toBe(attendus);
     }
-    expect((await listerFils()).every((fil) => fil.nonLus >= 0)).toBe(true);
   });
 });
 

@@ -5,9 +5,9 @@ import { Icone } from "@/components/espace/icone";
 import { ListeVide } from "@/components/espace/indicateurs";
 import { Bouton } from "@/components/ui/bouton";
 import {
-  listerReservations,
-  type Reservation,
-} from "@/server/espaces/activite";
+  constatsAfaire,
+  mesConstats,
+} from "@/server/locations/etats-des-lieux";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -28,22 +28,16 @@ export default async function PageEtatsDesLieux({ params }: Props) {
   const t = await getTranslations("espaces.loueur.etatsDesLieux");
   const format = await getFormatter();
 
-  const reservations = await listerReservations();
+  // Les constats réellement enregistrés, et ceux qui manquent encore. La
+  // version précédente déduisait tout du statut : un constat déjà signé
+  // continuait d'apparaître comme à faire.
+  const [aFaire, realises] = await Promise.all([constatsAfaire(), mesConstats()]);
 
-  // À faire : le départ d'une location confirmée, le retour d'une location
-  // restituée ou en cours.
-  const aFaire = reservations.filter((reservation) =>
-    ["confirmee", "en_cours", "restituee"].includes(reservation.statut),
-  );
-  const realises = reservations
-    .filter((reservation) => reservation.statut === "cloturee")
-    .slice(0, 10);
+  const moment = (type: "depart" | "retour") =>
+    type === "depart" ? t("depart") : t("retour");
 
-  const moment = (reservation: Reservation) =>
-    reservation.statut === "confirmee" ? t("depart") : t("retour");
-
-  const dateConcernee = (reservation: Reservation) =>
-    reservation.statut === "confirmee" ? reservation.debut : reservation.fin;
+  const dateConcernee = (entree: { type: string; debut: Date; fin: Date }) =>
+    entree.type === "depart" ? entree.debut : entree.fin;
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">
@@ -58,9 +52,9 @@ export default async function PageEtatsDesLieux({ params }: Props) {
           </div>
         ) : (
           <ul className="mt-4 space-y-3">
-            {aFaire.map((reservation) => (
+            {aFaire.map((entree) => (
               <li
-                key={reservation.id}
+                key={`${entree.reservationId}-${entree.type}`}
                 className="flex flex-wrap items-center gap-4 rounded-carte border border-bordure bg-fond-eleve p-5 shadow-(--ombre-carte)"
               >
                 <span
@@ -72,16 +66,16 @@ export default async function PageEtatsDesLieux({ params }: Props) {
 
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">
-                    {reservation.annonceTitre}
+                    {entree.annonceTitre}
                   </p>
                   <p className="mt-0.5 text-sm text-texte-attenue">
-                    {moment(reservation)} ·{" "}
-                    {format.dateTime(dateConcernee(reservation), {
+                    {moment(entree.type)} ·{" "}
+                    {format.dateTime(dateConcernee(entree), {
                       weekday: "long",
                       day: "numeric",
                       month: "long",
                     })}{" "}
-                    · {reservation.locataire}
+                    · {entree.interlocuteur}
                   </p>
                 </div>
 
@@ -98,12 +92,19 @@ export default async function PageEtatsDesLieux({ params }: Props) {
         <section className="mt-10">
           <h2 className="text-[1.0625rem] font-semibold">{t("realises")}</h2>
           <ul className="mt-4 divide-y divide-bordure overflow-hidden rounded-carte border border-bordure bg-fond-eleve">
-            {realises.map((reservation) => (
+            {realises.map((constat) => (
               <li
-                key={reservation.id}
+                key={constat.id}
                 className="flex items-center gap-4 px-5 py-3"
               >
-                <span aria-hidden className="shrink-0 text-succes">
+                {/* Une réserve au constat distingue une restitution sans
+                    histoire d'un dossier qui peut devenir un litige. */}
+                <span
+                  aria-hidden
+                  className={
+                    constat.reserve ? "shrink-0 text-attention" : "shrink-0 text-succes"
+                  }
+                >
                   <svg viewBox="0 0 24 24" className="size-5" fill="none">
                     <path
                       d="m5 13 4 4L19 7"
@@ -115,10 +116,13 @@ export default async function PageEtatsDesLieux({ params }: Props) {
                   </svg>
                 </span>
                 <p className="min-w-0 flex-1 truncate text-[0.9375rem]">
-                  {reservation.annonceTitre}
+                  {constat.annonceTitre}
+                  <span className="ml-2 text-sm text-texte-attenue">
+                    {moment(constat.type)}
+                  </span>
                 </p>
                 <p className="shrink-0 text-sm text-texte-attenue">
-                  {format.dateTime(reservation.fin, {
+                  {format.dateTime(constat.date, {
                     day: "numeric",
                     month: "short",
                     year: "numeric",

@@ -1,5 +1,6 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
@@ -86,4 +87,55 @@ export async function enregistrerParametres(donnees: FormData): Promise<Reponse>
 
   revalidatePath("/[locale]/(espaces)/admin", "layout");
   return { ok: true };
+}
+
+/**
+ * Active ou coupe le mode maintenance.
+ *
+ * Action distincte de l'enregistrement des réglages, et c'est voulu : elle
+ * coupe l'accès public, et n'a pas à être emportée par une soumission de
+ * formulaire qu'on croyait anodine. Elle est tracée comme les autres.
+ */
+export async function basculerMaintenance(actif: boolean): Promise<Reponse> {
+  const moi = await compteConnecte();
+  if (!moi?.role) return { ok: false, cle: "connexionRequise" };
+
+  const avant = await lireParametres();
+  const enTetes = await headers();
+
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(parametrePlateforme)
+      .values({ cle: "maintenance", valeur: String(actif), modifiePar: moi.email })
+      .onConflictDoUpdate({
+        target: parametrePlateforme.cle,
+        set: { valeur: String(actif), modifiePar: moi.email, modifieLe: new Date() },
+      });
+
+    await tx.insert(journalAudit).values({
+      auteurId: moi.id,
+      auteurEmail: moi.email,
+      action: actif ? "Mode maintenance activé" : "Mode maintenance levé",
+      entite: "parametre_plateforme",
+      entiteId: "maintenance",
+      motif: actif ? "Accès public suspendu" : "Accès public rétabli",
+      avant: { maintenance: avant.maintenance ?? "false" },
+      apres: { maintenance: String(actif) },
+      adresseIp: enTetes.get("x-forwarded-for")?.split(",")[0]?.trim(),
+    });
+  });
+
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/** Le site est-il en maintenance ? Lu par la page publique. */
+export async function enMaintenance(): Promise<boolean> {
+  const [ligne] = await db
+    .select({ valeur: parametrePlateforme.valeur })
+    .from(parametrePlateforme)
+    .where(eq(parametrePlateforme.cle, "maintenance"))
+    .limit(1);
+
+  return ligne?.valeur === "true";
 }

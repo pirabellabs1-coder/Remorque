@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { BasculeMaintenance } from "@/components/espace/bascule-maintenance";
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { FormulaireEnregistre } from "@/components/espace/formulaire-enregistre";
 import { Champ } from "@/components/ui/champ";
@@ -126,12 +127,7 @@ export default async function PageParametresAdmin({ params }: Props) {
         <p className="mt-2 max-w-xl text-[0.9375rem] text-texte-attenue">
           {t("maintenanceTexte")}
         </p>
-        <button
-          type="button"
-          className="mt-4 rounded-champ border border-danger px-4 py-2.5 text-sm font-medium text-danger transition-colors hover:bg-danger hover:text-white"
-        >
-          {t("activerMaintenance")}
-        </button>
+        <BasculeMaintenance actif={reglages.maintenance === "true"} />
       </section>
     </div>
   );

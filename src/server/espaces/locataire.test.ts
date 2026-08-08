@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import { mesFils } from "@/server/messagerie/depot";
+
 import {
   avisAecrire,
   cautionsEnCours,
   mesAvis,
   mesFavoris,
-  mesFils,
   mesPaiements,
   mesReservations,
   reservationsAvenir,
@@ -191,10 +192,11 @@ describe("cohérence générale", () => {
 
   it("ne compte comme non lus que les messages reçus", async () => {
     for (const fil of (await mesFils())) {
-      if (fil.deMoi) expect(fil.nonLus).toBe(0);
       expect(fil.nonLus).toBeGreaterThanOrEqual(0);
     }
 
+    // La pastille de la synthèse et la somme des fils doivent dire le même
+    // chiffre : deux compteurs qui divergent se remarquent immédiatement.
     const attendu = (await mesFils()).reduce((somme, fil) => somme + fil.nonLus, 0);
     expect((await syntheseLocataire()).messagesNonLus).toBe(attendu);
   });

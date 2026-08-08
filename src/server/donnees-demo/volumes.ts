@@ -13,6 +13,11 @@ import type { StatutReservation } from "@/domain/reservation/machine";
 
 /** Combien d'enregistrements chaque jeu produit. */
 export const VOLUMES = {
+  /** Locations dotées d'un constat de départ et de retour. */
+  etatsDesLieux: 20,
+
+  /** Fils de discussion amorcés. Au-delà, la liste ne se parcourt plus. */
+  conversations: 12,
   /** Réservations vues du loueur, réparties sur quatorze mois. */
   reservationsLoueur: 140,
   /**

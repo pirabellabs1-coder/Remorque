@@ -783,7 +783,13 @@
         "maintenance": "Maintenance",
         "maintenanceTexte": "Le mode maintenance rend le site inaccessible au public et affiche une page d’information. Les espaces authentifiés restent ouverts.",
         "activerMaintenance": "Activer le mode maintenance",
-        "enregistrer": "Enregistrer"
+        "enregistrer": "Enregistrer",
+        "desactiverMaintenance": "Lever la maintenance",
+        "confirmationCoupure": "L’accès public va être coupé. Les visiteurs verront une page d’indisponibilité ; les espaces connectés restent accessibles.",
+        "confirmationReprise": "Le site redeviendra accessible au public immédiatement.",
+        "confirmer": "Confirmer",
+        "annuler": "Annuler",
+        "bascule": "Application…"
       },
       "journalAudit": {
         "titre": "Journal d’audit",
@@ -843,6 +849,21 @@
         "massesInversees": "La masse non freinée ne peut pas dépasser la masse freinée.",
         "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
         "echec": "L’enregistrement a échoué. Réessayez."
+      }
+    },
+    "fil": {
+      "retour": "Tous les messages",
+      "reservation": "Réservation {reference}",
+      "placeholder": "Écrire un message…",
+      "envoyer": "Envoyer",
+      "envoi": "Envoi…",
+      "confidentialite": "Les numéros de téléphone et adresses électroniques sont masqués automatiquement : c’est la condition de l’assurance et de la garantie de caution.",
+      "coordonneesMasquees": "Des coordonnées ont été masquées dans ce message.",
+      "erreurs": {
+        "invalide": "Le message est vide ou trop long.",
+        "interdit": "Cette conversation ne vous concerne pas.",
+        "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+        "echec": "L’envoi a échoué. Réessayez."
       }
     }
   }

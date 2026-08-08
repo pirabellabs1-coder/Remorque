@@ -23,6 +23,8 @@
  * (code du pays, adresse électronique, couple ville/slug, numéro de
  * réservation), jamais par l'identifiant technique qui, lui, est engendré.
  */
+import { randomUUID } from "node:crypto";
+
 import { eq, sql as raw } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -39,6 +41,7 @@ import {
   AUTEURS_ADMIN,
   AVIS_LOCATAIRES,
   decalerJours,
+  MESSAGES_FIL,
   generateur,
   GRAINES,
   REPARTITION_LOUEUR,
@@ -55,9 +58,12 @@ import {
   avis,
   categorie,
   caution,
+  conversation,
+  etatDesLieux,
   identifiant,
   journalAudit,
   litige,
+  message,
   paiement,
   pays,
   reservation,
@@ -184,6 +190,25 @@ async function purger() {
       AND entite_id NOT IN (SELECT id::text FROM reservation)
       AND entite_id NOT IN (SELECT id::text FROM annonce)
       AND entite_id NOT IN (SELECT id::text FROM utilisateur)
+  `;
+  await sql`
+    DELETE FROM etat_des_lieux WHERE reservation_id IN (
+      SELECT r.id FROM reservation r
+      JOIN utilisateur u ON u.id = r.locataire_id
+      WHERE u.email LIKE ${"%" + DOMAINE_DEMO}
+    )
+  `;
+  await sql`
+    DELETE FROM message WHERE conversation_id IN (
+      SELECT c.id FROM conversation c
+      JOIN utilisateur u ON u.id = c.locataire_id
+      WHERE u.email LIKE ${"%" + DOMAINE_DEMO}
+    )
+  `;
+  await sql`
+    DELETE FROM conversation WHERE locataire_id IN (
+      SELECT id FROM utilisateur WHERE email LIKE ${"%" + DOMAINE_DEMO}
+    )
   `;
   for (const table of ["reversement", "caution", "paiement"]) {
     await sql.unsafe(`
@@ -936,6 +961,131 @@ async function amorcer() {
     await db.insert(journalAudit).values(valeursAudit);
   }
 
+  /* ------------------------------------------------------ États des lieux -- */
+  //
+  // Deux constats par location réellement partie : un au départ, un au retour.
+  // L'absence d'état des lieux au départ vaut présomption de bon état — au
+  // détriment de celui qui ne l'a pas fait —, si bien qu'un jeu d'essai sans
+  // constats ne montre jamais le cas qui compte.
+  const valeursConstats = [];
+
+  for (const [index, ligne] of lignesReservations.entries()) {
+    const source = contexte[index];
+    if (!["en_cours", "restituee", "cloturee"].includes(source.statut)) continue;
+    if (valeursConstats.length >= VOLUMES.etatsDesLieux * 2) break;
+
+    valeursConstats.push({
+      reservationId: ligne.id,
+      type: "depart" as const,
+      controles: {
+        feux: true,
+        pneus: true,
+        attelage: true,
+        chassis: true,
+        baches: hasard() > 0.15,
+      },
+      commentaire: "Matériel conforme, feux vérifiés au départ.",
+      // Signé des deux côtés : c'est ce qui lui donne sa valeur probante.
+      signatureLocataireLe: source.debut,
+      signatureProprietaireLe: source.debut,
+      finaliseLe: source.debut,
+      creeLe: source.debut,
+    });
+
+    // Le constat de retour n'existe que si la location est terminée : en
+    // fabriquer un pour une location en cours daterait un événement à venir.
+    if (source.statut === "en_cours") continue;
+
+    const incident = hasard() < 0.12;
+    valeursConstats.push({
+      reservationId: ligne.id,
+      type: "retour" as const,
+      controles: {
+        feux: !incident,
+        pneus: true,
+        attelage: true,
+        chassis: !incident,
+        baches: true,
+      },
+      commentaire: incident
+        ? "Feu arrière gauche endommagé, constaté au retour."
+        : "Restitution sans réserve.",
+      signatureLocataireLe: source.fin,
+      signatureProprietaireLe: source.fin,
+      finaliseLe: source.fin,
+      creeLe: source.fin,
+    });
+  }
+
+  if (valeursConstats.length > 0) {
+    await db.insert(etatDesLieux).values(valeursConstats);
+  }
+
+  /* ---------------------------------------------------------- Messagerie -- */
+  //
+  // De vraies conversations, rattachées à de vraies réservations. Les fils
+  // étaient jusqu'ici dérivés des locations avec des amorces prises dans un jeu
+  // de textes : les interlocuteurs et les matériels étaient vrais, les messages
+  // inventés, et l'on ne pouvait ni écrire ni répondre.
+  const valeursConversations: {
+    id: string;
+    annonceId: string;
+    reservationId: string;
+    locataireId: string;
+    proprietaireId: string;
+    dernierMessageLe: Date;
+  }[] = [];
+
+  const valeursMessages: {
+    conversationId: string;
+    auteurId: string;
+    contenu: string;
+    luLe: Date | null;
+    creeLe: Date;
+  }[] = [];
+
+  for (const [index, ligne] of lignesReservations.entries()) {
+    const source = contexte[index];
+    if (["demandee", "refusee", "expiree"].includes(source.statut)) continue;
+    if (valeursConversations.length >= VOLUMES.conversations) break;
+
+    const filId = randomUUID();
+    valeursConversations.push({
+      id: filId,
+      annonceId: source.annonceId,
+      reservationId: ligne.id,
+      locataireId: source.locataireId,
+      proprietaireId: source.proprietaireId,
+      // La date du dernier message ordonne la liste : elle suit l'échange, non
+      // la création du fil.
+      dernierMessageLe: decalerJours(source.debut, -1),
+    });
+
+    // Un échange court, comme il s'en tient réellement : une question, une
+    // réponse, un accord sur l'heure. Les fils de vingt messages sont
+    // l'exception, non la règle.
+    const echange = MESSAGES_FIL.slice(0, tirerEntier(hasard, 2, 4));
+    echange.forEach((amorce: { texte: string; deMoi: boolean }, rang: number) => {
+      valeursMessages.push({
+        conversationId: filId,
+        auteurId: amorce.deMoi ? source.locataireId : source.proprietaireId,
+        contenu: amorce.texte,
+        // Les derniers messages reçus restent non lus sur quelques fils :
+        // un compteur toujours à zéro ne montre jamais à quoi il sert.
+        luLe:
+          !amorce.deMoi && index < 4 && rang === echange.length - 1
+            ? null
+            : decalerJours(source.debut, -1),
+        creeLe: decalerJours(source.debut, -3 + rang),
+      });
+    });
+  }
+
+  if (valeursConversations.length > 0) {
+    await db.insert(conversation).values(valeursConversations);
+    await db.insert(message).values(valeursMessages);
+  }
+
   /* --------------------------------------------------- Accès de démonstration -- */
   //
   // Sans mot de passe, les comptes de démonstration ne servent à rien depuis
@@ -1014,6 +1164,9 @@ async function amorcer() {
   console.log(`  paiements     ${await compter("paiement")}`);
   console.log(`  cautions      ${await compter("caution")}`);
   console.log(`  reversements  ${await compter("reversement")}`);
+  console.log(`  conversations ${await compter("conversation")}`);
+  console.log(`  messages      ${await compter("message")}`);
+  console.log(`  états des lieux ${await compter("etat_des_lieux")}`);
   console.log("");
   console.log("Comptes de démonstration — mot de passe : " + MOT_DE_PASSE_DEMO);
   console.log(`  locataire             moi${DOMAINE_DEMO}`);

@@ -2,7 +2,8 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { ListeVide } from "@/components/espace/indicateurs";
-import { listerFils } from "@/server/espaces/activite";
+import { Link } from "@/i18n/navigation";
+import { mesFils } from "@/server/messagerie/depot";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -15,7 +16,7 @@ export default async function PageMessages({ params }: Props) {
 
   const t = await getTranslations("espaces.loueur.messages");
   const format = await getFormatter();
-  const fils = await listerFils();
+  const fils = await mesFils();
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">
@@ -29,7 +30,10 @@ export default async function PageMessages({ params }: Props) {
         <ul className="mt-8 divide-y divide-bordure overflow-hidden rounded-carte border border-bordure bg-fond-eleve shadow-(--ombre-carte)">
           {fils.map((fil) => (
             <li key={fil.id}>
-              <div className="flex items-start gap-4 px-5 py-4">
+              <Link
+                href={{ pathname: "/proprietaire/messages/[id]", params: { id: fil.id } }}
+                className="flex items-start gap-4 px-5 py-4 transition-colors hover:bg-fond-doux"
+              >
                 {/* Initiale plutôt qu'une photographie : nous n'avons pas
                     d'avatar, et un cercle gris vide est plus laid qu'une
                     lettre. */}
@@ -44,17 +48,19 @@ export default async function PageMessages({ params }: Props) {
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="truncate font-medium">{fil.interlocuteur}</p>
                     <span className="shrink-0 text-xs text-texte-attenue">
-                      {format.dateTime(fil.date, {
-                        day: "numeric",
-                        month: "short",
-                      })}
+                      {fil.date
+                        ? format.dateTime(fil.date, {
+                            day: "numeric",
+                            month: "short",
+                          })
+                        : null}
                     </span>
                   </div>
                   <p className="mt-0.5 truncate text-sm text-texte-attenue">
                     {fil.annonceTitre}
                   </p>
                   <p className="mt-1.5 truncate text-[0.9375rem]">
-                    {fil.dernierMessage}
+                    {fil.dernierMessage ?? ""}
                   </p>
                 </div>
 
@@ -66,7 +72,7 @@ export default async function PageMessages({ params }: Props) {
                     <span aria-hidden>{fil.nonLus}</span>
                   </span>
                 ) : null}
-              </div>
+              </Link>
             </li>
           ))}
         </ul>

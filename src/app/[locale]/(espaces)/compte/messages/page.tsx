@@ -2,7 +2,8 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { ListeVide } from "@/components/espace/indicateurs";
-import { mesFils } from "@/server/espaces/locataire";
+import { Link } from "@/i18n/navigation";
+import { mesFils } from "@/server/messagerie/depot";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -30,7 +31,10 @@ export default async function PageMessagesLocataire({ params }: Props) {
         <ul className="mt-8 divide-y divide-bordure overflow-hidden rounded-carte border border-bordure bg-fond-eleve shadow-(--ombre-carte)">
           {fils.map((fil) => (
             <li key={fil.id}>
-              <div className="flex items-start gap-4 px-5 py-4">
+              <Link
+                href={{ pathname: "/compte/messages/[id]", params: { id: fil.id } }}
+                className="flex items-start gap-4 px-5 py-4 transition-colors hover:bg-fond-doux"
+              >
                 {/* Initiale plutôt qu'une photographie : nous n'avons pas
                     d'avatar, et un cercle gris vide est plus laid qu'une
                     lettre. */}
@@ -38,17 +42,19 @@ export default async function PageMessagesLocataire({ params }: Props) {
                   aria-hidden
                   className="grid size-10 shrink-0 place-items-center rounded-full bg-fond-doux font-medium"
                 >
-                  {fil.proprietaire.charAt(0)}
+                  {fil.interlocuteur.charAt(0)}
                 </span>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-3">
-                    <p className="truncate font-medium">{fil.proprietaire}</p>
+                    <p className="truncate font-medium">{fil.interlocuteur}</p>
                     <span className="shrink-0 text-xs text-texte-attenue">
-                      {format.dateTime(fil.date, {
-                        day: "numeric",
-                        month: "short",
-                      })}
+                      {fil.date
+                        ? format.dateTime(fil.date, {
+                            day: "numeric",
+                            month: "short",
+                          })
+                        : null}
                     </span>
                   </div>
 
@@ -66,7 +72,7 @@ export default async function PageMessagesLocataire({ params }: Props) {
                     {fil.deMoi ? (
                       <span className="text-texte-attenue">{t("vous")} </span>
                     ) : null}
-                    {fil.dernierMessage}
+                    {fil.dernierMessage ?? ""}
                   </p>
                 </div>
 
@@ -78,7 +84,7 @@ export default async function PageMessagesLocataire({ params }: Props) {
                     <span aria-hidden>{fil.nonLus}</span>
                   </span>
                 ) : null}
-              </div>
+              </Link>
             </li>
           ))}
         </ul>
