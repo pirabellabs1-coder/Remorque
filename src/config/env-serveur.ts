@@ -35,6 +35,16 @@ const schemaServeur = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.string().url(),
 
+  /**
+   * Secret partagé avec la planification de l'hébergeur.
+   *
+   * Les routes `/api/taches` et `/api/courriels` expirent des demandes,
+   * libèrent des cautions et vident la file d'envoi : sans ce secret elles se
+   * ferment, plutôt que de s'ouvrir à qui connaît l'adresse. Facultatif, donc,
+   * mais son absence désarme la planification.
+   */
+  CRON_SECRET: z.string().min(16).optional(),
+
   STRIPE_SECRET_KEY: z.string().startsWith("sk_").optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
 

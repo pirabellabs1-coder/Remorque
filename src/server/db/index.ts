@@ -34,7 +34,15 @@ const global_ = globalThis as unknown as {
 function connexion() {
   if (!global_.__remorqueSql) {
     global_.__remorqueSql = postgres(serverEnv.DATABASE_URL, {
-      max: serverEnv.NODE_ENV === "production" ? 10 : 3,
+      // Le pool est **par instance**, et une plateforme sans serveur en
+      // multiplie autant que le trafic l'exige. Dix connexions par instance,
+      // multipliées par cinquante instances un samedi matin, épuisent le
+      // gestionnaire de connexions bien avant la base : les requêtes se
+      // mettent alors à attendre un créneau, et l'application paraît lente
+      // sans qu'aucune requête ne soit lente. Trois suffisent — le
+      // gestionnaire travaille en mode transaction et rend la connexion à
+      // chaque fin de requête.
+      max: 3,
       // Le gestionnaire de connexions de Supabase travaille en mode
       // transaction : il ne conserve pas les instructions préparées d'une
       // requête à l'autre, et les activer ferait échouer une requête sur deux.
