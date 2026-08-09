@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, isNull, lt, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, lt, sql } from "drizzle-orm";
 
 import { db } from "@/server/db";
 import { caution, reservation } from "@/server/db/schema";
@@ -80,7 +80,12 @@ async function libererLesCautions(): Promise<number> {
     .set({ statut: "liberee", libereeLe: new Date() })
     .where(
       and(
-        eq(caution.statut, "constituee"),
+        // La caution partiellement débitée est du lot : la retenue a pris ce
+        // que la décision accordait, le **solde** appartient au locataire et
+        // se libère à l'échéance comme n'importe quelle caution. L'exclure
+        // la ferait sortir du circuit pour toujours — « retenue » (tout est
+        // pris) reste dehors : il n'y a plus rien à rendre.
+        inArray(caution.statut, ["constituee", "debitee_partiellement"]),
         isNull(caution.libereeLe),
         lt(caution.liberationPrevueLe, new Date()),
         sql`exists (

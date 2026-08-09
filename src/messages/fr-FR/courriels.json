@@ -49,7 +49,7 @@
     "litige": {
       "ouvert": {
         "sujet": "Litige ouvert sur la location {reference}",
-        "corps": "Bonjour {prenom},\n\nUn litige a été ouvert sur la location « {annonceTitre} » ({reference}). Les fonds sont immobilisés le temps de l’instruction : ni la caution n’est libérée, ni le reversement envoyé.\n\nConnectez-vous pour consulter le dossier et répondre. Un accord amiable reste possible à tout moment."
+        "corps": "Bonjour {prenom},\n\nUn litige a été ouvert sur la location « {annonceTitre} » ({reference}). Ce que la plateforme détient encore sur cette location — caution non rendue, reversement non parti — est immobilisé le temps de l'instruction.\n\nConnectez-vous pour consulter le dossier et répondre. Un accord amiable reste possible à tout moment."
       },
       "proposition": {
         "sujet": "Proposition de règlement — {reference}",
@@ -86,6 +86,28 @@
       "nouveauMessage": {
         "sujet": "Nouveau message de {interlocuteur} — {annonceTitre}",
         "corps": "Bonjour {prenom},\n\n{interlocuteur} vous a écrit au sujet de « {annonceTitre} ». Répondez depuis votre espace : les échanges y restent rattachés au dossier de location, et les coordonnées y sont protégées."
+      }
+    },
+    "sinistre": {
+      "declare": {
+        "sujet": "Sinistre déclaré sur la location {reference}",
+        "corps": "Bonjour {prenom},\n\nUn sinistre a été déclaré sur la location « {annonceTitre} » ({reference}). Ce que la plateforme détient encore sur cette location — caution non rendue, reversement non parti — est immobilisé le temps du dossier.\n\nLa plateforme transmet le dossier à l'assureur partenaire et vous tiendra informé à chaque étape."
+      },
+      "transmis": {
+        "sujet": "Sinistre {reference} : dossier transmis à l'assureur",
+        "corps": "Bonjour {prenom},\n\nLe sinistre déclaré sur la location « {annonceTitre} » ({reference}) a été transmis à l'assureur partenaire. La référence du dossier figure sur votre espace : citez-la dans chaque échange.\n\nLes fonds encore retenus le restent jusqu'à la décision."
+      },
+      "instruction": {
+        "sujet": "Sinistre {reference} : instruction ouverte",
+        "corps": "Bonjour {prenom},\n\nL'assureur a ouvert l'instruction du sinistre de la location « {annonceTitre} » ({reference}). Il peut vous demander des pièces complémentaires — les états des lieux signés font déjà partie du dossier."
+      },
+      "indemnise": {
+        "sujet": "Sinistre {reference} : indemnisation accordée",
+        "corps": "Bonjour {prenom},\n\nL'assureur a conclu le sinistre de la location « {annonceTitre} » ({reference}) par une indemnisation. Le montant figure sur votre espace.\n\nLe dossier est clos : la caution et le reversement reprennent leur cours normal, sauf autre dossier encore ouvert."
+      },
+      "refuse": {
+        "sujet": "Sinistre {reference} : prise en charge refusée",
+        "corps": "Bonjour {prenom},\n\nL'assureur a refusé la prise en charge du sinistre de la location « {annonceTitre} » ({reference}). Le motif du refus figure sur votre espace.\n\nLe dossier est clos : la caution et le reversement reprennent leur cours normal, sauf autre dossier encore ouvert."
       }
     }
   }

@@ -64,6 +64,13 @@
       "when": 1786196156470,
       "tag": "0008_first_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786253589938,
+      "tag": "0009_careful_blackheart",
+      "breakpoints": true
     }
   ]
 }

@@ -171,6 +171,8 @@ export const sinistre = pgTable(
     montantEstime: montant("montant_estime"),
     montantIndemnise: montant("montant_indemnise"),
     referenceAssureur: text("reference_assureur"),
+    /** Motif d'un refus de garantie : il sera opposé au déclarant. */
+    refusMotif: text("refus_motif"),
     transmisLe: timestamp("transmis_le", { withTimezone: true, mode: "date" }),
     clotureLe: timestamp("cloture_le", { withTimezone: true, mode: "date" }),
     ...timestamps,

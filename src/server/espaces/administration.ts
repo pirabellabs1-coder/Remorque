@@ -2,7 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 
-import { desc, eq, sql as raw } from "drizzle-orm";
+import { asc, desc, eq, sql as raw } from "drizzle-orm";
 
 import { db } from "@/server/db";
 import {
@@ -161,7 +161,7 @@ export type Sinistre = {
   nature: "collision" | "vol" | "bris" | "incendie";
   montantEstime: number;
   devise: string;
-  statut: "declare" | "transmis" | "indemnise" | "refuse";
+  statut: "declare" | "transmis" | "en_cours" | "indemnise" | "refuse";
   transmisLe: Date | null;
 };
 
@@ -285,9 +285,14 @@ export const listerLitiges = cache(async (): Promise<Litige[]> => {
     })
     .from(litige)
     .innerJoin(reservation, eq(reservation.id, litige.reservationId))
-    .orderBy(desc(litige.creeLe));
+    // Rang d'arrivée, identifiant en départage : la référence LIT- se calcule
+    // sur cet ordre-là, qui ne bouge plus jamais. Une référence dérivée de la
+    // position d'affichage — le plus récent d'abord — glisserait d'un cran à
+    // chaque ouverture, et « LIT-0002 » cité hier désignerait un autre dossier.
+    .orderBy(asc(litige.creeLe), asc(litige.id));
 
-  return lignes.map((ligne, index) => {
+  return lignes
+    .map((ligne, index): Litige => {
     const statut = STATUT_LITIGE[ligne.statut ?? "ouvert"] ?? "ouvert";
     const montant = ligne.montantEnJeu ?? 0;
 
@@ -306,7 +311,9 @@ export const listerLitiges = cache(async (): Promise<Litige[]> => {
       // s'applique.
       fondsGeles: statut === "resolu" ? 0 : montant,
     };
-  });
+  })
+    // L'écran, lui, garde le plus récent en tête.
+    .reverse();
 });
 
 const NATURE_SINISTRE: Sinistre["nature"][] = ["collision", "vol", "bris", "incendie"];
@@ -325,9 +332,12 @@ export const listerSinistres = cache(async (): Promise<Sinistre[]> => {
     })
     .from(sinistre)
     .innerJoin(reservation, eq(reservation.id, sinistre.reservationId))
-    .orderBy(desc(sinistre.creeLe));
+    // Même règle que pour LIT- : la référence naît du rang d'arrivée, stable,
+    // et l'affichage inverse ensuite. Une référence citée au courtier hier
+    // doit désigner le même dossier demain.
+    .orderBy(asc(sinistre.creeLe), asc(sinistre.id));
 
-  return lignes.map((ligne, index) => ({
+  return lignes.map((ligne, index): Sinistre => ({
     id: ligne.id,
     reference: `SIN-${(index + 1).toString().padStart(4, "0")}`,
     reservationReference: ligne.reservationReference,
@@ -343,9 +353,11 @@ export const listerSinistres = cache(async (): Promise<Sinistre[]> => {
           : NATURE_SINISTRE[0],
     montantEstime: ligne.montantEstime ?? 0,
     devise: ligne.devise,
-    statut: (ligne.statut === "en_cours" ? "transmis" : ligne.statut) as Sinistre["statut"],
+    statut: ligne.statut as Sinistre["statut"],
     transmisLe: ligne.transmisLe,
-  }));
+  }))
+    // L'écran, lui, garde le plus récent en tête.
+    .reverse();
 });
 
 export const listerAudit = cache(async (): Promise<EntreeAudit[]> => {
@@ -434,7 +446,9 @@ export async function fondsGeles(): Promise<number> {
     .reduce((somme, litige) => somme + litige.fondsGeles, 0);
 
   const parSinistres = (await listerSinistres())
-    .filter((sinistre) => ["declare", "transmis"].includes(sinistre.statut))
+    .filter((sinistre) =>
+      ["declare", "transmis", "en_cours"].includes(sinistre.statut),
+    )
     .reduce((somme, sinistre) => somme + sinistre.montantEstime, 0);
 
   return parLitiges + parSinistres;
@@ -493,7 +507,7 @@ export async function syntheseAdmin(): Promise<SyntheseAdmin> {
     litigesOuverts: (await listerLitiges()).filter((litige) => litige.statut !== "resolu")
       .length,
     sinistresOuverts: (await listerSinistres()).filter((sinistre) =>
-      ["declare", "transmis"].includes(sinistre.statut),
+      ["declare", "transmis", "en_cours"].includes(sinistre.statut),
     ).length,
     identitesAverifier: utilisateurs.filter(
       (utilisateur) => utilisateur.verification === "en_attente",

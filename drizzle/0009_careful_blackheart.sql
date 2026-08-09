@@ -1,0 +1,1 @@
+ALTER TABLE "sinistre" ADD COLUMN "refus_motif" text;

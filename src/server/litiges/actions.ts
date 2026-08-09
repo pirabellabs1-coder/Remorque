@@ -10,6 +10,7 @@ import {
   evaluerLitige,
   gelActif,
   MOTIFS_LITIGE,
+  STATUTS_GELANTS,
   type ActeurLitige,
   type EvenementLitige,
   type StatutLitige,
@@ -24,6 +25,7 @@ import {
   reservation,
   reversement,
 } from "@/server/db/schema";
+import { leverGelSiPlusRienOuvert, poserGel } from "@/server/finances/gel";
 import { enfilerNotificationsLitige } from "@/server/notifications/file";
 
 import { executerEffetsStripe } from "./execution";
@@ -114,17 +116,23 @@ export async function ouvrirLitige(donnees: FormData): Promise<Reponse> {
   // plateforme peut retenir. Au-delà, le recours est judiciaire, pas ici.
   if (montantReclame > partie.caution) return { ok: false, cle: "montantExcessif" };
 
-  const [existant] = await db
-    .select({ id: litige.id, statut: litige.statut })
+  // Un seul litige vivant à la fois par location : deux dossiers ouverts sur
+  // les mêmes faits produiraient deux décisions, éventuellement contraires.
+  // La requête cherche **un dossier vivant**, pas le premier venu — une
+  // location qui porte un litige clos puis un litige ouvert doit refuser la
+  // troisième ouverture, quel que soit l'ordre où la base rend ses lignes.
+  const [vivant] = await db
+    .select({ id: litige.id })
     .from(litige)
-    .where(eq(litige.reservationId, reservationId))
+    .where(
+      and(
+        eq(litige.reservationId, reservationId),
+        inArray(litige.statut, [...STATUTS_GELANTS]),
+      ),
+    )
     .limit(1);
 
-  // Un seul litige à la fois par location : deux dossiers ouverts sur les
-  // mêmes faits produiraient deux décisions, éventuellement contraires.
-  if (existant && gelActif(existant.statut as StatutLitige)) {
-    return { ok: false, cle: "dejaOuvert" };
-  }
+  if (vivant) return { ok: false, cle: "dejaOuvert" };
 
   const cree = await db.transaction(async (tx) => {
     const [ligne] = await tx
@@ -140,60 +148,13 @@ export async function ouvrirLitige(donnees: FormData): Promise<Reponse> {
       })
       .returning({ id: litige.id });
 
-    await appliquerGel(tx, reservationId, true, "Litige ouvert sur cette location");
+    await poserGel(tx, reservationId, "Litige ouvert sur cette location");
     await enfilerNotificationsLitige(tx, reservationId, "ouvert");
     return ligne;
   });
 
   revalidatePath("/[locale]/(espaces)", "layout");
   return { ok: true, id: cree.id };
-}
-
-/**
- * Pose ou lève le gel des fonds sur une location.
- *
- * Écrit aux trois endroits qui le portent — la réservation, la caution, le
- * reversement — parce que trois écrans différents le lisent. Les laisser
- * diverger, c'est promettre au propriétaire un virement que le litige interdit.
- */
-async function appliquerGel(
-  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-  reservationId: string,
-  gele: boolean,
-  motif: string,
-): Promise<void> {
-  await tx
-    .update(reservation)
-    .set({ fondsGeles: gele, modifieLe: new Date() })
-    .where(eq(reservation.id, reservationId));
-
-  await tx
-    .update(caution)
-    .set(
-      gele
-        ? { statut: "contestee", contesteeLe: new Date() }
-        : { statut: "constituee" },
-    )
-    .where(
-      and(
-        eq(caution.reservationId, reservationId),
-        inArray(caution.statut, gele ? ["constituee"] : ["contestee"]),
-      ),
-    );
-
-  await tx
-    .update(reversement)
-    .set(
-      gele
-        ? { statut: "gele", geleMotif: motif }
-        : { statut: "planifie", geleMotif: null },
-    )
-    .where(
-      and(
-        eq(reversement.reservationId, reservationId),
-        inArray(reversement.statut, gele ? ["planifie"] : ["gele"]),
-      ),
-    );
 }
 
 /**
@@ -425,9 +386,10 @@ export async function franchirLitige(donnees: FormData): Promise<Reponse> {
     }
 
     // Le dossier clos rend les fonds à leur cours normal — c'est la seconde
-    // moitié de la règle 6, celle qu'on oublie.
+    // moitié de la règle 6, celle qu'on oublie. La levée est conditionnelle :
+    // si un sinistre court encore sur la même location, elle n'a pas lieu.
     if (!gelActif(suivant)) {
-      await appliquerGel(tx, dossier.reservationId, false, "");
+      await leverGelSiPlusRienOuvert(tx, dossier.reservationId);
     }
 
     const gabarit =

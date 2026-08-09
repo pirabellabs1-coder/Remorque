@@ -33,6 +33,34 @@ const CLAUSE_DOSSIER_OUVERT = `
   )
 `;
 
+/**
+ * Un dossier ouvert **pendant que l'argent était encore là**.
+ *
+ * Le gel immobilise ce que la plateforme détient — pas ce qui est déjà parti :
+ * un dossier ouvert sur une vieille location close, caution rendue et
+ * reversement payé, est instruisable mais n'a plus rien à retenir. L'exiger
+ * gelé quand même transformerait chaque déclaration tardive en fausse alerte.
+ * La borne est la date d'ouverture du dossier face à la date de sortie des
+ * fonds ; une sortie sans date compte comme une violation, pas comme une
+ * excuse.
+ */
+function clauseDossierOuvertAvant(sortie: string): string {
+  return `
+  EXISTS (
+    SELECT 1 FROM litige l
+    WHERE l.reservation_id = rv.reservation_id
+      AND l.statut NOT IN ('resolu', 'clos_sans_suite')
+      AND l.cree_le < coalesce(${sortie}, 'infinity'::timestamptz)
+  )
+  OR EXISTS (
+    SELECT 1 FROM sinistre s
+    WHERE s.reservation_id = rv.reservation_id
+      AND s.statut IN ('declare', 'transmis', 'en_cours')
+      AND s.cree_le < coalesce(${sortie}, 'infinity'::timestamptz)
+  )
+`;
+}
+
 async function compter(requete: string): Promise<number> {
   const lignes = await db.execute(requete);
   const premiere = (lignes as unknown as { n: number }[])[0];
@@ -55,7 +83,7 @@ describe("règle 6 — transfert au propriétaire", () => {
   it("gèle tout reversement dont la location porte un dossier ouvert", async () => {
     const fuites = await compter(`
       SELECT count(*)::int AS n FROM reversement rv
-      WHERE rv.statut <> 'gele' AND (${CLAUSE_DOSSIER_OUVERT})
+      WHERE rv.statut <> 'gele' AND (${clauseDossierOuvertAvant("rv.envoye_le")})
     `);
 
     // C'est le défaut coûteux : le virement part alors que le litige est en
@@ -85,9 +113,11 @@ describe("règle 6 — transfert au propriétaire", () => {
 
 describe("règle 6 — libération de la caution", () => {
   it("ne libère aucune caution dont la location porte un dossier ouvert", async () => {
+    // Même borne que pour le reversement : une caution rendue avant
+    // l'ouverture du dossier n'est pas une fuite, elle est partie à l'heure.
     const liberees = await compter(`
       SELECT count(*)::int AS n FROM caution rv
-      WHERE rv.statut = 'liberee' AND (${CLAUSE_DOSSIER_OUVERT})
+      WHERE rv.statut = 'liberee' AND (${clauseDossierOuvertAvant("rv.liberee_le")})
     `);
     expect(liberees).toBe(0);
   });

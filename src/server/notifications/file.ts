@@ -162,6 +162,35 @@ export async function enfilerNotificationsLitige(
   );
 }
 
+/**
+ * Prévient les deux parties d'un mouvement sur un sinistre.
+ *
+ * Les deux, comme pour le litige : le dossier immobilise l'argent de l'un et
+ * la garantie de l'autre, et une instruction que l'une des parties suivrait
+ * seule finirait en incompréhension au moment du verdict.
+ */
+export async function enfilerNotificationsSinistre(
+  executeur: Executeur,
+  reservationId: string,
+  gabarit: "declare" | "transmis" | "instruction" | "indemnise" | "refuse",
+): Promise<void> {
+  const dossier = await chargerDossier(executeur, reservationId);
+  if (!dossier) return;
+
+  await executeur.insert(notification).values(
+    [dossier.locataireId, dossier.proprietaireId].map((destinataireId) => ({
+      destinataireId,
+      gabarit: `sinistre.${gabarit}`,
+      donnees: {
+        reference: dossier.numero,
+        annonceTitre: dossier.annonceTitre,
+        prenom: dossier.prenoms.get(destinataireId) ?? "",
+        interlocuteur: "",
+      },
+    })),
+  );
+}
+
 /** Un message reçu prévient l'autre partie — jamais son auteur. */
 export async function enfilerNotificationNouveauMessage(
   executeur: Executeur,

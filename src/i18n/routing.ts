@@ -70,6 +70,7 @@ export const pathnames = {
   "/compte/avis": "/compte/avis",
   "/compte/avis/[reservation]": "/compte/avis/[reservation]",
   "/compte/litiges/[reservation]": "/compte/litiges/[reservation]",
+  "/compte/sinistres/[reservation]": "/compte/sinistres/[reservation]",
   "/compte/parametres": "/compte/parametres",
 
   /* --- Espace loueur ---------------------------------------------------- */
@@ -83,6 +84,7 @@ export const pathnames = {
   "/proprietaire/messages": "/proprietaire/messages",
   "/proprietaire/messages/[id]": "/proprietaire/messages/[id]",
   "/proprietaire/litiges/[reservation]": "/proprietaire/litiges/[reservation]",
+  "/proprietaire/sinistres/[reservation]": "/proprietaire/sinistres/[reservation]",
   "/proprietaire/revenus": "/proprietaire/revenus",
   "/proprietaire/avis": "/proprietaire/avis",
   "/proprietaire/profil": "/proprietaire/profil",
@@ -97,6 +99,7 @@ export const pathnames = {
   "/admin/litiges": "/admin/litiges",
   "/admin/litiges/[litige]": "/admin/litiges/[litige]",
   "/admin/assurance": "/admin/assurance",
+  "/admin/sinistres/[sinistre]": "/admin/sinistres/[sinistre]",
   "/admin/pays": "/admin/pays",
   "/admin/contenu": "/admin/contenu",
   "/admin/support": "/admin/support",

@@ -289,6 +289,24 @@ la décision reste un fait comptable : `caution.stripe_payment_intent_id` vide
 et aucune entrée d'exécution — c'est le marqueur honnête de ce qui n'est pas
 encore exécuté.
 
+## 6 ter bis. Sinistres — déclaration, instruction, dégel croisé
+
+Le sinistre se déclare par les parties (location `en_cours`, `restituee` ou
+`cloturee` uniquement — et jamais par l'administration, qui transmet sans
+avoir rien constaté), s'instruit par l'administration, et se conclut par
+l'assureur.
+
+| Vérification | Attendu |
+|---|---|
+| Déclaration (description + estimation) | `sinistre.statut = 'declare'`, gel posé : `fonds_geles`, caution `contestee`, reversement `gele` ; `sinistre.declare` aux deux parties |
+| Transmission (admin, référence obligatoire) | `transmis`, `reference_assureur` et `transmis_le` remplis, journal d'audit |
+| Instruction ouverte | `en_cours` — le statut n'est plus masqué en « transmis » sur la page assurance |
+| Indemnisation (montant obligatoire) | `indemnise`, `montant_indemnise`, `cloture_le`, dégel |
+| Refus (motif obligatoire) | `refuse`, `refus_motif` lisible par les parties, dégel |
+| **Dégel croisé** | un litige classé ne dégèle **pas** si un sinistre court sur la même location, et réciproquement — la levée se constate en base (`leverGelSiPlusRienOuvert`), elle ne se décrète pas |
+| Second sinistre pendant le premier | refusé (`dejaDeclare`) |
+| Écrans | les trois espaces lisent le même dossier ; seules les actions diffèrent (instruction : administration seule) |
+
 ## 6 quater. Tâches quotidiennes
 
 `npm run taches` — à planifier une fois par jour, avant `npm run courriels`.

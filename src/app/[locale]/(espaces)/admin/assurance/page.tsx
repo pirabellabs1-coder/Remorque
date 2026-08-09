@@ -3,6 +3,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { ListeVide } from "@/components/espace/indicateurs";
 import { Cellule, Pastille, Tableau } from "@/components/espace/tableau";
+import { Link } from "@/i18n/navigation";
 import { PRIX_AFFICHE } from "@/lib/cn";
 import { listerSinistres, type Sinistre } from "@/server/espaces/administration";
 
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
 const TONS: Record<Sinistre["statut"], "attente" | "actif" | "succes" | "danger"> = {
   declare: "attente",
   transmis: "actif",
+  en_cours: "actif",
   indemnise: "succes",
   refuse: "danger",
 };
@@ -55,7 +57,17 @@ export default async function PageAssurance({ params }: Props) {
                 scope="row"
                 className="px-5 py-3.5 text-left font-mono text-sm font-normal whitespace-nowrap"
               >
-                {sinistre.reference}
+                {/* La référence mène au dossier : c'est là que la plateforme
+                    transmet, indemnise ou refuse. */}
+                <Link
+                  href={{
+                    pathname: "/admin/sinistres/[sinistre]",
+                    params: { sinistre: sinistre.id },
+                  }}
+                  className="underline-offset-4 transition-colors hover:text-accent hover:underline"
+                >
+                  {sinistre.reference}
+                </Link>
               </th>
               <Cellule secondaire attenue className="font-mono text-sm">
                 {sinistre.reservationReference}

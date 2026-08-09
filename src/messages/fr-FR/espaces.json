@@ -69,7 +69,8 @@
           "texte": "Changez de filtre, ou cherchez une remorque près de chez vous pour votre prochain trajet.",
           "action": "Chercher une remorque"
         },
-        "litige": "Signaler un litige"
+        "litige": "Signaler un litige",
+        "sinistre": "Déclarer un sinistre"
       },
       "favoris": {
         "titre": "Favoris",
@@ -380,7 +381,8 @@
           "titre": "Aucune réservation dans ce filtre",
           "texte": "Changez de filtre, ou publiez une annonce pour recevoir vos premières demandes."
         },
-        "litige": "Signaler un litige"
+        "litige": "Signaler un litige",
+        "sinistre": "Déclarer un sinistre"
       },
       "revenus": {
         "titre": "Revenus",
@@ -769,7 +771,8 @@
           "declare": "Déclaré",
           "transmis": "Transmis à l’assureur",
           "indemnise": "Indemnisé",
-          "refuse": "Refusé"
+          "refuse": "Refusé",
+          "en_cours": "Instruction en cours"
         },
         "delaiTitre": "Délai de transmission",
         "delaiTexte": "Un sinistre doit être transmis au partenaire assureur sous cinq jours ouvrables. Au-delà, la prise en charge peut être refusée pour déclaration tardive.",
@@ -1065,6 +1068,61 @@
           "dossierClos": "Le dossier est clos : la décision a été rendue sur les pièces existantes.",
           "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
           "echec": "Le versement a échoué. Réessayez."
+        }
+      }
+    },
+    "sinistre": {
+      "titre": "Sinistre",
+      "retourReservations": "Retour aux réservations",
+      "retourListe": "Retour à l'assurance",
+      "statuts": {
+        "declare": "Déclaré",
+        "transmis": "Transmis à l'assureur",
+        "en_cours": "Instruction en cours",
+        "indemnise": "Indemnisé",
+        "refuse": "Garantie refusée"
+      },
+      "fondsGeles": "Les fonds de la location sont immobilisés le temps du dossier.",
+      "declaration": "Déclaration",
+      "declareLe": "Déclaré le",
+      "montantEstime": "Dommage estimé",
+      "transmission": "Transmission à l'assureur",
+      "transmisLe": "Transmis le",
+      "referenceAssureur": "Référence de l'assureur",
+      "verdict": "Indemnisation",
+      "montantIndemnise": "Montant indemnisé",
+      "clotureLe": "Clos le",
+      "refusTitre": "Prise en charge refusée",
+      "refusLe": "Refus notifié le {date}.",
+      "pasEncoreDeclarable": "Un sinistre ne peut être déclaré qu'une fois le matériel parti — pendant la location ou après la restitution.",
+      "actions": {
+        "transmettre": "Transmettre à l'assureur",
+        "instruire": "Marquer l'instruction ouverte",
+        "indemniser": "Enregistrer l'indemnisation",
+        "refuser": "Enregistrer un refus"
+      },
+      "champReference": "Référence donnée par l'assureur",
+      "referenceAide": "C'est elle que les parties citeront dans chaque échange avec l'assureur.",
+      "champMontant": "Montant indemnisé (en euros)",
+      "champMotif": "Motif",
+      "motifAide": "Le motif sera opposé au déclarant : citez la clause ou le constat qui fonde la décision.",
+      "confirmer": "Confirmer",
+      "annuler": "Annuler",
+      "formulaire": {
+        "avertissement": "Déclarer un sinistre immobilise la caution et le reversement de cette location le temps de l'instruction, et le dossier sera transmis à l'assureur partenaire. Ne déclarez que ce que vous pourrez justifier.",
+        "montant": "Dommage estimé (en euros)",
+        "montantAide": "Un ordre de grandeur suffit : l'assureur chiffrera précisément.",
+        "description": "Ce qui s'est passé",
+        "descriptionAide": "Circonstances, date, dégâts constatés. Les états des lieux signés accompagneront le dossier.",
+        "declarer": "Déclarer le sinistre",
+        "declarationEnCours": "Déclaration…",
+        "erreurs": {
+          "invalide": "Vérifiez le montant et la description (20 caractères au moins).",
+          "interdit": "Seules les parties à la location peuvent déclarer un sinistre.",
+          "dejaDeclare": "Un sinistre est déjà ouvert sur cette location.",
+          "statutInadapte": "Un sinistre ne peut être déclaré qu'une fois le matériel parti.",
+          "connexionRequise": "Connectez-vous pour déclarer un sinistre.",
+          "echec": "La déclaration n'a pas pu être enregistrée. Réessayez."
         }
       }
     }
