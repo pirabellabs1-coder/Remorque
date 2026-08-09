@@ -1,6 +1,10 @@
 {
   "courriels": {
     "reservation": {
+      "instantanee": {
+        "sujet": "Votre annonce vient d'être réservée — {reference}",
+        "corps": "Bonjour {prenom},\n\n{interlocuteur} vient de réserver « {annonceTitre} » ({reference}) en réservation instantanée, comme votre annonce le permet. L'acceptation est faite ; le paiement du locataire déclenchera la confirmation.\n\nSi ces dates ne conviennent plus, bloquez votre calendrier au plus vite."
+      },
       "demandee": {
         "sujet": "Nouvelle demande de location — {annonceTitre}",
         "corps": "Bonjour {prenom},\n\n{interlocuteur} souhaite louer « {annonceTitre} » ({reference}). Vous avez un délai limité pour répondre : passé ce délai, la demande expire d’elle-même.\n\nConnectez-vous à votre espace pour accepter ou refuser."

@@ -1049,7 +1049,24 @@
           "echec": "L’ouverture a échoué. Réessayez."
         }
       },
-      "fondsDejaVerses": "Les fonds de cette location ont déjà été versés : le litige est instruit, mais rien ne peut être immobilisé."
+      "fondsDejaVerses": "Les fonds de cette location ont déjà été versés : le litige est instruit, mais rien ne peut être immobilisé.",
+      "retenueAppliquee": "Retenue appliquée sur la caution",
+      "pieces": {
+        "titre": "Pièces du dossier",
+        "aucune": "Aucune pièce versée pour l’instant. L’état des lieux est joint d’office.",
+        "parMoi": "Vous",
+        "verser": "Verser une pièce",
+        "aide": "Témoignage, référence d’un devis, description d’une photographie. Une pièce versée ne se modifie ni ne se retire — versez-en une autre pour préciser. Le dépôt de fichiers viendra avec le stockage.",
+        "bouton": "Verser au dossier",
+        "versement": "Versement…",
+        "erreurs": {
+          "invalide": "La pièce est trop courte ou trop longue.",
+          "interdit": "Ce dossier ne vous concerne pas.",
+          "dossierClos": "Le dossier est clos : la décision a été rendue sur les pièces existantes.",
+          "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+          "echec": "Le versement a échoué. Réessayez."
+        }
+      }
     }
   }
 }

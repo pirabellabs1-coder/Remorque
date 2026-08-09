@@ -47,6 +47,8 @@ export type LitigeDossier = {
    */
   cautionGelee: boolean;
   reversementGele: boolean;
+  /** Ce que la caution a déjà rendu, toutes retenues confondues. */
+  cautionMontantDebite: number;
 };
 
 const colonnes = {
@@ -71,6 +73,9 @@ const colonnes = {
   cautionStatut: sql<string | null>`(
     select c.statut from caution c where c.reservation_id = ${reservation.id} limit 1
   )`,
+  cautionMontantDebite: sql<number>`coalesce((
+    select c.montant_debite from caution c where c.reservation_id = ${reservation.id} limit 1
+  ), 0)`,
   reversementStatut: sql<string | null>`(
     select v.statut from reversement v where v.reservation_id = ${reservation.id} limit 1
   )`,
@@ -113,6 +118,7 @@ function composer(
     monRole: estAdmin && monRole === "administrateur" ? "administrateur" : monRole,
     cautionGelee: ligne.cautionStatut === "contestee",
     reversementGele: ligne.reversementStatut === "gele",
+    cautionMontantDebite: Number(ligne.cautionMontantDebite ?? 0),
   };
 }
 

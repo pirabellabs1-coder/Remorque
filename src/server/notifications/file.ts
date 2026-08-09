@@ -81,13 +81,19 @@ async function chargerDossier(executeur: Executeur, reservationId: string) {
   return { ...dossier, prenoms };
 }
 
-/** Enfile les courriels que l'état atteint commande, pour chaque destinataire. */
-export async function enfilerNotificationsReservation(
+/**
+ * Enfile un gabarit de réservation pour les rôles donnés.
+ *
+ * C'est la brique commune : la version « par statut » en dérive, et les cas
+ * qui sortent du tableau — la réservation instantanée, par exemple — s'en
+ * servent directement sans avoir à y entrer de force.
+ */
+export async function enfilerNotificationReservation(
   executeur: Executeur,
   reservationId: string,
-  statut: StatutReservation,
+  gabarit: string,
+  roles: readonly ("locataire" | "proprietaire")[],
 ): Promise<void> {
-  const roles = DESTINATAIRES_PAR_STATUT[statut];
   if (roles.length === 0) return;
 
   const dossier = await chargerDossier(executeur, reservationId);
@@ -102,7 +108,7 @@ export async function enfilerNotificationsReservation(
 
       return {
         destinataireId,
-        gabarit: `reservation.${statut}`,
+        gabarit,
         donnees: {
           reference: dossier.numero,
           annonceTitre: dossier.annonceTitre,
@@ -111,6 +117,20 @@ export async function enfilerNotificationsReservation(
         },
       };
     }),
+  );
+}
+
+/** Enfile les courriels que l'état atteint commande, pour chaque destinataire. */
+export async function enfilerNotificationsReservation(
+  executeur: Executeur,
+  reservationId: string,
+  statut: StatutReservation,
+): Promise<void> {
+  await enfilerNotificationReservation(
+    executeur,
+    reservationId,
+    `reservation.${statut}`,
+    DESTINATAIRES_PAR_STATUT[statut],
   );
 }
 

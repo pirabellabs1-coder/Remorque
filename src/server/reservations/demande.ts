@@ -12,7 +12,11 @@ import {
   reversement,
   tarif,
 } from "@/server/db/schema";
-import { enfilerNotificationsReservation } from "@/server/notifications/file";
+import {
+  enfilerNotificationReservation,
+  enfilerNotificationsReservation,
+} from "@/server/notifications/file";
+import { changerStatut } from "@/server/reservations/transitions";
 
 /**
  * Création d'une demande de réservation.
@@ -188,10 +192,43 @@ export async function demanderReservation(entree: {
     // Le propriétaire est prévenu qu'une demande l'attend — enfilé dans la
     // même transaction : un courriel annonçant une demande qui n'a pas été
     // écrite serait pire que pas de courriel du tout.
-    await enfilerNotificationsReservation(tx, nouvelle.id, "demandee");
+    //
+    // Sauf en réservation instantanée : lui écrire « vous avez un délai pour
+    // répondre » alors que l'acceptation part dans la seconde serait un
+    // courriel faux à la naissance. Il recevra l'annonce de la réservation,
+    // rédigée pour ce cas.
+    if (!ligne.instantanee) {
+      await enfilerNotificationsReservation(tx, nouvelle.id, "demandee");
+    }
 
     return nouvelle;
   });
+
+  /* ---- Réservation instantanée (M05) ---- */
+  //
+  // L'acceptation est automatique parce que le propriétaire l'a décidée en
+  // publiant l'annonce : l'acteur de la transition est donc bien lui — c'est
+  // son consentement permanent qui s'exerce, pas celui d'un automate. La
+  // machine, elle, n'y voit qu'une acceptation ordinaire, tracée comme les
+  // autres.
+  if (ligne.instantanee) {
+    const acceptation = await changerStatut({
+      reservationId: cree.id,
+      evenement: "accepter",
+      acteur: "proprietaire",
+      acteurId: ligne.proprietaireId,
+      motif: "Réservation instantanée : acceptation prévue par l'annonce",
+    });
+
+    // Si la machine refusait — cas qui ne devrait pas exister —, la demande
+    // reste une demande ordinaire : le propriétaire répondra à la main, et
+    // rien n'est perdu que l'instantanéité.
+    if (acceptation.ok) {
+      await enfilerNotificationReservation(db, cree.id, "reservation.instantanee", [
+        "proprietaire",
+      ]);
+    }
+  }
 
   return {
     ok: true,

@@ -6,6 +6,7 @@ import { db } from "@/server/db";
 import {
   annonce,
   caution,
+  notification,
   reservation,
   reservationTransition,
   reversement,
@@ -32,17 +33,24 @@ import { changerStatut, historique } from "./transitions";
 
 const creees: string[] = [];
 
-async function contexte() {
+async function contexte(instantanee = false) {
   const [locataire] = await db
     .select({ id: utilisateur.id })
     .from(utilisateur)
     .where(eq(utilisateur.email, "moi@demonstration.flexitrailer.eu"))
     .limit(1);
 
+  // L'annonce est choisie selon ce que le test éprouve : le parcours manuel
+  // — accepter, refuser — exige une annonce **sans** réservation instantanée,
+  // sans quoi l'acceptation automatique prend la machine de vitesse et le
+  // test mesure autre chose que ce qu'il croit.
   const [cible] = await db
     .select({ id: annonce.id, proprietaireId: annonce.proprietaireId })
     .from(annonce)
-    .where(sql`${annonce.proprietaireId} <> ${locataire.id}`)
+    .where(
+      sql`${annonce.proprietaireId} <> ${locataire.id}
+          and ${annonce.reservationInstantanee} = ${instantanee}`,
+    )
     .limit(1);
 
   return { locataire, cible };
@@ -56,8 +64,8 @@ function periode(dansCombienDeJours: number, duree = 2) {
   return { debut, fin };
 }
 
-async function demander(dansCombienDeJours: number, duree = 2) {
-  const { locataire, cible } = await contexte();
+async function demander(dansCombienDeJours: number, duree = 2, instantanee = false) {
+  const { locataire, cible } = await contexte(instantanee);
   const { debut, fin } = periode(dansCombienDeJours, duree);
 
   const resultat = await demanderReservation({
@@ -73,6 +81,20 @@ async function demander(dansCombienDeJours: number, duree = 2) {
 
 afterAll(async () => {
   if (creees.length === 0) return;
+
+  // Les notifications d'abord : elles ne portent pas la clé étrangère mais la
+  // référence, qu'il faut lire avant de supprimer les réservations. Les
+  // laisser encombrerait la file d'envoi de courriels d'essai — que
+  // `npm run courriels` afficherait comme s'ils étaient vrais.
+  const numeros = await db
+    .select({ numero: reservation.numero })
+    .from(reservation)
+    .where(inArray(reservation.id, creees));
+
+  for (const { numero } of numeros) {
+    await db.delete(notification).where(sql`${notification.donnees}->>'reference' = ${numero}`);
+  }
+
   // L'ordre suit les clés étrangères : les mouvements avant la réservation.
   for (const table of [caution, reversement, reservationTransition]) {
     await db.delete(table).where(inArray(table.reservationId, creees));
@@ -205,6 +227,34 @@ describe("dépôt d'une demande", () => {
 
     expect(resultat.ok).toBe(false);
     if (!resultat.ok) expect(resultat.cle).toBe("proprePropriete");
+  });
+});
+
+describe("réservation instantanée — M05", () => {
+  it("accepte d'elle-même, au nom du propriétaire, et le trace", async () => {
+    const { resultat } = await demander(420, 2, true);
+    expect(resultat.ok).toBe(true);
+    if (!resultat.ok) return;
+
+    expect(resultat.instantanee).toBe(true);
+
+    const [ligne] = await db
+      .select({ statut: reservation.statut })
+      .from(reservation)
+      .where(eq(reservation.id, resultat.reservationId));
+
+    expect(ligne.statut).toBe("acceptee");
+
+    // Deux transitions, pas une : l'instantanéité n'est pas un état de
+    // naissance différent, c'est une acceptation ordinaire qui suit la
+    // demande — tracée, motivée, au nom de celui qui l'a décidée en
+    // publiant l'annonce.
+    const trace = await historique(resultat.reservationId);
+    expect(trace.map((etape) => etape.statutSuivant)).toEqual([
+      "demandee",
+      "acceptee",
+    ]);
+    expect(trace.at(-1)?.acteur).toBe("proprietaire");
   });
 });
 

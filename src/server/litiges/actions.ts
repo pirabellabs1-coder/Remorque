@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { effetsDecision, type EffetsDecision } from "@/domain/litige/decision";
 import {
   evaluerLitige,
   gelActif,
@@ -19,10 +20,13 @@ import {
   caution,
   journalAudit,
   litige,
+  paiement,
   reservation,
   reversement,
 } from "@/server/db/schema";
 import { enfilerNotificationsLitige } from "@/server/notifications/file";
+
+import { executerEffetsStripe } from "./execution";
 
 /**
  * Ouverture et instruction des litiges.
@@ -98,6 +102,13 @@ export async function ouvrirLitige(donnees: FormData): Promise<Reponse> {
 
   const partie = await roleSurDossier(reservationId, moi.id, Boolean(moi.role));
   if (!partie) return { ok: false, cle: "interdit" };
+
+  // Seules les parties ouvrent un litige. Un administrateur arbitre, il ne
+  // réclame pas : la direction financière de la décision se déduit de qui a
+  // ouvert, et un dossier ouvert par la plateforme n'aurait pas de direction —
+  // la retenue frapperait la caution du locataire par défaut, sans qu'il ait
+  // rien réclamé ni qu'on ait rien constaté contre lui.
+  if (partie.role === "administrateur") return { ok: false, cle: "interdit" };
 
   // Réclamer plus que la caution n'a pas de sens : c'est tout ce que la
   // plateforme peut retenir. Au-delà, le recours est judiciaire, pas ici.
@@ -185,6 +196,123 @@ async function appliquerGel(
     );
 }
 
+/**
+ * Applique l'effet financier d'une décision, dans la transaction qui la rend.
+ *
+ * Le calcul appartient au domaine (`effetsDecision`) ; ici on lit ce que les
+ * deux gisements peuvent encore donner, et on écrit ce que le domaine a
+ * décidé. Une caution retenue porte le motif de la décision : c'est lui qui
+ * sera opposé au locataire, et une retenue sans motif est indéfendable.
+ */
+async function appliquerDecision(
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  entree: {
+    reservationId: string;
+    ouvertPar: "locataire" | "proprietaire";
+    montantAccorde: number;
+    motif: string;
+  },
+): Promise<EffetsDecision> {
+  const [garantie] = await tx
+    .select({
+      id: caution.id,
+      statut: caution.statut,
+      montant: caution.montant,
+      montantDebite: caution.montantDebite,
+    })
+    .from(caution)
+    .where(eq(caution.reservationId, entree.reservationId))
+    .limit(1);
+
+  const [versement] = await tx
+    .select({
+      id: reversement.id,
+      statut: reversement.statut,
+      montant: reversement.montant,
+    })
+    .from(reversement)
+    .where(eq(reversement.reservationId, entree.reservationId))
+    .limit(1);
+
+  const [reglement] = await tx
+    .select({
+      id: paiement.id,
+      montant: paiement.montant,
+      montantRembourse: paiement.montantRembourse,
+    })
+    .from(paiement)
+    .where(eq(paiement.reservationId, entree.reservationId))
+    .limit(1);
+
+  // Une caution libérée a rendu ses fonds : elle n'a plus rien à donner. Un
+  // reversement déjà parti non plus — l'argent est chez le propriétaire.
+  const cautionRestante =
+    garantie && garantie.statut !== "liberee"
+      ? garantie.montant - garantie.montantDebite
+      : 0;
+
+  const reversementRestant =
+    versement && ["planifie", "gele"].includes(versement.statut ?? "")
+      ? versement.montant
+      : 0;
+
+  const effets = effetsDecision({
+    ouvertPar: entree.ouvertPar,
+    montantAccorde: entree.montantAccorde,
+    cautionRestante,
+    reversementRestant,
+  });
+
+  if (effets.retenueCaution > 0 && garantie) {
+    const debiteTotal = garantie.montantDebite + effets.retenueCaution;
+
+    await tx
+      .update(caution)
+      .set({
+        montantDebite: debiteTotal,
+        statut: debiteTotal >= garantie.montant ? "retenue" : "debitee_partiellement",
+        debitMotif: entree.motif,
+        modifieLe: new Date(),
+      })
+      .where(eq(caution.id, garantie.id));
+  }
+
+  if (effets.reductionReversement > 0 && versement) {
+    await tx
+      .update(reversement)
+      .set({
+        montant: versement.montant - effets.reductionReversement,
+        modifieLe: new Date(),
+      })
+      .where(eq(reversement.id, versement.id));
+  }
+
+  // La destination de la réduction : ce qui est retranché au propriétaire
+  // revient au locataire, et son relevé doit le montrer dès la décision. Le
+  // plafond est défensif — le reversement ne dépasse jamais le paiement, mais
+  // un relevé qui afficherait plus remboursé qu'encaissé serait indéfendable.
+  if (effets.remboursementLocataire > 0 && reglement) {
+    const rembourseTotal = Math.min(
+      reglement.montantRembourse + effets.remboursementLocataire,
+      reglement.montant,
+    );
+
+    await tx
+      .update(paiement)
+      .set({
+        montantRembourse: rembourseTotal,
+        statut:
+          rembourseTotal >= reglement.montant
+            ? "rembourse"
+            : "rembourse_partiellement",
+        modifieLe: new Date(),
+      })
+      .where(eq(paiement.id, reglement.id));
+  }
+
+  return effets;
+}
+
 const instruction = z.object({
   litigeId: z.string().uuid(),
   evenement: z.enum(["proposer", "escalader", "trancher", "classer", "retirer"]),
@@ -220,8 +348,10 @@ export async function franchirLitige(donnees: FormData): Promise<Reponse> {
       reservationId: litige.reservationId,
       ouvertParId: litige.ouvertParId,
       montantReclame: litige.montantReclame,
+      locataireId: reservation.locataireId,
     })
     .from(litige)
+    .innerJoin(reservation, eq(reservation.id, litige.reservationId))
     .where(eq(litige.id, litigeId))
     .limit(1);
 
@@ -253,6 +383,13 @@ export async function franchirLitige(donnees: FormData): Promise<Reponse> {
   const suivant = verdict.statutSuivant;
   const enTetes = await headers();
 
+  let effets: EffetsDecision = {
+    retenueCaution: 0,
+    reductionReversement: 0,
+    remboursementLocataire: 0,
+    resteARecouvrer: 0,
+  };
+
   await db.transaction(async (tx) => {
     await tx
       .update(litige)
@@ -271,6 +408,21 @@ export async function franchirLitige(donnees: FormData): Promise<Reponse> {
         modifieLe: new Date(),
       })
       .where(eq(litige.id, litigeId));
+
+    // La décision emporte son effet financier, dans la même transaction : un
+    // litige tranché dont la retenue arriverait « plus tard » laisserait la
+    // caution se libérer entre les deux. **Avant la levée du gel** — l'ordre
+    // compte : une caution passée « retenue » n'est plus « contestée », et la
+    // levée du gel ne la remettra donc pas en circulation.
+    if (evenement === "trancher") {
+      effets = await appliquerDecision(tx, {
+        reservationId: dossier.reservationId,
+        ouvertPar:
+          dossier.ouvertParId === dossier.locataireId ? "locataire" : "proprietaire",
+        montantAccorde: montant ?? 0,
+        motif: decisionMotif ?? "",
+      });
+    }
 
     // Le dossier clos rend les fonds à leur cours normal — c'est la seconde
     // moitié de la règle 6, celle qu'on oublie.
@@ -300,10 +452,39 @@ export async function franchirLitige(donnees: FormData): Promise<Reponse> {
       apres: {
         statut: suivant,
         ...(montant !== undefined ? { montant: String(montant) } : {}),
+        ...(effets.retenueCaution > 0
+          ? { retenueCaution: String(effets.retenueCaution) }
+          : {}),
+        ...(effets.reductionReversement > 0
+          ? { reductionReversement: String(effets.reductionReversement) }
+          : {}),
+        ...(effets.remboursementLocataire > 0
+          ? { remboursementLocataire: String(effets.remboursementLocataire) }
+          : {}),
+        // Le reste à recouvrer figure au journal, pas seulement à l'écran : un
+        // manque qui ne serait écrit nulle part finirait par être oublié.
+        ...(effets.resteARecouvrer > 0
+          ? { resteARecouvrer: String(effets.resteARecouvrer) }
+          : {}),
       },
       adresseIp: enTetes.get("x-forwarded-for")?.split(",")[0]?.trim(),
     });
   });
+
+  // L'exécution bancaire vient après la décision, jamais dedans : un appel
+  // réseau n'a rien à faire dans une transaction, et un refus de carte ne
+  // remet pas en cause l'arbitrage — il s'inscrit au journal et se règle
+  // autrement. Sans clé Stripe, la décision reste un fait comptable, ce que
+  // la recette documente déjà.
+  if (evenement === "trancher") {
+    await executerEffetsStripe({
+      reservationId: dossier.reservationId,
+      litigeId,
+      effets,
+      motif: decisionMotif ?? "",
+      auteur: { id: moi.id, email: moi.email },
+    });
+  }
 
   revalidatePath("/[locale]/(espaces)", "layout");
   return { ok: true };

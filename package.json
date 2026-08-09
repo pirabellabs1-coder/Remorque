@@ -14,6 +14,7 @@
     "db:setup": "npm run db:prepare && npm run db:migrate && npm run db:seed",
     "db:studio": "drizzle-kit studio",
     "rappels": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/poser-rappels.ts",
+    "taches": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/taches-quotidiennes.ts",
     "db:verifier": "tsx --env-file-if-exists=.env.local scripts/verifier-base.ts",
     "dev": "next dev",
     "lint": "eslint",

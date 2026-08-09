@@ -1,8 +1,10 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
 import { ActionsLitige } from "@/components/espace/actions-litige";
+import { FormulairePiece } from "@/components/espace/pieces-litige";
 import { PRIX_AFFICHE } from "@/lib/cn";
 import type { LitigeDossier } from "@/server/litiges/depot";
+import { piecesDuLitige } from "@/server/litiges/pieces";
 
 /**
  * Corps d'un dossier de litige, commun aux trois espaces.
@@ -15,6 +17,7 @@ import type { LitigeDossier } from "@/server/litiges/depot";
 export async function DossierLitige({ litige }: { litige: LitigeDossier }) {
   const t = await getTranslations("espaces.litige");
   const format = await getFormatter();
+  const pieces = await piecesDuLitige(litige.id);
 
   const montant = (centimes: number | null) =>
     centimes === null
@@ -110,6 +113,16 @@ export async function DossierLitige({ litige }: { litige: LitigeDossier }) {
               <dt className="text-texte-attenue">{t("renduLe")}</dt>
               <dd>{date(litige.resoluLe)}</dd>
             </div>
+            {/* L'effet réellement appliqué, pas seulement le montant décidé :
+                c'est la différence entre une décision et un vœu. */}
+            {litige.cautionMontantDebite > 0 ? (
+              <div className="flex flex-wrap justify-between gap-2">
+                <dt className="text-texte-attenue">{t("retenueAppliquee")}</dt>
+                <dd className="font-medium tabular-nums">
+                  {montant(litige.cautionMontantDebite)}
+                </dd>
+              </div>
+            ) : null}
           </dl>
 
           {litige.decisionMotif ? (
@@ -125,6 +138,37 @@ export async function DossierLitige({ litige }: { litige: LitigeDossier }) {
           {t("closSansSuite")}
         </p>
       ) : null}
+
+      {/* Les pièces versées, dans l'ordre. La décision est rendue sur elles :
+          l'arbitre et les parties lisent exactement la même liste. */}
+      <section className="rounded-carte border border-bordure bg-fond-eleve p-5 shadow-(--ombre-carte)">
+        <h2 className="text-[0.9375rem] font-semibold">{t("pieces.titre")}</h2>
+
+        {pieces.length === 0 ? (
+          <p className="mt-2 text-sm text-texte-attenue">{t("pieces.aucune")}</p>
+        ) : (
+          <ol className="mt-3 space-y-3">
+            {pieces.map((piece) => (
+              <li key={piece.id} className="rounded-champ bg-fond-doux p-3">
+                <p className="text-sm text-texte-attenue">
+                  {piece.auteurEstMoi ? t("pieces.parMoi") : piece.auteur} ·{" "}
+                  {format.dateTime(piece.date, {
+                    day: "numeric",
+                    month: "long",
+                    hour: "numeric",
+                    minute: "numeric",
+                  })}
+                </p>
+                <p className="mt-1 whitespace-pre-wrap text-[0.9375rem]">
+                  {piece.commentaire}
+                </p>
+              </li>
+            ))}
+          </ol>
+        )}
+
+        {!clos ? <FormulairePiece litigeId={litige.id} /> : null}
+      </section>
 
       <ActionsLitige
         litigeId={litige.id}

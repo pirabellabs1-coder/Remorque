@@ -255,6 +255,51 @@ et non 13,07 €.
 Le code de retrait ne part par aucun courriel : il s'échange de vive voix devant
 le matériel. Vérifier qu'il n'apparaît pas dans `npm run courriels`.
 
+## 6 bis. Réservation instantanée
+
+Sur une annonce en réservation instantanée, la demande s'accepte d'elle-même,
+au nom du propriétaire — c'est son consentement permanent, donné en publiant
+l'annonce, qui s'exerce.
+
+| Vérification | Attendu |
+|---|---|
+| `reservation.statut` juste après la demande | `acceptee` |
+| `reservation_transition` | deux lignes : `→ demandee` (locataire) puis `demandee → acceptee` (proprietaire, motif « Réservation instantanée ») |
+| Notifications | `reservation.acceptee` au locataire, `reservation.instantanee` au propriétaire, **aucune** `reservation.demandee` |
+| Écran locataire | « Régler la location » immédiatement disponible |
+
+## 6 ter. Décision d'arbitrage et effets financiers
+
+La décision emporte son effet dans la même transaction, selon qui a ouvert :
+
+| Cas | Attendu |
+|---|---|
+| Litige ouvert par le **propriétaire**, décision X | `caution.montant_debite` += X, statut `debitee_partiellement` (ou `retenue` si tout), `debit_motif` = motif de la décision |
+| Litige ouvert par le **locataire**, décision X | `reversement.montant` −= X (si encore `planifie`/`gele`) **et** `paiement.montant_rembourse` += X — l'argent retranché revient au gagnant ; ligne « remboursement » sur le relevé du locataire ; la caution du locataire **jamais** touchée |
+| Décision à zéro | aucun effet financier, dégel seul |
+| Reversement déjà parti | rien n'est réduit, rien n'est remboursé ; `resteARecouvrer` au journal d'audit |
+| Journal d'audit | `retenueCaution` / `reductionReversement` / `remboursementLocataire` / `resteARecouvrer` inscrits dans `apres` |
+| Compte administrateur qui tente d'**ouvrir** un litige | refusé (`interdit`) — les parties réclament, la plateforme arbitre ; un dossier ouvert par elle n'aurait pas de direction financière |
+
+Avec une clé Stripe, la décision s'exécute juste après la transaction qui la
+rend : débit hors session de la caution (mêmes garde-fous que le débit manuel)
+et remboursement du paiement d'origine, chacun inscrit au journal d'audit sous
+« Litige — exécution bancaire », y compris en cas de refus de carte. Sans clé,
+la décision reste un fait comptable : `caution.stripe_payment_intent_id` vide
+et aucune entrée d'exécution — c'est le marqueur honnête de ce qui n'est pas
+encore exécuté.
+
+## 6 quater. Tâches quotidiennes
+
+`npm run taches` — à planifier une fois par jour, avant `npm run courriels`.
+
+| Vérification | Attendu |
+|---|---|
+| Demande `demandee` avec `expire_le` passé | passe à `expiree` **par la machine** (transition `systeme` tracée), notification au locataire |
+| Caution `constituee`, échéance passée, location close, sans dossier ouvert | `liberee` |
+| Caution avec litige ou sinistre ouvert | **intouchée** — le gel prime |
+| Seconde exécution immédiate | zéro partout — idempotence |
+
 ## 7. Débit de caution après dommage
 
 Réservé à l'administration. Depuis un compte administrateur, sur une location
