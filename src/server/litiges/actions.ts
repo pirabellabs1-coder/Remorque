@@ -46,6 +46,16 @@ import { executerEffetsStripe } from "./execution";
 
 export type Reponse = { ok: true; id?: string } | { ok: false; cle: string };
 
+/**
+ * Les états d'une location où un litige a un objet.
+ *
+ * Les mêmes que pour le sinistre, et ce n'est pas un hasard : les deux
+ * dossiers gèlent de l'argent, et l'argent n'est là qu'une fois le matériel
+ * parti. La liste est ici, en toutes lettres, plutôt que déduite d'un
+ * « après le paiement » qui laisserait passer les demandes refusées.
+ */
+const STATUTS_CONTESTABLES = ["en_cours", "restituee", "cloturee"] as const;
+
 const ouverture = z.object({
   reservationId: z.string().uuid(),
   motif: z.enum(MOTIFS_LITIGE),
@@ -60,7 +70,12 @@ async function roleSurDossier(
   reservationId: string,
   compteId: string,
   estAdmin: boolean,
-): Promise<{ role: ActeurLitige; devise: string; caution: number } | null> {
+): Promise<{
+  role: ActeurLitige;
+  devise: string;
+  caution: number;
+  statut: string;
+} | null> {
   const [dossier] = await db
     .select({
       locataireId: reservation.locataireId,
@@ -75,15 +90,15 @@ async function roleSurDossier(
 
   if (!dossier) return null;
 
-  if (dossier.locataireId === compteId) {
-    return { role: "locataire", devise: dossier.devise, caution: dossier.caution };
-  }
-  if (dossier.proprietaireId === compteId) {
-    return { role: "proprietaire", devise: dossier.devise, caution: dossier.caution };
-  }
-  if (estAdmin) {
-    return { role: "administrateur", devise: dossier.devise, caution: dossier.caution };
-  }
+  const commun = {
+    devise: dossier.devise,
+    caution: dossier.caution,
+    statut: dossier.statut,
+  };
+
+  if (dossier.locataireId === compteId) return { role: "locataire", ...commun };
+  if (dossier.proprietaireId === compteId) return { role: "proprietaire", ...commun };
+  if (estAdmin) return { role: "administrateur", ...commun };
 
   return null;
 }
@@ -111,6 +126,15 @@ export async function ouvrirLitige(donnees: FormData): Promise<Reponse> {
   // la retenue frapperait la caution du locataire par défaut, sans qu'il ait
   // rien réclamé ni qu'on ait rien constaté contre lui.
   if (partie.role === "administrateur") return { ok: false, cle: "interdit" };
+
+  // Un litige suppose de l'argent encaissé et un matériel parti : avant le
+  // retrait, il n'y a rien à contester et rien à geler. Ouvrir un dossier sur
+  // une demande jamais payée immobiliserait des fonds qui n'existent pas, et
+  // laisserait une réservation refusée ou expirée porter un gel éternel — la
+  // même borne que la déclaration de sinistre, pour la même raison.
+  if (!(STATUTS_CONTESTABLES as readonly string[]).includes(partie.statut)) {
+    return { ok: false, cle: "statutInadapte" };
+  }
 
   // Réclamer plus que la caution n'a pas de sens : c'est tout ce que la
   // plateforme peut retenir. Au-delà, le recours est judiciaire, pas ici.

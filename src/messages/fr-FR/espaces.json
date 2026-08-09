@@ -1048,6 +1048,7 @@
           "interdit": "Cette location ne vous concerne pas.",
           "dejaOuvert": "Un litige est déjà ouvert sur cette location.",
           "montantExcessif": "Le montant réclamé dépasse la caution.",
+          "statutInadapte": "Un litige ne peut être ouvert qu'une fois le matériel retiré.",
           "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
           "echec": "L’ouverture a échoué. Réessayez."
         }

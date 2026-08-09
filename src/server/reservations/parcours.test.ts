@@ -2,11 +2,13 @@ import { afterAll, describe, expect, it } from "vitest";
 
 import { eq, inArray, sql } from "drizzle-orm";
 
+import { remboursementAnnulation } from "@/domain/reservation/annulation";
 import { db } from "@/server/db";
 import {
   annonce,
   caution,
   notification,
+  paiement,
   reservation,
   reservationTransition,
   reversement,
@@ -96,7 +98,7 @@ afterAll(async () => {
   }
 
   // L'ordre suit les clés étrangères : les mouvements avant la réservation.
-  for (const table of [caution, reversement, reservationTransition]) {
+  for (const table of [caution, reversement, paiement, reservationTransition]) {
     await db.delete(table).where(inArray(table.reservationId, creees));
   }
   await db.delete(reservation).where(inArray(reservation.id, creees));
@@ -135,13 +137,15 @@ describe("dépôt d'une demande", () => {
       .where(eq(caution.reservationId, resultat.reservationId));
     expect(empreintes).toHaveLength(0);
 
-    // Le reversement, lui, est planifié dès la demande : il porte le montant
-    // dû au propriétaire, sans être envoyé.
-    const [attendu] = await db
-      .select({ statut: reversement.statut })
+    // Le reversement non plus n'existe pas encore : rien n'est dû au
+    // propriétaire tant que rien n'est encaissé. Une ligne née à la demande
+    // affirmerait une dette sans argent — et resterait à jamais « planifiée »
+    // sur une demande refusée ou expirée.
+    const versements = await db
+      .select({ id: reversement.id })
       .from(reversement)
       .where(eq(reversement.reservationId, resultat.reservationId));
-    expect(attendu.statut).toBe("planifie");
+    expect(versements).toHaveLength(0);
   });
 
   it("ne prend l'empreinte de caution qu'au paiement", async () => {
@@ -285,6 +289,16 @@ describe("transitions — règle 4", () => {
       "acceptee",
       "payee",
     ]);
+
+    // Les deux mouvements naissent au paiement, ensemble : l'empreinte qui
+    // garantit le locataire, et le reversement qui porte la dette envers le
+    // propriétaire — laquelle n'existe que depuis que l'argent est là.
+    const [versement] = await db
+      .select({ statut: reversement.statut, montant: reversement.montant })
+      .from(reversement)
+      .where(eq(reversement.reservationId, resultat.reservationId));
+    expect(versement.statut).toBe("planifie");
+    expect(versement.montant).toBeGreaterThan(0);
   });
 
   it("empêche le locataire d'accepter sa propre demande", async () => {
@@ -370,6 +384,166 @@ describe("transitions — règle 4", () => {
       .where(eq(caution.reservationId, resultat.reservationId));
 
     expect(empreinte.statut).toBe("liberee");
+  });
+
+  it("rembourse une annulation selon la politique de l'annonce — M05", async () => {
+    // Départ très lointain : quel que soit le barème de l'annonce, on est
+    // au-dessus de tous les seuils.
+    const { resultat, cible, locataire } = await demander(1400);
+    if (!resultat.ok) return;
+
+    await changerStatut({
+      reservationId: resultat.reservationId,
+      evenement: "accepter",
+      acteur: "proprietaire",
+      acteurId: cible.proprietaireId,
+    });
+    await changerStatut({
+      reservationId: resultat.reservationId,
+      evenement: "encaisser",
+      acteur: "systeme",
+    });
+
+    // Le paiement qu'aurait écrit le webhook Stripe : capture du total.
+    const [dossier] = await db
+      .select({
+        devise: reservation.devise,
+        total: reservation.totalLocataire,
+        debut: reservation.debut,
+        loyer: reservation.loyer,
+        remise: reservation.remise,
+        fraisService: reservation.fraisService,
+        primeAssurance: reservation.primeAssurance,
+        fraisLivraison: reservation.fraisLivraison,
+        politique: annonce.politiqueAnnulation,
+      })
+      .from(reservation)
+      .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
+      .where(eq(reservation.id, resultat.reservationId));
+
+    await db.insert(paiement).values({
+      reservationId: resultat.reservationId,
+      statut: "capture",
+      devise: dossier.devise,
+      montant: dossier.total,
+      autoriseLe: new Date(),
+      captureLe: new Date(),
+    });
+
+    const [versementAvant] = await db
+      .select({ montant: reversement.montant })
+      .from(reversement)
+      .where(eq(reversement.reservationId, resultat.reservationId));
+
+    const annulation = await changerStatut({
+      reservationId: resultat.reservationId,
+      evenement: "annuler",
+      acteur: "locataire",
+      acteurId: locataire.id,
+      motif: "Changement de programme",
+    });
+    expect(annulation.ok).toBe(true);
+
+    // Le remboursement attendu est celui que le domaine promet pour ces
+    // montants-là : le test vérifie le branchement, le barème lui-même a ses
+    // propres tests.
+    const attendu = remboursementAnnulation({
+      politique: dossier.politique,
+      annulePar: "locataire",
+      heuresAvantDebut: (dossier.debut.getTime() - Date.now()) / 3_600_000,
+      loyer: dossier.loyer,
+      remise: dossier.remise,
+      fraisService: dossier.fraisService,
+      primeAssurance: dossier.primeAssurance,
+      fraisLivraison: dossier.fraisLivraison,
+    });
+    expect(attendu.total).toBeGreaterThan(0);
+
+    const [reglement] = await db
+      .select({ rembourse: paiement.montantRembourse, statut: paiement.statut })
+      .from(paiement)
+      .where(eq(paiement.reservationId, resultat.reservationId));
+
+    expect(reglement.rembourse).toBe(attendu.total);
+    expect(["rembourse", "rembourse_partiellement"]).toContain(reglement.statut);
+
+    // Le reversement suit le loyer conservé, au prorata exact : rien pour le
+    // propriétaire si tout le loyer revient au locataire, la proportion du
+    // barème sinon.
+    const [versementApres] = await db
+      .select({ montant: reversement.montant })
+      .from(reversement)
+      .where(eq(reversement.reservationId, resultat.reservationId));
+
+    const loyerNet = Math.max(0, dossier.loyer - Math.max(0, dossier.remise));
+    const proportionAttendue =
+      loyerNet > 0
+        ? Math.round((versementAvant.montant * attendu.loyerConserve) / loyerNet)
+        : 0;
+
+    expect(versementApres.montant).toBe(proportionAttendue);
+  });
+
+  it("plafonne le remboursement quand la charge a déjà été entamée", async () => {
+    // Le cas qui se produit après un litige tranché en faveur du locataire :
+    // une partie du paiement lui a déjà été rendue, puis la location est
+    // annulée. Le barème promet le total, mais la charge ne peut rendre que
+    // ce qui reste — et ce qui part à la banque est ce **delta**, pas le
+    // total, sans quoi le prestataire rejette l'appel et le relevé annonce un
+    // remboursement qui n'a jamais eu lieu.
+    const { resultat, cible } = await demander(1500);
+    if (!resultat.ok) return;
+
+    await changerStatut({
+      reservationId: resultat.reservationId,
+      evenement: "accepter",
+      acteur: "proprietaire",
+      acteurId: cible.proprietaireId,
+    });
+    await changerStatut({
+      reservationId: resultat.reservationId,
+      evenement: "encaisser",
+      acteur: "systeme",
+    });
+
+    const [dossier] = await db
+      .select({ devise: reservation.devise, total: reservation.totalLocataire })
+      .from(reservation)
+      .where(eq(reservation.id, resultat.reservationId));
+
+    // Un tiers de la charge est déjà rendu — l'arbitrage d'hier.
+    const dejaRendu = Math.round(dossier.total / 3);
+
+    await db.insert(paiement).values({
+      reservationId: resultat.reservationId,
+      statut: "rembourse_partiellement",
+      devise: dossier.devise,
+      montant: dossier.total,
+      montantRembourse: dejaRendu,
+      autoriseLe: new Date(),
+      captureLe: new Date(),
+    });
+
+    // Le propriétaire annule : le barème rend tout, donc plus que ce qui
+    // reste sur la charge.
+    const annulation = await changerStatut({
+      reservationId: resultat.reservationId,
+      evenement: "annuler",
+      acteur: "proprietaire",
+      acteurId: cible.proprietaireId,
+      motif: "Matériel indisponible",
+    });
+    expect(annulation.ok).toBe(true);
+
+    const [reglement] = await db
+      .select({ rembourse: paiement.montantRembourse, statut: paiement.statut })
+      .from(paiement)
+      .where(eq(paiement.reservationId, resultat.reservationId));
+
+    // Jamais plus que la charge : le cumul s'arrête au montant payé, il ne
+    // s'additionne pas au-delà.
+    expect(reglement.rembourse).toBe(dossier.total);
+    expect(reglement.statut).toBe("rembourse");
   });
 
   it("conserve le motif de la décision", async () => {

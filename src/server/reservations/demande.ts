@@ -9,7 +9,6 @@ import {
   pays,
   reservation,
   reservationTransition,
-  reversement,
   tarif,
 } from "@/server/db/schema";
 import {
@@ -172,22 +171,15 @@ export async function demanderReservation(entree: {
       motif: "Demande déposée",
     });
 
-    // **Aucune caution n'est créée ici.** Une demande n'immobilise rien : la
-    // carte du locataire n'est pas engagée tant que le propriétaire n'a pas
-    // accepté et que le paiement n'a pas eu lieu. Créer l'empreinte dès la
-    // demande ferait afficher au locataire un montant bloqué qui ne l'est pas
-    // — le mensonge exact que l'écran des cautions existe pour éviter.
+    // **Aucun mouvement d'argent n'est créé ici — ni caution, ni
+    // reversement.** Une demande n'immobilise rien et ne doit rien : la carte
+    // du locataire n'est pas engagée tant que le propriétaire n'a pas accepté
+    // et que le paiement n'a pas eu lieu, et rien n'est dû au propriétaire
+    // tant que rien n'est encaissé. Une ligne de reversement née avant
+    // l'argent affirmerait une dette qui n'existe pas — sur une demande
+    // refusée ou expirée, elle ne serait jamais soldée.
     //
-    // Elle naîtra au passage à « payée », dans `transitions.ts`.
-    await tx.insert(reversement).values({
-      reservationId: nouvelle.id,
-      beneficiaireId: ligne.proprietaireId,
-      statut: "planifie",
-      devise: ligne.devise,
-      montant: devis.montantReverse,
-      commissionRetenue: devis.commissionProprietaire,
-      prevuLe: fin,
-    });
+    // Les deux naîtront au passage à « payée », dans `transitions.ts`.
 
     // Le propriétaire est prévenu qu'une demande l'attend — enfilé dans la
     // même transaction : un courriel annonçant une demande qui n'a pas été

@@ -289,6 +289,26 @@ la décision reste un fait comptable : `caution.stripe_payment_intent_id` vide
 et aucune entrée d'exécution — c'est le marqueur honnête de ce qui n'est pas
 encore exécuté.
 
+## 6 ter 0. Annulation — le barème rend l'argent
+
+L'annulation d'une location encaissée applique la politique de l'annonce,
+celle que les conditions générales promettent, dans la transaction même de la
+transition :
+
+| Cas | Attendu |
+|---|---|
+| Locataire annule, **souple**, ≥ 24 h avant | loyer rendu à 100 % ; frais de service conservés ; assurance et livraison rendues |
+| Locataire annule, **modérée**, < 3 jours | loyer rendu de moitié |
+| Locataire annule, **stricte**, < 7 jours | loyer conservé en entier ; seules assurance et livraison reviennent |
+| **Propriétaire** (ou plateforme) annule | tout est rendu, frais de service compris, quel que soit le délai |
+| `paiement.montant_rembourse` | += le total rendu, statut `rembourse` / `rembourse_partiellement` ; ligne « remboursement » sur le relevé |
+| `reversement.montant` | recalculé au prorata du loyer conservé — zéro si tout revient au locataire (soldé « payé » sans virement) |
+| Caution | libérée (comportement existant) |
+| Avec clé Stripe | `refunds.create` sur le paiement d'origine, idempotence `annulation-<réservation>-<montant>` |
+| Charge déjà entamée (litige tranché avant l'annulation) | le cumul s'arrête au montant payé, et ce qui part à la banque est le **delta** réellement écrit — pas le total du barème, que Stripe rejetterait comme supérieur au restant remboursable |
+| Demande jamais payée (refus, expiration, annulation avant paiement) | **aucun mouvement** : ni caution ni reversement n'existent — les deux naissent au passage à « payée » |
+| Ouverture d'un litige avant le retrait | refusée (`statutInadapte`) — comme le sinistre : sans matériel parti ni argent encaissé, il n'y a rien à contester ni à geler |
+
 ## 6 ter bis. Sinistres — déclaration, instruction, dégel croisé
 
 Le sinistre se déclare par les parties (location `en_cours`, `restituee` ou

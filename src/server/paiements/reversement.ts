@@ -174,6 +174,17 @@ export async function envoyerReversement(reservationId: string): Promise<Reponse
   // deux cas, réessayer ne doit pas produire d'erreur.
   if (!ligne) return { ok: true };
 
+  // Un reversement ramené à zéro — annulation entièrement remboursée — n'a
+  // rien à virer : il se solde sur place. Le marquer « payé » sans virement
+  // est exact, puisque tout ce qui était dû (rien) l'a été.
+  if (ligne.montant <= 0) {
+    await db
+      .update(reversement)
+      .set({ statut: "paye", envoyeLe: new Date() })
+      .where(eq(reversement.id, ligne.id));
+    return { ok: true };
+  }
+
   if (ligne.gele) {
     await db
       .update(reversement)

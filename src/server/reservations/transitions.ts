@@ -3,14 +3,26 @@ import "server-only";
 import { and, eq, sql } from "drizzle-orm";
 
 import {
+  remboursementAnnulation,
+  type PolitiqueAnnulation,
+} from "@/domain/reservation/annulation";
+import {
   evaluerTransition,
   type Acteur,
   type Evenement,
   type StatutReservation,
 } from "@/domain/reservation/machine";
 import { db } from "@/server/db";
-import { caution, reservation, reservationTransition, reversement } from "@/server/db/schema";
+import {
+  annonce,
+  caution,
+  paiement,
+  reservation,
+  reservationTransition,
+  reversement,
+} from "@/server/db/schema";
 import { enfilerNotificationsReservation } from "@/server/notifications/file";
+import { executerRemboursementStripe } from "@/server/paiements/remboursement";
 
 /**
  * Le seul chemin par lequel une réservation change d'état — règle 4.
@@ -120,6 +132,10 @@ export async function changerStatut(entree: {
   const suivant = verdict.statutSuivant;
   const colonne = HORODATAGE[suivant];
 
+  // Rempli dans la transaction si l'annulation rend de l'argent ; le geste
+  // bancaire, lui, attend que la transaction soit retombée.
+  let remboursement: { intention: string | null; montant: number } | null = null;
+
   await db.transaction(async (tx) => {
     await tx.execute(sql`
       update reservation
@@ -155,19 +171,48 @@ export async function changerStatut(entree: {
         .where(eq(caution.reservationId, entree.reservationId))
         .limit(1);
 
-      if (!existante) {
-        const [montants] = await tx
-          .select({ caution: reservation.caution, devise: reservation.devise, fin: reservation.fin })
-          .from(reservation)
-          .where(eq(reservation.id, entree.reservationId))
-          .limit(1);
+      const [montants] = await tx
+        .select({
+          caution: reservation.caution,
+          devise: reservation.devise,
+          fin: reservation.fin,
+          proprietaireId: reservation.proprietaireId,
+          montantReverse: reservation.montantReverse,
+          commissionProprietaire: reservation.commissionProprietaire,
+        })
+        .from(reservation)
+        .where(eq(reservation.id, entree.reservationId))
+        .limit(1);
 
+      if (!existante) {
         await tx.insert(caution).values({
           reservationId: entree.reservationId,
           statut: "constituee",
           devise: montants.devise,
           montant: montants.caution,
           liberationPrevueLe: montants.fin,
+        });
+      }
+
+      // Le reversement naît ici, avec la caution : rien n'est dû au
+      // propriétaire tant que rien n'est encaissé. Une ligne née à la
+      // demande affirmerait une dette sans argent — et resterait à jamais
+      // « planifiée » sur une demande refusée ou expirée.
+      const [versementExistant] = await tx
+        .select({ id: reversement.id })
+        .from(reversement)
+        .where(eq(reversement.reservationId, entree.reservationId))
+        .limit(1);
+
+      if (!versementExistant) {
+        await tx.insert(reversement).values({
+          reservationId: entree.reservationId,
+          beneficiaireId: montants.proprietaireId,
+          statut: "planifie",
+          devise: montants.devise,
+          montant: montants.montantReverse,
+          commissionRetenue: montants.commissionProprietaire,
+          prevuLe: montants.fin,
         });
       }
     }
@@ -182,6 +227,113 @@ export async function changerStatut(entree: {
             eq(caution.statut, "constituee"),
           ),
         );
+    }
+
+    // L'annulation d'une location déjà encaissée rend l'argent selon la
+    // politique de l'annonce — c'est la promesse des conditions générales,
+    // et elle tombe dans la même transaction que le statut : une annulation
+    // écrite sans son remboursement serait exactement le mensonge que la
+    // machine existe pour empêcher.
+    if (suivant === "annulee") {
+      const [reglement] = await tx
+        .select({
+          id: paiement.id,
+          montant: paiement.montant,
+          montantRembourse: paiement.montantRembourse,
+          intention: paiement.stripePaymentIntentId,
+        })
+        .from(paiement)
+        .where(eq(paiement.reservationId, entree.reservationId))
+        .limit(1);
+
+      if (reglement) {
+        const [dossier] = await tx
+          .select({
+            debut: reservation.debut,
+            loyer: reservation.loyer,
+            remise: reservation.remise,
+            fraisService: reservation.fraisService,
+            primeAssurance: reservation.primeAssurance,
+            fraisLivraison: reservation.fraisLivraison,
+            politique: annonce.politiqueAnnulation,
+          })
+          .from(reservation)
+          .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
+          .where(eq(reservation.id, entree.reservationId))
+          .limit(1);
+
+        const effets = remboursementAnnulation({
+          politique: dossier.politique as PolitiqueAnnulation,
+          annulePar: entree.acteur,
+          heuresAvantDebut:
+            (dossier.debut.getTime() - Date.now()) / 3_600_000,
+          loyer: dossier.loyer,
+          remise: dossier.remise,
+          fraisService: dossier.fraisService,
+          primeAssurance: dossier.primeAssurance,
+          fraisLivraison: dossier.fraisLivraison,
+        });
+
+        if (effets.total > 0) {
+          const rembourseTotal = Math.min(
+            reglement.montant,
+            reglement.montantRembourse + effets.total,
+          );
+
+          // Ce que la banque doit rendre est le **delta réellement écrit**,
+          // pas le total du barème. Les deux diffèrent dès qu'un
+          // remboursement antérieur a déjà entamé la charge — un litige
+          // tranché en faveur du locataire, par exemple : le plafond mord,
+          // la comptabilité n'ajoute que ce qui reste, et demander à Stripe
+          // le total ferait rejeter l'appel (« montant supérieur au restant
+          // remboursable »). L'échec étant silencieux, le relevé annoncerait
+          // un remboursement que la banque n'a jamais fait.
+          const aRendre = rembourseTotal - reglement.montantRembourse;
+
+          await tx
+            .update(paiement)
+            .set({
+              montantRembourse: rembourseTotal,
+              statut:
+                rembourseTotal >= reglement.montant
+                  ? "rembourse"
+                  : "rembourse_partiellement",
+              modifieLe: new Date(),
+            })
+            .where(eq(paiement.id, reglement.id));
+
+          if (aRendre > 0) {
+            remboursement = { intention: reglement.intention, montant: aRendre };
+          }
+        }
+
+        // Le reversement suit le loyer conservé, au prorata : la commission
+        // garde sa part relative, et un loyer entièrement rendu ne laisse
+        // rien à verser au propriétaire.
+        const loyerNet = Math.max(0, dossier.loyer - Math.max(0, dossier.remise));
+        const [versement] = await tx
+          .select({ id: reversement.id, montant: reversement.montant })
+          .from(reversement)
+          .where(
+            and(
+              eq(reversement.reservationId, entree.reservationId),
+              eq(reversement.statut, "planifie"),
+            ),
+          )
+          .limit(1);
+
+        if (versement) {
+          const conserve =
+            loyerNet > 0
+              ? Math.round((versement.montant * effets.loyerConserve) / loyerNet)
+              : 0;
+
+          await tx
+            .update(reversement)
+            .set({ montant: conserve, modifieLe: new Date() })
+            .where(eq(reversement.id, versement.id));
+        }
+      }
     }
 
     if (suivant === "cloturee") {
@@ -204,6 +356,19 @@ export async function changerStatut(entree: {
         );
     }
   });
+
+  // Le geste bancaire après la transaction, jamais dedans — même régime que
+  // l'exécution d'une décision de litige. Sans clé Stripe, le fait comptable
+  // suffit et le rapprochement verra le reste.
+  if (remboursement !== null) {
+    const { intention, montant } = remboursement;
+    await executerRemboursementStripe({
+      reservationId: entree.reservationId,
+      intention,
+      montant,
+      motif: entree.motif ?? "Annulation de la location",
+    });
+  }
 
   return { ok: true, statut: suivant };
 }

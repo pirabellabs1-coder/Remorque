@@ -62,6 +62,7 @@ export function FormulaireLitige({
         "interdit",
         "dejaOuvert",
         "montantExcessif",
+        "statutInadapte",
         "connexionRequise",
       ];
       setErreur(
