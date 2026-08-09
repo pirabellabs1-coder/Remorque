@@ -60,6 +60,7 @@ export const NAVIGATION_LOCATAIRE = [
     cle: "groupe.compte",
     entrees: [
       { cle: "profil", href: "/compte/profil", icone: "profil" },
+      { cle: "assistance", href: "/compte/assistance", icone: "aide" },
       { cle: "parametres", href: "/compte/parametres", icone: "reglages" },
     ],
   },
@@ -92,6 +93,7 @@ export const NAVIGATION_LOUEUR = [
     cle: "groupe.compte",
     entrees: [
       { cle: "profil", href: "/proprietaire/profil", icone: "profil" },
+      { cle: "assistance", href: "/proprietaire/assistance", icone: "aide" },
       { cle: "parametres", href: "/proprietaire/parametres", icone: "reglages" },
     ],
   },

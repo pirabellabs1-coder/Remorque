@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   jsonb,
   pgEnum,
@@ -114,6 +115,35 @@ export const ticketSupport = pgTable(
     index("ticket_support_statut_idx").on(table.statut, table.creeLe),
     index("ticket_support_demandeur_idx").on(table.demandeurId),
   ],
+);
+
+/**
+ * Fil d'une demande d'assistance.
+ *
+ * Le ticket porte le message d'ouverture ; l'échange qui suit vit ici. Les
+ * séparer plutôt que d'empiler du texte dans une colonne est ce qui permet de
+ * dater la **première réponse** — l'engagement de délai — et de savoir, à
+ * chaque tour, qui a parlé en dernier.
+ *
+ * Le message interne est le seul qui ne parte pas au demandeur : il sert aux
+ * notes de dossier, celles qu'on écrit pour le collègue qui prendra la suite.
+ */
+export const ticketMessage = pgTable(
+  "ticket_message",
+  {
+    id: id(),
+    ticketId: reference("ticket_id")
+      .notNull()
+      .references(() => ticketSupport.id, { onDelete: "cascade" }),
+    auteurId: reference("auteur_id").references(() => utilisateur.id),
+    /** `demandeur` ou `assistance` : la qualité au moment d'écrire. */
+    auteurRole: text("auteur_role").notNull(),
+    corps: text("corps").notNull(),
+    /** Note de dossier, jamais montrée au demandeur. */
+    interne: boolean("interne").notNull().default(false),
+    ...timestamps,
+  },
+  (table) => [index("ticket_message_ticket_idx").on(table.ticketId, table.creeLe)],
 );
 
 /**

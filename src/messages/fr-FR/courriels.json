@@ -109,6 +109,20 @@
         "sujet": "Sinistre {reference} : prise en charge refusée",
         "corps": "Bonjour {prenom},\n\nL'assureur a refusé la prise en charge du sinistre de la location « {annonceTitre} » ({reference}). Le motif du refus figure sur votre espace.\n\nLe dossier est clos : la caution et le reversement reprennent leur cours normal, sauf autre dossier encore ouvert."
       }
+    },
+    "support": {
+      "ouverte": {
+        "sujet": "Votre demande {reference} est bien arrivée",
+        "corps": "Bonjour {prenom},\n\nNous avons bien reçu votre demande « {annonceTitre} », enregistrée sous la référence {reference}.\n\nElle est dans la file de l'assistance et recevra une réponse dans le délai annoncé pour son niveau d'urgence. Inutile de la renvoyer : une seconde demande sur le même sujet nous ferait traiter deux dossiers au lieu d'un."
+      },
+      "reponse": {
+        "sujet": "Réponse à votre demande {reference}",
+        "corps": "Bonjour {prenom},\n\nL'assistance a répondu à votre demande « {annonceTitre} » ({reference}).\n\nConnectez-vous pour lire la réponse et poursuivre l'échange si elle ne suffit pas."
+      },
+      "resolue": {
+        "sujet": "Votre demande {reference} est close",
+        "corps": "Bonjour {prenom},\n\nVotre demande « {annonceTitre} » ({reference}) a été close.\n\nSi le sujet revient, ouvrez une nouvelle demande depuis votre compte : elle repartira avec tout l'historique de celle-ci."
+      }
     }
   }
 }

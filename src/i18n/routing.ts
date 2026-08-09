@@ -71,6 +71,8 @@ export const pathnames = {
   "/compte/avis/[reservation]": "/compte/avis/[reservation]",
   "/compte/litiges/[reservation]": "/compte/litiges/[reservation]",
   "/compte/sinistres/[reservation]": "/compte/sinistres/[reservation]",
+  "/compte/assistance": "/compte/assistance",
+  "/compte/assistance/[demande]": "/compte/assistance/[demande]",
   "/compte/parametres": "/compte/parametres",
 
   /* --- Espace loueur ---------------------------------------------------- */
@@ -85,6 +87,8 @@ export const pathnames = {
   "/proprietaire/messages/[id]": "/proprietaire/messages/[id]",
   "/proprietaire/litiges/[reservation]": "/proprietaire/litiges/[reservation]",
   "/proprietaire/sinistres/[reservation]": "/proprietaire/sinistres/[reservation]",
+  "/proprietaire/assistance": "/proprietaire/assistance",
+  "/proprietaire/assistance/[demande]": "/proprietaire/assistance/[demande]",
   "/proprietaire/revenus": "/proprietaire/revenus",
   "/proprietaire/avis": "/proprietaire/avis",
   "/proprietaire/profil": "/proprietaire/profil",
@@ -103,6 +107,7 @@ export const pathnames = {
   "/admin/pays": "/admin/pays",
   "/admin/contenu": "/admin/contenu",
   "/admin/support": "/admin/support",
+  "/admin/support/[demande]": "/admin/support/[demande]",
   "/admin/statistiques": "/admin/statistiques",
   "/admin/parametres": "/admin/parametres",
   "/admin/journal-audit": "/admin/journal-audit",

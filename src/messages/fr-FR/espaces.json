@@ -14,6 +14,7 @@
         "paiements": "Paiements et cautions",
         "avis": "Avis",
         "profil": "Profil et véhicule",
+        "assistance": "Assistance",
         "parametres": "Paramètres"
       },
       "tableau": {
@@ -268,6 +269,7 @@
         "revenus": "Revenus",
         "avis": "Avis reçus",
         "profil": "Profil et paiements",
+        "assistance": "Assistance",
         "parametres": "Paramètres"
       },
       "tableau": {
@@ -1125,6 +1127,76 @@
           "connexionRequise": "Connectez-vous pour déclarer un sinistre.",
           "echec": "La déclaration n'a pas pu être enregistrée. Réessayez."
         }
+      }
+    },
+    "support": {
+      "titre": "Assistance",
+      "chapo": "Écrivez-nous depuis votre compte : nous voyons vos locations, vous n'avez rien à réexpliquer.",
+      "retourListe": "Retour à mes demandes",
+      "retourFile": "Retour à la file",
+      "mesDemandes": "Mes demandes",
+      "nouvelleDemande": "Poser une question",
+      "nouvelleDemandeAide": "Une demande par sujet : deux questions dans le même message finissent par n'en avoir qu'une de traitée.",
+      "statuts": {
+        "ouvert": "En attente",
+        "en_cours": "En cours",
+        "resolu": "Close"
+      },
+      "priorites": {
+        "basse": "Sans urgence",
+        "normale": "Normale",
+        "haute": "Urgente"
+      },
+      "ouvertLe": "Ouverte le",
+      "location": "Location concernée",
+      "premiereReponse": "Première réponse",
+      "enAttente": "Pas encore répondu",
+      "assigneA": "Suivie par",
+      "fil": "Échange",
+      "parMoi": "Vous",
+      "parAssistance": "Assistance",
+      "noteInterne": "Note interne",
+      "noteInterneAide": "Visible de l'assistance seule : elle ne part pas au demandeur et ne compte pas comme réponse.",
+      "enRetard": "Réponse attendue sous {heures} h",
+      "close": "Demande close le {date}.",
+      "actions": {
+        "prendre": "Prendre en charge",
+        "repondre": "Répondre",
+        "resoudre": "Clore la demande",
+        "renoncer": "Retirer ma demande"
+      },
+      "confirmer": "Envoyer",
+      "annuler": "Annuler",
+      "formulaire": {
+        "sujet": "Sujet",
+        "priorite": "Urgence",
+        "prioriteAide": "Urgente : une location en cours, un départ imminent. Normale : tout le reste.",
+        "priorites": {
+          "basse": "Sans urgence — réponse sous trois jours",
+          "normale": "Normale — réponse sous vingt-quatre heures",
+          "haute": "Urgente — réponse sous quatre heures"
+        },
+        "location": "Location concernée",
+        "locationAide": "Facultatif, mais cela nous évite de vous redemander la référence.",
+        "sansLocation": "Aucune location en particulier",
+        "message": "Votre message",
+        "messageAide": "Dites ce que vous attendiez et ce qui s'est passé : c'est ce qui permet de répondre du premier coup.",
+        "envoyer": "Envoyer la demande",
+        "envoiEnCours": "Envoi…",
+        "erreurs": {
+          "invalide": "Vérifiez le sujet (5 caractères au moins) et le message (20 au moins).",
+          "locationInconnue": "Cette location n'est pas la vôtre.",
+          "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+          "echec": "La demande n'a pas pu être envoyée. Réessayez.",
+          "reessayer": "Deux demandes sont parties en même temps. Renvoyez la vôtre."
+        }
+      },
+      "erreurs": {
+        "invalide": "L'action n'a pas pu être comprise. Rechargez la page.",
+        "interdit": "Cette demande ne vous concerne pas.",
+        "introuvable": "Cette demande n'existe plus.",
+        "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
+        "echec": "L'action n'a pas abouti. Réessayez."
       }
     }
   }

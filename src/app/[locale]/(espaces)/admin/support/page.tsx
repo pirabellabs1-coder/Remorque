@@ -3,6 +3,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { CarteIndicateur, ListeVide } from "@/components/espace/indicateurs";
 import { Cellule, Pastille, Tableau } from "@/components/espace/tableau";
+import { Link } from "@/i18n/navigation";
 import { listerTickets, type TicketSupport } from "@/server/espaces/administration";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -72,7 +73,17 @@ export default async function PageSupport({ params }: Props) {
                   scope="row"
                   className="px-5 py-3.5 text-left font-mono text-sm font-normal whitespace-nowrap"
                 >
-                  {ticket.reference}
+                  {/* La référence mène au dossier : c'est là qu'on prend,
+                      qu'on répond et qu'on clôt. */}
+                  <Link
+                    href={{
+                      pathname: "/admin/support/[demande]",
+                      params: { demande: ticket.id },
+                    }}
+                    className="underline-offset-4 transition-colors hover:text-accent hover:underline"
+                  >
+                    {ticket.reference}
+                  </Link>
                 </th>
                 <Cellule className="max-w-80">{ticket.sujet}</Cellule>
                 <Cellule secondaire attenue>

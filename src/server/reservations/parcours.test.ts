@@ -484,6 +484,12 @@ describe("transitions — règle 4", () => {
     expect(versementApres.montant).toBe(proportionAttendue);
   });
 
+  // Le test le plus lourd du fichier : dépôt, acceptation, encaissement,
+  // écriture du paiement puis annulation — six allers-retours jusqu'à la base
+  // de Stockholm, dont deux transactions à plusieurs écritures. Les trente
+  // secondes communes n'y suffisent pas les jours où la latence monte, et un
+  // dépassement de délai se lit comme un échec d'assertion alors que rien
+  // n'est en cause.
   it("plafonne le remboursement quand la charge a déjà été entamée", async () => {
     // Le cas qui se produit après un litige tranché en faveur du locataire :
     // une partie du paiement lui a déjà été rendue, puis la location est
@@ -544,7 +550,7 @@ describe("transitions — règle 4", () => {
     // s'additionne pas au-delà.
     expect(reglement.rembourse).toBe(dossier.total);
     expect(reglement.statut).toBe("rembourse");
-  });
+  }, 90_000);
 
   it("conserve le motif de la décision", async () => {
     const { resultat, cible } = await demander(1200);

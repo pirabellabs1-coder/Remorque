@@ -327,6 +327,29 @@ l'assureur.
 | Second sinistre pendant le premier | refusé (`dejaDeclare`) |
 | Écrans | les trois espaces lisent le même dossier ; seules les actions diffèrent (instruction : administration seule) |
 
+## 6 quinquies. Assistance — la demande s'ouvre, se répond et se clôt
+
+La page de contact publique reste **sans formulaire**, délibérément. La
+demande d'assistance s'ouvre depuis le compte, où l'usager a une identité, un
+historique et une location à rattacher.
+
+| Vérification | Attendu |
+|---|---|
+| Ouverture (`/compte/assistance`) | `ticket_support` en `ouvert`, référence `AS-<année>-0001`, message d'ouverture **aussi** dans `ticket_message` ; `support.ouverte` au demandeur |
+| Rattachement à la location d'autrui | refusé (`locationInconnue`) |
+| Prise en charge (assistance) | `en_cours`, `assigne_a_id` renseigné, journal d'audit |
+| Réponse | `en_cours` même depuis `ouvert` — répondre vaut prise en charge, sans quoi l'indicateur daterait une réponse sur un dossier « en attente » ; `premiere_reponse_le` figé au premier envoi seulement ; `support.reponse` au demandeur |
+| **Note interne** | reste dans le fil de l'assistance, ne part pas au demandeur, **ne date pas** la première réponse et ne suffit donc pas à autoriser la clôture |
+| Clôture sans aucune réponse | refusée — c'est la règle qui justifie le module : un dossier clos que personne n'a lu sort des indicateurs en annonçant un traitement qui n'a pas eu lieu |
+| Clôture après réponse | `resolu`, `resolu_le`, `support.resolue` au demandeur |
+| Demandeur | relance tant que le dossier vit, retire tant que personne ne s'en est saisi ; ne prend ni ne clôt jamais |
+| Agent qui a écrit pour son propre compte | traité en demandeur — il n'instruit pas sa propre demande |
+| Retard | signalé tant que la première réponse manque **et que le dossier vit** : 4 h en urgente, 24 h en normale, 72 h sans urgence ; une demande retirée cesse d'être en retard |
+| Identité de l'agent | jamais montrée au demandeur — le fil signe « Assistance », et « Suivie par » n'apparaît que côté plateforme |
+| Demande sans fil (canal courriel ou téléphone, jeu d'amorçage) | la colonne `message` sert de message d'ouverture : l'échange ne s'ouvre jamais vide |
+| Espace loueur | `/proprietaire/assistance` existe aussi : un compte sans profil locataire ne franchit pas la garde de `/compte` et serait sinon sans recours |
+| Deux ouvertures simultanées | la référence se calcule sur le rang le plus haut, jamais sur le nombre de lignes ; en cas de collision l'ouverture se rejoue, et l'échec éventuel se dit à l'écran |
+
 ## 6 quater. Tâches quotidiennes
 
 `npm run taches` — à planifier une fois par jour, avant `npm run courriels`.

@@ -1,12 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { db } from "@/server/db";
 import {
   caution,
   facture,
+  notification,
+  paiement,
   reservation,
   reservationTransition,
+  reversement,
 } from "@/server/db/schema";
 
 import { confirmerReservation } from "./confirmation";
@@ -40,13 +43,31 @@ async function dossier() {
   return ligne ?? null;
 }
 
-/** Efface tout ce qu'une confirmation laisse derrière elle. */
+/**
+ * Efface tout ce qu'une confirmation laisse derrière elle.
+ *
+ * La liste suit ce que la transition vers « payée » crée réellement, et elle
+ * doit être révisée quand cette transition change : le reversement y est entré
+ * le jour où il a cessé de naître à la demande. Un mouvement oublié ici ne
+ * casse pas ce test — il casse les invariants de `gel-des-fonds`, qui
+ * découvrent une dette accrochée à une demande jamais payée.
+ */
 async function nettoyer(id: string): Promise<void> {
   await db.delete(facture).where(eq(facture.reservationId, id));
   await db.delete(caution).where(eq(caution.reservationId, id));
+  await db.delete(reversement).where(eq(reversement.reservationId, id));
+  await db.delete(paiement).where(eq(paiement.reservationId, id));
   await db
     .delete(reservationTransition)
     .where(eq(reservationTransition.reservationId, id));
+
+  // Les notifications de l'essai partent aussi : sans cela, `npm run
+  // courriels` afficherait à chaque passage une paire « payée / confirmée »
+  // de plus, sur une réservation qui est retournée à l'état de demande.
+  await db
+    .delete(notification)
+    .where(sql`${notification.donnees}->>'reference' = ${REFERENCE}`);
+
   await db
     .update(reservation)
     .set({

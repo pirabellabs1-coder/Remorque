@@ -5,7 +5,13 @@ import { alias } from "drizzle-orm/pg-core";
 
 import type { StatutReservation } from "@/domain/reservation/machine";
 import type { db } from "@/server/db";
-import { annonce, notification, reservation, utilisateur } from "@/server/db/schema";
+import {
+  annonce,
+  notification,
+  reservation,
+  ticketSupport,
+  utilisateur,
+} from "@/server/db/schema";
 import { destinatairesAcceptant } from "@/server/notifications/preferences";
 
 /**
@@ -189,6 +195,47 @@ export async function enfilerNotificationsSinistre(
       },
     })),
   );
+}
+
+/**
+ * Prévient le demandeur d'un mouvement sur sa demande d'assistance.
+ *
+ * Lui seul : une demande n'a pas deux parties, et l'assistance suit ses
+ * dossiers sur son écran, pas dans sa boîte. Le gabarit d'ouverture sert
+ * d'accusé de réception — c'est ce qui évite la relance de politesse, et donc
+ * une demande de plus dans la file.
+ */
+export async function enfilerNotificationTicket(
+  executeur: Executeur,
+  ticketId: string,
+  gabarit: "ouverte" | "reponse" | "resolue",
+): Promise<void> {
+  const [dossier] = await executeur
+    .select({
+      reference: ticketSupport.reference,
+      sujet: ticketSupport.sujet,
+      demandeurId: ticketSupport.demandeurId,
+      prenom: utilisateur.prenom,
+    })
+    .from(ticketSupport)
+    .leftJoin(utilisateur, eq(utilisateur.id, ticketSupport.demandeurId))
+    .where(eq(ticketSupport.id, ticketId))
+    .limit(1);
+
+  // Une demande arrivée par téléphone n'a pas toujours de compte derrière :
+  // sans destinataire, il n'y a rien à enfiler.
+  if (!dossier?.demandeurId) return;
+
+  await executeur.insert(notification).values({
+    destinataireId: dossier.demandeurId,
+    gabarit: `support.${gabarit}`,
+    donnees: {
+      reference: dossier.reference,
+      annonceTitre: dossier.sujet,
+      prenom: dossier.prenom ?? "",
+      interlocuteur: "",
+    },
+  });
 }
 
 /** Un message reçu prévient l'autre partie — jamais son auteur. */
