@@ -61,7 +61,7 @@ export default async function PageFinance({ params }: Props) {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

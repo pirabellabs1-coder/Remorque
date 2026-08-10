@@ -51,7 +51,7 @@ export default async function PageUtilisateurs({ params, searchParams }: Props) 
   const utilisateurs = tous.filter(FILTRES[actif]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace
         titre={t("titre")}
         sousTitre={t("chapo", { nombre: tous.length })}

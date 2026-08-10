@@ -34,7 +34,7 @@ export default async function PageSupport({ params }: Props) {
   const ouverts = tickets.filter((ticket) => ticket.statut !== "resolu");
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       {tickets.length === 0 ? (

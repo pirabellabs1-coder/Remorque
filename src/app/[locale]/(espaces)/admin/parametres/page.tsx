@@ -27,7 +27,7 @@ export default async function PageParametresAdmin({ params }: Props) {
     "mt-2 h-12 w-full rounded-champ border border-bordure bg-fond-eleve px-4 text-base text-texte";
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       <FormulaireEnregistre action={enregistrerParametres} className="mt-8">

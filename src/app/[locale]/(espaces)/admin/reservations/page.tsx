@@ -38,7 +38,7 @@ export default async function PageReservationsAdmin({ params }: Props) {
     format.dateTime(date, { day: "2-digit", month: "2-digit", year: "2-digit" });
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       <section className="mt-8 rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte)">

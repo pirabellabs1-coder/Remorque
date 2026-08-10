@@ -56,7 +56,7 @@ export default async function PageReservations({ params, searchParams }: Props) 
     Math.max(1, Math.round((fin.getTime() - debut.getTime()) / 86_400_000));
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace
         titre={t("titre")}
         sousTitre={t("chapo", { nombre: toutes.length })}

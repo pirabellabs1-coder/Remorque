@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BoutonAutourDeMoi } from "@/components/annonce/bouton-autour-de-moi";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
+import { FiltreCategorie } from "@/components/recherche/filtre-categorie";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
 import { CATEGORIES } from "@/config/categories";
@@ -143,50 +144,13 @@ export default async function PageRecherche({ params, searchParams }: Props) {
       </div>
 
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
-        {/* Filtres par catégorie, sous forme de pastilles défilables. */}
-        <nav aria-label={t("filtres.categorie")} className="-mx-4 px-4 sm:mx-0 sm:px-0">
-          <ul className="flex gap-2 overflow-x-auto pb-2">
-            <li>
-              <Link
-                href={{
-                  pathname: "/recherche",
-                  query: avec({ categorie: undefined }),
-                }}
-                aria-current={!categorie ? "page" : undefined}
-                className={cn(
-                  "inline-flex whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm transition-colors",
-                  !categorie
-                    ? "border-accent bg-accent text-accent-contraste"
-                    : "border-bordure hover:border-accent",
-                )}
-              >
-                {t("filtres.tout")}
-              </Link>
-            </li>
-            {CATEGORIES.map((entree) => {
-              const actif = entree.slug === slugCategorie;
-              return (
-                <li key={entree.slug}>
-                  <Link
-                    href={{
-                      pathname: "/recherche",
-                      query: avec({ categorie: entree.slug }),
-                    }}
-                    aria-current={actif ? "page" : undefined}
-                    className={cn(
-                      "inline-flex whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm transition-colors",
-                      actif
-                        ? "border-accent bg-accent text-accent-contraste"
-                        : "border-bordure hover:border-accent",
-                    )}
-                  >
-                    {entree.nom}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+        {/* Filtre par catégorie. Onze pastilles en rangée débordaient de
+            l'écran et cachaient les deux tiers du choix derrière une barre de
+            défilement ; une liste déroulante montre tout d'un coup. */}
+        <FiltreCategorie
+          valeur={categorie?.slug ?? ""}
+          parametres={avec({ categorie: undefined })}
+        />
 
         <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
           <div>

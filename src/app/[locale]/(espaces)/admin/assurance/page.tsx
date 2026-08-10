@@ -31,7 +31,7 @@ export default async function PageAssurance({ params }: Props) {
   const devise = sinistres[0]?.devise ?? "EUR";
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       {sinistres.length === 0 ? (

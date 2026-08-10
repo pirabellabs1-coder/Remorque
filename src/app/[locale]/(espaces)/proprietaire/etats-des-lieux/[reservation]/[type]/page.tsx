@@ -58,7 +58,7 @@ export default async function PageConstat({ params }: Props) {
       : [];
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <Link
         href="/proprietaire/etats-des-lieux"
         className="text-sm font-medium text-texte-attenue transition-colors hover:text-accent"

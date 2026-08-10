@@ -28,7 +28,7 @@ export default async function PageFilLocataire({ params }: Props) {
   await marquerLus(fil.id);
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <Link
         href="/compte/messages"
         className="text-sm font-medium text-texte-attenue transition-colors hover:text-accent"

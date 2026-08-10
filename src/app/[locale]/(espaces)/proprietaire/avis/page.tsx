@@ -33,7 +33,7 @@ export default async function PageAvis({ params }: Props) {
   }));
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace
         titre={t("titre")}
         sousTitre={t("chapo", { nombre: avis.length })}

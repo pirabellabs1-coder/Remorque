@@ -29,7 +29,7 @@ export default async function PageAssistanceLoueur({ params }: Props) {
   const locations = await mesLocationsRattachables();
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       {demandes.length > 0 ? (

@@ -49,7 +49,7 @@ export default async function PageParametresLocataire({ params }: Props) {
   ] as const;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       <FormulaireEnregistre action={enregistrerPreferences} className="mt-8">

@@ -52,7 +52,7 @@ export default async function PagePaiements({ params }: Props) {
   );
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       {/* L'explication passe avant le relevé, et non en note de bas de page.

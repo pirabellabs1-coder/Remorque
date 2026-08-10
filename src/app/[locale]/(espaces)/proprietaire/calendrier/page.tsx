@@ -93,7 +93,7 @@ export default async function PageCalendrier({ params, searchParams }: Props) {
   const JOURS = ["L", "M", "M", "J", "V", "S", "D"];
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       <div className="mt-8 rounded-carte border border-bordure bg-fond-eleve p-4 shadow-(--ombre-carte) sm:p-6">

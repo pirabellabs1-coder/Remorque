@@ -19,7 +19,7 @@ export default async function PageMessages({ params }: Props) {
   const fils = await mesFils();
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       {fils.length === 0 ? (

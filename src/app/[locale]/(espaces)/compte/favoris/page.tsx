@@ -27,7 +27,7 @@ export default async function PageFavoris({ params }: Props) {
     format.number(centimes / 100, { ...PRIX_AFFICHE, currency: devise });
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8 sm:py-10">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
       <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
 
       {favoris.length === 0 ? (
