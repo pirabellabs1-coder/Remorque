@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { CATEGORIES } from "@/config/categories";
@@ -252,46 +252,55 @@ export async function enregistrerEtapeCaracteristiques(
 /*  Étape 4 — les photos                                                       */
 /* -------------------------------------------------------------------------- */
 
-export type EtatDepot =
-  | { statut: "inactif" }
-  | { statut: "fait"; deposees: number; refus: string[] };
+export type BilanPhoto = { deposee: boolean; refus: string[] };
 
-export async function deposerPhotos(
-  _precedent: EtatDepot,
-  donnees: FormData,
-): Promise<EtatDepot> {
+/**
+ * Dépose **une** photo.
+ *
+ * Une par requête, et non la sélection entière d'un coup. La première version
+ * envoyait tout dans un seul appel, ce qui échouait précisément quand on en
+ * ajoutait plusieurs : la réduction faite par le navigateur peut ne pas
+ * aboutir — appareil ancien, format que le moteur ne décode pas —, et huit
+ * originaux de téléphone dépassent alors largement la taille de corps
+ * autorisée. La sélection entière était refusée d'un bloc, sans que rien ne
+ * dise pourquoi.
+ *
+ * Une photo par requête supprime le plafond comme sujet, laisse passer les
+ * bonnes quand une seule est mauvaise, et permet de les voir arriver une à
+ * une plutôt que d'attendre devant un écran figé.
+ */
+export async function deposerPhoto(donnees: FormData): Promise<BilanPhoto> {
   const locale = String(donnees.get("locale") ?? "");
   const proprietaireId = await exigerCompte(locale);
   const annonceId = String(donnees.get("annonce") ?? "");
 
-  const fichiers = donnees
-    .getAll("photos")
-    .filter((entree): entree is File => entree instanceof File && entree.size > 0);
+  const fichier = donnees.get("photo");
+  if (!(fichier instanceof File) || fichier.size === 0) {
+    return { deposee: false, refus: [] };
+  }
 
-  if (fichiers.length === 0) return { statut: "inactif" };
-
-  // Le navigateur mesure les images pendant qu'il les réduit ; les redemander
-  // au serveur imposerait de décoder chaque fichier une seconde fois.
-  const mesures = donnees
-    .getAll("dimensions")
-    .map((valeur) => {
-      const [largeur, hauteur] = String(valeur).split("x").map(Number);
-      return { largeur, hauteur };
-    })
-    .filter((mesure) => Number.isFinite(mesure.largeur));
+  // Le navigateur mesure l'image pendant qu'il la réduit ; la redemander au
+  // serveur imposerait de décoder le fichier une seconde fois.
+  const [largeur, hauteur] = String(donnees.get("dimensions") ?? "")
+    .split("x")
+    .map(Number);
 
   const bilan = await ajouterPhotos(
     annonceId,
     proprietaireId,
-    fichiers,
-    mesures,
+    [fichier],
+    Number.isFinite(largeur) ? [{ largeur, hauteur }] : [],
   );
 
-  revalidatePath("/proprietaire/annonces/publier", "page");
+  // `refresh` et non `revalidatePath` : l'écran est en rendu dynamique, il n'y
+  // a donc aucun cache à invalider — il faut seulement que le client reçoive
+  // l'arbre à jour, avec la photo qui vient d'arriver. L'appel précédent
+  // visait par surcroît « /proprietaire/annonces/publier », chemin qui
+  // n'existe pas : la route réelle porte le segment de marché.
+  refresh();
 
   return {
-    statut: "fait",
-    deposees: bilan.deposees,
+    deposee: bilan.deposees > 0,
     // Les refus se répètent quand plusieurs fichiers échouent pour la même
     // raison : une seule mention par motif suffit à l'expliquer.
     refus: [...new Set(bilan.refus)],

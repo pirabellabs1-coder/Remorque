@@ -1,27 +1,35 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useId, useRef, useState, startTransition } from "react";
+import { useId, useRef, useState } from "react";
 
 import { Bouton } from "@/components/ui/bouton";
 import { PHOTOS_MAXIMUM } from "@/domain/annonce/publication";
-import { deposerPhotos, type EtatDepot } from "@/server/annonces/publication-actions";
+import { deposerPhoto } from "@/server/annonces/publication-actions";
 
 /**
  * Dépôt des photos d'une annonce.
  *
- * C'est le seul écran de l'assistant qui exige le navigateur, et pour une
- * raison précise : **les photos sont réduites avant de partir**. Une photo de
- * téléphone pèse aujourd'hui entre trois et huit méga-octets pour une image
- * qui ne sera jamais affichée à plus de 1 600 pixels de large. L'envoyer telle
- * quelle, c'est trois minutes d'attente sur un réseau de campagne, une action
- * serveur qui dépasse sa limite de corps, et un stockage qui gonfle pour rien.
+ * C'est le seul écran de l'assistant qui exige le navigateur, et pour deux
+ * raisons.
  *
- * La réduction se fait donc ici, sur l'appareil : redimensionnement au plus
- * grand côté, réencodage en WebP. Une photo de six méga-octets en fait environ
- * trois cents kilo-octets, sans différence visible à l'écran.
+ * **Les photos sont réduites avant de partir.** Une photo de téléphone pèse
+ * aujourd'hui entre trois et huit méga-octets pour une image qui ne sera
+ * jamais affichée à plus de 1 600 pixels de large. L'envoyer telle quelle,
+ * c'est trois minutes d'attente sur un réseau de campagne et un stockage qui
+ * gonfle pour rien. Redimensionnement au plus grand côté, réencodage en WebP :
+ * six méga-octets deviennent environ trois cents kilo-octets, sans différence
+ * visible à l'écran.
  *
- * Si le navigateur ne sait pas le faire — appareil ancien, image exotique — le
+ * **Elles partent une par une.** La première version envoyait la sélection
+ * entière dans une seule requête, ce qui échouait précisément quand on en
+ * ajoutait plusieurs : la réduction peut ne pas aboutir sur un appareil
+ * ancien, et huit originaux dépassent alors la taille de corps autorisée — la
+ * sélection était refusée d'un bloc, sans explication. Une par une, le plafond
+ * cesse d'être un sujet, une mauvaise photo ne fait plus perdre les bonnes, et
+ * on les voit arriver au lieu d'attendre devant un écran figé.
+ *
+ * Si le navigateur ne sait pas réduire — appareil ancien, format exotique — le
  * fichier d'origine part tel quel. Mieux vaut un envoi lent qu'une photo
  * perdue.
  */
@@ -78,6 +86,11 @@ async function reduire(fichier: File): Promise<Reduite> {
   }
 }
 
+type Avancement =
+  | { phase: "repos" }
+  | { phase: "envoi"; faites: number; total: number }
+  | { phase: "fini"; deposees: number; refus: string[] };
+
 export function DepotPhotos({
   annonceId,
   locale,
@@ -91,38 +104,47 @@ export function DepotPhotos({
   const t = useTranslations("espaces.loueur.publication.photos");
   const identifiant = useId();
   const champ = useRef<HTMLInputElement>(null);
-  const [prepare, setPrepare] = useState(false);
+  const [avancement, setAvancement] = useState<Avancement>({ phase: "repos" });
 
-  const [etat, action, enCours] = useActionState<EtatDepot, FormData>(
-    deposerPhotos,
-    { statut: "inactif" },
-  );
+  async function choisir(selection: FileList | null) {
+    if (!selection || selection.length === 0) return;
 
-  async function choisir(fichiers: FileList | null) {
-    if (!fichiers || fichiers.length === 0) return;
-
-    setPrepare(true);
-
-    const reduites = await Promise.all(
-      Array.from(fichiers).slice(0, restantes).map(reduire),
-    );
-
-    const donnees = new FormData();
-    donnees.set("annonce", annonceId);
-    donnees.set("locale", locale);
-
-    for (const reduite of reduites) {
-      donnees.append("photos", reduite.fichier);
-      donnees.append("dimensions", `${reduite.largeur}x${reduite.hauteur}`);
-    }
-
-    setPrepare(false);
+    // La borne est reprise côté serveur : celle-ci évite seulement de faire
+    // travailler l'appareil sur des photos qui seraient refusées.
+    const fichiers = Array.from(selection).slice(0, restantes);
     if (champ.current) champ.current.value = "";
 
-    startTransition(() => action(donnees));
+    setAvancement({ phase: "envoi", faites: 0, total: fichiers.length });
+
+    const refus = new Set<string>();
+    let deposees = 0;
+
+    for (const [rang, fichier] of fichiers.entries()) {
+      const reduite = await reduire(fichier);
+
+      const donnees = new FormData();
+      donnees.set("annonce", annonceId);
+      donnees.set("locale", locale);
+      donnees.set("photo", reduite.fichier);
+      donnees.set("dimensions", `${reduite.largeur}x${reduite.hauteur}`);
+
+      const bilan = await deposerPhoto(donnees);
+
+      if (bilan.deposee) deposees += 1;
+      for (const motif of bilan.refus) refus.add(motif);
+
+      setAvancement({
+        phase: "envoi",
+        faites: rang + 1,
+        total: fichiers.length,
+      });
+    }
+
+    setAvancement({ phase: "fini", deposees, refus: [...refus] });
   }
 
-  const occupe = prepare || enCours;
+  const occupe = avancement.phase === "envoi";
+  const complet = restantes <= 0;
 
   return (
     <div className="rounded-carte border border-dashed border-bordure bg-fond-eleve p-6 text-center">
@@ -134,7 +156,7 @@ export function DepotPhotos({
         // exactement le geste attendu : on photographie la remorque devant soi.
         accept="image/*"
         multiple
-        disabled={occupe || restantes <= 0}
+        disabled={occupe || complet}
         onChange={(evenement) => void choisir(evenement.target.files)}
         className="sr-only"
       />
@@ -147,7 +169,7 @@ export function DepotPhotos({
       <div className="mt-5 flex justify-center">
         <Bouton
           type="button"
-          disabled={occupe || restantes <= 0}
+          disabled={occupe || complet}
           onClick={() => champ.current?.click()}
         >
           {occupe ? t("envoi") : t("choisir")}
@@ -155,21 +177,30 @@ export function DepotPhotos({
       </div>
 
       <p aria-live="polite" className="mt-4 text-sm">
-        {restantes <= 0 ? (
+        {complet ? (
           <span className="text-texte-attenue">
             {t("complet", { maximum: PHOTOS_MAXIMUM })}
           </span>
         ) : null}
 
-        {etat.statut === "fait" && etat.deposees > 0 ? (
-          <span className="text-succes">
-            {t("deposees", { nombre: etat.deposees })}
+        {avancement.phase === "envoi" ? (
+          <span className="text-texte-attenue">
+            {t("progression", {
+              faites: avancement.faites,
+              total: avancement.total,
+            })}
           </span>
         ) : null}
 
-        {etat.statut === "fait" && etat.refus.length > 0 ? (
+        {avancement.phase === "fini" && avancement.deposees > 0 ? (
+          <span className="text-succes">
+            {t("deposees", { nombre: avancement.deposees })}
+          </span>
+        ) : null}
+
+        {avancement.phase === "fini" && avancement.refus.length > 0 ? (
           <span className="mt-1 block text-danger">
-            {etat.refus.map((motif) => t(`refus.${motif}`)).join(" ")}
+            {avancement.refus.map((motif) => t(`refus.${motif}`)).join(" ")}
           </span>
         ) : null}
       </p>

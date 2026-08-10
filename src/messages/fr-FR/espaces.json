@@ -400,7 +400,6 @@
           "descendre": "Reculer d’un rang",
           "supprimer": "Supprimer cette photo",
           "encore": "Encore {nombre, plural, one {# photo} other {# photos}} avant de continuer.",
-          "stockageFerme": "Le dépôt de photos n’est pas encore ouvert : le stockage n’est pas configuré. Prévenez l’administrateur — les clés se renseignent sans redéploiement du code.",
           "deposer": "Ajouter des photos",
           "consigne": "Jusqu’à {maximum} photos. Elles sont réduites sur votre appareil avant l’envoi : inutile de les redimensionner vous-même.",
           "choisir": "Choisir des photos",
@@ -408,12 +407,12 @@
           "deposees": "{nombre, plural, one {# photo ajoutée} other {# photos ajoutées}}.",
           "complet": "Vous avez atteint le maximum de {maximum} photos.",
           "refus": {
-            "stockageFerme": "Le stockage n’est pas configuré : rien n’a été envoyé.",
             "trop": "Certaines photos dépassent le maximum autorisé et ont été écartées.",
             "type": "Certains fichiers ne sont pas des images reconnues (JPEG, PNG ou WebP).",
             "taille": "Certaines photos sont trop lourdes, même après réduction.",
             "introuvable": "Cette annonce est introuvable."
-          }
+          },
+          "progression": "{faites} sur {total} envoyées…"
         },
         "retrait": {
           "titre": "Où se fait le retrait ?",
