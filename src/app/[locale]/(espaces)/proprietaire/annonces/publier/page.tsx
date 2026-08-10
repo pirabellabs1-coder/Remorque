@@ -11,7 +11,7 @@ import { PAYS, villesDuPays } from "@/config/villes";
 import {
   PHOTOS_MAXIMUM,
   PHOTOS_MINIMUM,
-  etapeDeRang,
+  etapeAffichable,
   etapePrecedente,
   rangDe,
   type Etape,
@@ -74,14 +74,17 @@ export default async function PagePublier({ params, searchParams }: Props) {
     ? await chargerBrouillon(annonceId, compte.id)
     : null;
 
-  // Un identifiant qui ne mène à rien — brouillon d'un autre compte, annonce
-  // supprimée — ramène au début plutôt que d'afficher un écran vide.
-  const rangDemande = Number(lire(parametres.etape) ?? "1");
-  const etape: Etape =
-    brouillon || rangDemande === 1 ? etapeDeRang(rangDemande) : "categorie";
-
   const categorieChoisie =
     brouillon?.categorieSlug ?? lire(parametres.categorie) ?? "";
+
+  // Quelle étape peut être dessinée, compte tenu de ce qu'on a sous la main.
+  // La règle vit dans le domaine, où elle est vérifiée sans base ni réseau —
+  // c'est elle qui décide, et non une condition écrite ici au fil de l'eau.
+  const etape: Etape = etapeAffichable({
+    rangDemande: Number(lire(parametres.etape) ?? "1"),
+    aBrouillon: brouillon !== null,
+    aCategorie: categorieChoisie !== "",
+  });
 
   const precedente = etapePrecedente(etape);
 
@@ -145,14 +148,19 @@ export default async function PagePublier({ params, searchParams }: Props) {
             <EtapeTarifs locale={locale} brouillon={brouillon} />
           ) : null}
 
-          {precedente && brouillon ? (
+          {precedente ? (
             <p className="mt-6">
               <Link
                 href={{
                   pathname: "/proprietaire/annonces/publier",
                   query: {
                     etape: String(rangDe(precedente)),
-                    annonce: brouillon.id,
+                    // À l'étape 2, le brouillon n'existe pas encore : c'est la
+                    // catégorie qui doit repartir dans l'adresse, sans quoi le
+                    // retour perdrait le choix déjà fait.
+                    ...(brouillon
+                      ? { annonce: brouillon.id }
+                      : { categorie: categorieChoisie }),
                   },
                 }}
                 className="text-[0.9375rem] text-texte-attenue underline underline-offset-4 hover:text-texte"
@@ -325,9 +333,21 @@ async function EtapeMateriel({
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 flex flex-wrap gap-3">
         <Bouton type="submit" taille="grand">
           {t("continuer")}
+        </Bouton>
+        {/* Même formulaire, même enregistrement : seule la destination change.
+            Sans ce bouton, s'arrêter en cours de route demandait de deviner
+            qu'on pouvait fermer l'onglet sans rien perdre. */}
+        <Bouton
+          type="submit"
+          name="finir"
+          value="oui"
+          variante="secondaire"
+          taille="grand"
+        >
+          {t("enregistrerBrouillon")}
         </Bouton>
       </div>
     </form>
@@ -476,9 +496,21 @@ async function EtapeCaracteristiques({
         </label>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 flex flex-wrap gap-3">
         <Bouton type="submit" taille="grand">
           {t("continuer")}
+        </Bouton>
+        {/* Même formulaire, même enregistrement : seule la destination change.
+            Sans ce bouton, s'arrêter en cours de route demandait de deviner
+            qu'on pouvait fermer l'onglet sans rien perdre. */}
+        <Bouton
+          type="submit"
+          name="finir"
+          value="oui"
+          variante="secondaire"
+          taille="grand"
+        >
+          {t("enregistrerBrouillon")}
         </Bouton>
       </div>
     </form>
@@ -723,9 +755,21 @@ async function EtapeRetrait({
         </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-8 flex flex-wrap gap-3">
         <Bouton type="submit" taille="grand">
           {t("continuer")}
+        </Bouton>
+        {/* Même formulaire, même enregistrement : seule la destination change.
+            Sans ce bouton, s'arrêter en cours de route demandait de deviner
+            qu'on pouvait fermer l'onglet sans rien perdre. */}
+        <Bouton
+          type="submit"
+          name="finir"
+          value="oui"
+          variante="secondaire"
+          taille="grand"
+        >
+          {t("enregistrerBrouillon")}
         </Bouton>
       </div>
     </form>

@@ -4,6 +4,7 @@ import {
   ETAPES,
   NOMBRE_ETAPES,
   PHOTOS_MINIMUM,
+  etapeAffichable,
   etapeComplete,
   etapeDeRang,
   etapePrecedente,
@@ -61,6 +62,43 @@ describe("parcours des étapes", () => {
     expect(etapeSuivante("tarifs")).toBeNull();
     expect(etapeSuivante("categorie")).toBe("materiel");
     expect(etapePrecedente("tarifs")).toBe("retrait");
+  });
+});
+
+describe("quelle étape afficher", () => {
+  it("laisse passer à l'étape 2 avec la seule catégorie, sans brouillon", () => {
+    // Le défaut que ce test verrouille : le brouillon naît à la *fin* de
+    // l'étape 2. Exiger sa présence pour l'afficher renvoyait à l'étape 1
+    // celui qui venait de choisir sa catégorie, et l'assistant ne démarrait
+    // jamais — « Continuer » paraissait sans effet.
+    expect(
+      etapeAffichable({ rangDemande: 2, aBrouillon: false, aCategorie: true }),
+    ).toBe("materiel");
+  });
+
+  it("refuse l'étape 2 quand aucune catégorie n'a été choisie", () => {
+    expect(
+      etapeAffichable({ rangDemande: 2, aBrouillon: false, aCategorie: false }),
+    ).toBe("categorie");
+  });
+
+  it("exige un brouillon au-delà de l'étape 2", () => {
+    for (const rang of [3, 4, 5, 6]) {
+      expect(
+        etapeAffichable({ rangDemande: rang, aBrouillon: false, aCategorie: true }),
+      ).toBe("categorie");
+      expect(
+        etapeAffichable({ rangDemande: rang, aBrouillon: true, aCategorie: true }),
+      ).toBe(etapeDeRang(rang));
+    }
+  });
+
+  it("ramène au début pour un rang aberrant, même avec un brouillon", () => {
+    for (const rang of [0, -3, 7, 99, 1.5, Number.NaN]) {
+      expect(
+        etapeAffichable({ rangDemande: rang, aBrouillon: true, aCategorie: true }),
+      ).toBe("categorie");
+    }
   });
 });
 

@@ -60,6 +60,45 @@ export function etapePrecedente(etape: Etape): Etape | null {
 }
 
 /**
+ * Quelle étape afficher, pour un rang demandé dans l'adresse.
+ *
+ * Le rang vient du navigateur : il peut désigner une étape qu'on n'a pas les
+ * moyens de dessiner. Trois cas, et un seul repli.
+ *
+ * Le piège est à l'étape 2. Le brouillon naît à la *fin* de cette étape —
+ * la ligne `annonce` exige une ville, une position et une devise, qu'on ne
+ * connaît pas avant. Exiger un brouillon pour l'afficher renvoie donc à
+ * l'étape 1 celui qui vient tout juste de choisir sa catégorie, et l'assistant
+ * ne démarre jamais : le bouton « Continuer » semble sans effet alors qu'il a
+ * bien fonctionné. C'est exactement le défaut que cette fonction existe pour
+ * rendre impossible, et que les tests ci-contre verrouillent.
+ */
+export function etapeAffichable(contexte: {
+  rangDemande: number;
+  /** Un brouillon existe déjà et appartient au demandeur. */
+  aBrouillon: boolean;
+  /** Une catégorie a été choisie, fût-ce seulement dans l'adresse. */
+  aCategorie: boolean;
+}): Etape {
+  const { rangDemande, aBrouillon, aCategorie } = contexte;
+
+  if (!Number.isInteger(rangDemande) || rangDemande < 1 || rangDemande > NOMBRE_ETAPES) {
+    return "categorie";
+  }
+
+  if (rangDemande === 1) return "categorie";
+
+  // Étape 2 : la catégorie suffit, elle voyage dans l'adresse.
+  if (rangDemande === 2) {
+    return aCategorie || aBrouillon ? "materiel" : "categorie";
+  }
+
+  // Au-delà, il faut de quoi enregistrer : sans brouillon, il n'y a rien à
+  // remplir ni où le mettre.
+  return aBrouillon ? etapeDeRang(rangDemande) : "categorie";
+}
+
+/**
  * L'état d'une annonce en cours de rédaction, vu du domaine.
  *
  * Volontairement plat et sans dépendance : ce sont les colonnes de `annonce`

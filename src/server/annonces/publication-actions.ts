@@ -62,6 +62,25 @@ function adresseEtape(
   throw new Error("inatteignable");
 }
 
+/**
+ * Sortie vers la liste des annonces, brouillon conservé.
+ *
+ * Chaque étape enregistre avant de rediriger : s'arrêter ne perd donc jamais
+ * ce qui vient d'être saisi. Le bouton n'existe que pour dire *où l'on va* —
+ * sans lui, quitter l'assistant demandait de deviner qu'on pouvait fermer
+ * l'onglet sans rien perdre.
+ */
+function adresseListe(locale: string): never {
+  redirect({
+    href: "/proprietaire/annonces",
+    locale: locale as Market,
+  });
+  throw new Error("inatteignable");
+}
+
+/** L'usager a-t-il demandé à s'arrêter là plutôt qu'à continuer ? */
+const finirPlusTard = (donnees: FormData) => donnees.get("finir") === "oui";
+
 /** Le compte connecté, ou retour à l'accueil de l'espace. */
 async function exigerCompte(locale: string): Promise<string> {
   const compte = await compteConnecte();
@@ -142,6 +161,7 @@ export async function enregistrerEtapeMateriel(
       ...analyse.data,
     });
 
+    if (finirPlusTard(donnees)) adresseListe(locale);
     adresseEtape(locale, { etape: "3", annonce: cree });
   }
 
@@ -153,6 +173,7 @@ export async function enregistrerEtapeMateriel(
 
   if (!enregistre) adresseEtape(locale, { etape: "1", erreur: "introuvable" });
 
+  if (finirPlusTard(donnees)) adresseListe(locale);
   adresseEtape(locale, { etape: "3", annonce: annonceId });
 }
 
@@ -223,6 +244,7 @@ export async function enregistrerEtapeCaracteristiques(
 
   if (!enregistre) adresseEtape(locale, { etape: "1", erreur: "introuvable" });
 
+  if (finirPlusTard(donnees)) adresseListe(locale);
   adresseEtape(locale, { etape: "4", annonce: annonceId });
 }
 
@@ -352,6 +374,7 @@ export async function enregistrerEtapeRetrait(
 
   if (!enregistre) adresseEtape(locale, { etape: "1", erreur: "introuvable" });
 
+  if (finirPlusTard(donnees)) adresseListe(locale);
   adresseEtape(locale, { etape: "6", annonce: annonceId });
 }
 
