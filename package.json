@@ -7,6 +7,7 @@
     "courriels": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/expedier-courriels.ts",
     "db:demo": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/amorcer-demonstration.ts",
     "db:generate": "drizzle-kit generate",
+    "db:vitrine": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/amorcer-vitrine.ts",
     "db:migrate": "drizzle-kit migrate",
     "db:prepare": "tsx --env-file-if-exists=.env.local scripts/preparer-base.ts",
     "db:push": "drizzle-kit push",
@@ -24,6 +25,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1106.0",
     "better-auth": "^1.6.25",
     "drizzle-orm": "^0.45.2",
     "next": "16.2.12",

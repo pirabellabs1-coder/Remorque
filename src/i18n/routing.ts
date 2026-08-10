@@ -78,6 +78,7 @@ export const pathnames = {
   /* --- Espace loueur ---------------------------------------------------- */
   "/proprietaire": "/proprietaire",
   "/proprietaire/annonces": "/proprietaire/annonces",
+  "/proprietaire/annonces/publier": "/proprietaire/annonces/publier",
   "/proprietaire/calendrier": "/proprietaire/calendrier",
   "/proprietaire/reservations": "/proprietaire/reservations",
   "/proprietaire/etats-des-lieux": "/proprietaire/etats-des-lieux",

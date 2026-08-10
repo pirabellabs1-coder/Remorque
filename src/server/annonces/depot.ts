@@ -49,7 +49,7 @@ export type BrouillonAnnonce = {
   politiqueAnnulation: "souple" | "moderee" | "stricte";
 };
 
-function slugifier(valeur: string): string {
+export function slugifier(valeur: string): string {
   return valeur
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
@@ -66,7 +66,10 @@ function slugifier(valeur: string): string {
  * Deux « benne 750 kg » à Bruxelles donnent donc `benne-750-kg` et
  * `benne-750-kg-2`.
  */
-async function slugDisponible(villeSlug: string, base: string): Promise<string> {
+export async function slugDisponible(
+  villeSlug: string,
+  base: string,
+): Promise<string> {
   const existants = new Set(
     (
       await db
@@ -130,17 +133,6 @@ export async function listerAnnoncesDetaillees() {
         : undefined,
     };
   });
-}
-
-/**
- * Annonces du loueur connecté.
- *
- * Tant que l'authentification n'est pas branchée, le loueur voit tout le
- * catalogue. Le filtre sur l'identifiant du propriétaire viendra avec la
- * session — c'est une clause `where`, à l'endroit prévu.
- */
-export async function annoncesDuProprietaire(): Promise<AnnonceResume[]> {
-  return listerAnnonces();
 }
 
 export async function trouverParSlug(

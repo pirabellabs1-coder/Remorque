@@ -55,10 +55,28 @@ const schemaServeur = z.object({
   RESEND_API_KEY: z.string().startsWith("re_").optional(),
   COURRIEL_EXPEDITEUR: z.string().email().optional(),
 
+  /**
+   * Stockage objet des photos d'annonces et d'états des lieux.
+   *
+   * Les quatre premières valeurs vont ensemble : sans elles, le dépôt de
+   * photos se ferme et le dit, plutôt que d'accepter un fichier pour le perdre
+   * ensuite. C'est la même discipline que pour Stripe et Resend.
+   */
   S3_ENDPOINT: z.string().url().optional(),
   S3_BUCKET: z.string().optional(),
   S3_ACCESS_KEY_ID: z.string().optional(),
   S3_SECRET_ACCESS_KEY: z.string().optional(),
+  /**
+   * Région du magasin. Elle entre dans la signature des requêtes : une région
+   * qui ne correspond pas à celle du projet fait échouer chaque dépôt avec une
+   * erreur d'authentification, message trompeur s'il en est.
+   */
+  S3_REGION: z.string().default("eu-north-1"),
+  /**
+   * Racine publique des objets déposés, si elle ne se déduit pas de
+   * `S3_ENDPOINT`. Sur Supabase, elle s'en déduit — voir `urlPublique`.
+   */
+  S3_URL_PUBLIQUE: z.string().url().optional(),
 });
 
 type EnvServeur = z.infer<typeof schemaServeur>;
