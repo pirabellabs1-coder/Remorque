@@ -4,6 +4,7 @@ import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { ListeVide } from "@/components/espace/indicateurs";
 import { Bouton } from "@/components/ui/bouton";
 import { Illustration } from "@/components/ui/illustration";
+import { marchePourPays } from "@/config/markets";
 import { NOMBRE_ETAPES } from "@/domain/annonce/publication";
 import { Link } from "@/i18n/navigation";
 import { PRIX_AFFICHE } from "@/lib/cn";
@@ -148,6 +149,11 @@ export default async function PageAnnonces({ params }: Props) {
                     pathname: "/remorque/[ville]/[slug]",
                     params: { ville: annonce.villeSlug, slug: annonce.slug },
                   }}
+                  // Une annonce se consulte sur le marché de son pays. Sans
+                  // cela, le lien vers une remorque belge, suivi depuis le
+                  // site français, mène à une page introuvable — le catalogue
+                  // étant cloisonné par pays.
+                  locale={marchePourPays(annonce.pays)}
                   className="shrink-0 rounded-champ border border-bordure px-3 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
                 >
                   {t("annonces.voir")}

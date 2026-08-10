@@ -98,6 +98,24 @@ export function getMarket(market: Market): MarketDefinition {
   return MARKETS[market];
 }
 
+/**
+ * Le marché ouvert qui sert un pays donné.
+ *
+ * Une annonce appartient au marché de son pays, jamais à celui que son
+ * propriétaire consultait au moment de la publier. Sans cette correspondance,
+ * un loueur qui met en ligne depuis le site français une remorque garée à
+ * Charleroi est renvoyé, après publication, vers une adresse française où le
+ * cloisonnement par pays rend son annonce introuvable : elle existe, elle est
+ * publiée, et il voit une page « introuvable ».
+ *
+ * Rend `undefined` pour un pays dont le marché n'est pas encore ouvert —
+ * l'appelant décide alors quoi faire, plutôt que d'hériter d'un repli
+ * silencieux qui le ramènerait au même défaut.
+ */
+export function marchePourPays(code: string): Market | undefined {
+  return ENABLED_MARKETS.find((marche) => MARKETS[marche].country === code);
+}
+
 export function isMarket(value: string): value is Market {
   return (ALL_MARKETS as string[]).includes(value);
 }

@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { CATEGORIES } from "@/config/categories";
 import { VILLES } from "@/config/villes";
-import type { Market } from "@/config/markets";
+import { marchePourPays, type Market } from "@/config/markets";
 import { rangDe } from "@/domain/annonce/publication";
 import { redirect } from "@/i18n/navigation";
 import { compteConnecte } from "@/server/authentification/session";
@@ -458,11 +458,25 @@ export async function enregistrerEtapeTarifs(donnees: FormData): Promise<void> {
   // pages pré-générées continueraient de servir l'ancien catalogue.
   revalidatePath("/", "layout");
 
+  // Le marché suit le pays de l'annonce, pas celui que le propriétaire
+  // consultait. Publier depuis le site français une remorque garée à
+  // Charleroi renvoyait vers une adresse française, où le cloisonnement par
+  // pays rend l'annonce introuvable : elle était bien publiée, et l'écran
+  // affichait « page introuvable ».
+  const marche = marchePourPays(resultat.pays);
+
+  if (!marche) {
+    // Pays dont le marché n'est pas encore ouvert : l'annonce existe, mais
+    // aucune adresse publique ne la sert. On ramène à la liste plutôt que
+    // vers un 404, et le parc en rend compte.
+    adresseListe(locale);
+  }
+
   redirect({
     href: {
       pathname: "/remorque/[ville]/[slug]",
       params: { ville: resultat.villeSlug, slug: resultat.slug },
     },
-    locale: locale as Market,
+    locale: marche,
   });
 }

@@ -46,6 +46,8 @@ export type Brouillon = {
   categorieSlug: string | null;
   villeSlug: string;
   slug: string;
+  /** Code ISO du pays de l'annonce : il désigne son marché. */
+  pays: string;
   devise: string;
   bornesCaution: BornesCaution;
   photos: { id: string; url: string; ordre: number }[];
@@ -115,6 +117,7 @@ export async function chargerBrouillon(
       categorieSlug: tableCategorie.slug,
       villeSlug: tableAnnonce.villeSlug,
       slug: tableAnnonce.slug,
+      pays: tablePays.code,
       devise: tableAnnonce.devise,
       cautionMinimum: tablePays.cautionMinimum,
       cautionMaximum: tablePays.cautionMaximum,
@@ -178,6 +181,7 @@ export async function chargerBrouillon(
     categorieSlug: ligne.categorieSlug,
     villeSlug: ligne.villeSlug,
     slug: ligne.slug,
+    pays: ligne.pays,
     devise: ligne.devise,
     bornesCaution: {
       minimum: ligne.cautionMinimum,
@@ -499,7 +503,11 @@ export async function enregistrerTarifs(
 }
 
 export type ResultatPublication =
-  | { statut: "publiee"; villeSlug: string; slug: string }
+  /**
+   * Le pays voyage avec l'adresse : c'est lui qui désigne le marché sur lequel
+   * l'annonce est visible, et non celui que le propriétaire consultait.
+   */
+  | { statut: "publiee"; villeSlug: string; slug: string; pays: string }
   | { statut: "incomplete"; etape: Etape }
   | { statut: "introuvable" };
 
@@ -544,6 +552,7 @@ export async function publierBrouillon(
     statut: "publiee",
     villeSlug: brouillon.villeSlug,
     slug: brouillon.slug,
+    pays: brouillon.pays,
   };
 }
 
@@ -583,6 +592,9 @@ export async function annoncesPublieesDuProprietaire(proprietaireId: string) {
       villeSlug: tableAnnonce.villeSlug,
       slug: tableAnnonce.slug,
       statut: tableAnnonce.statut,
+      // Le pays désigne le marché sur lequel l'annonce est visible : un lien
+      // vers une annonce belge depuis le marché français mène à un 404.
+      pays: tablePays.code,
       devise: tableAnnonce.devise,
       ptacKg: tableAnnonce.ptacKg,
       chargeUtileKg: tableAnnonce.chargeUtileKg,
@@ -602,6 +614,7 @@ export async function annoncesPublieesDuProprietaire(proprietaireId: string) {
       )`,
     })
     .from(tableAnnonce)
+    .innerJoin(tablePays, eq(tablePays.id, tableAnnonce.paysId))
     .where(
       and(
         eq(tableAnnonce.proprietaireId, proprietaireId),
