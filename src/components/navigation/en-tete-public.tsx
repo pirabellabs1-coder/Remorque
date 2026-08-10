@@ -1,16 +1,17 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState, type ComponentProps } from "react";
 
 import { Logo } from "@/components/navigation/logo";
+import type { Market } from "@/config/markets";
 import {
   CATEGORIES_EN_AVANT,
   LIENS_AIDE,
   LIENS_LOCATAIRE,
   LIENS_PROPRIETAIRE,
   OUTILS,
-  VILLES_EN_AVANT,
+  villesEnAvant,
 } from "@/components/navigation/menu";
 import { Bouton } from "@/components/ui/bouton";
 import { Illustration } from "@/components/ui/illustration";
@@ -298,6 +299,8 @@ function TitreColonne({ children }: { children: React.ReactNode }) {
 }
 
 function PanneauLouer() {
+  // Le marché courant : le panneau ne propose que les villes qu'il dessert.
+  const marche = useLocale() as Market;
   const t = useTranslations("menu");
 
   return (
@@ -341,7 +344,7 @@ function PanneauLouer() {
         <div className="mt-6 border-t border-bordure pt-5">
           <TitreColonne>{t("villes")}</TitreColonne>
           <ul className="mt-4 flex flex-wrap gap-1.5">
-            {VILLES_EN_AVANT.map((ville) => (
+            {villesEnAvant(marche).map((ville) => (
               <li key={ville.slug}>
                 <Link
                   href={{

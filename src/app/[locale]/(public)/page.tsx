@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/typographie";
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
-import type { Market } from "@/config/markets";
-import { PAYS, villesDuPays } from "@/config/villes";
+import { getMarket, type Market } from "@/config/markets";
+import { villesDuPays, type CodePays } from "@/config/villes";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { metadonneesPage } from "@/lib/metadonnees";
@@ -26,7 +26,14 @@ import { annoncesEnVitrine } from "@/server/annonces/catalogue";
  * Villes montrées par pays sur l'accueil. Les autres restent atteignables par
  * la recherche et par le maillage des villes voisines, sur chaque page locale.
  */
-const VILLES_PAR_PAYS = 12;
+/**
+ * Villes listées sur l'accueil.
+ *
+ * Elles sont toutes du pays servi : trente liens vers des pages locales du
+ * même marché valent mieux que douze par pays dont onze douzièmes mènent à un
+ * catalogue vide pour ce visiteur.
+ */
+const VILLES_ACCUEIL = 32;
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -238,34 +245,30 @@ export default async function PageAccueil({ params }: Props) {
             <p className="mt-5 text-texte-attenue">{t("villes.mention")}</p>
           </div>
 
-          <div className="mt-12 space-y-10">
-            {PAYS.map((pays) => (
-              <section key={pays}>
-                <div className="flex items-center gap-4">
-                  <h3 className="text-[0.6875rem] font-semibold tracking-[0.14em] text-texte-attenue uppercase">
-                    {t(`villes.pays.${pays}`)}
-                  </h3>
-                  <span aria-hidden className="h-px flex-1 bg-bordure" />
-                </div>
-
-                <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                  {villesDuPays(pays)
-                    .slice(0, VILLES_PAR_PAYS)
-                    .map((ville) => (
-                      <li key={ville.slug}>
-                        <TuileLien
-                          href={{
-                            pathname: "/location-remorque/[ville]",
-                            params: { ville: ville.slug },
-                          }}
-                        >
-                          {ville.nom}
-                        </TuileLien>
-                      </li>
-                    ))}
-                </ul>
-              </section>
-            ))}
+          {/* Les villes du pays servi, et elles seules. Le catalogue étant
+              cloisonné par pays (règle 7), afficher Anvers à un visiteur
+              français revient à lui promettre un catalogue qu'il ne verra
+              pas — et à diluer le maillage interne de chaque marché sur des
+              pages qui ne lui répondent pas. En contrepartie, on en montre
+              davantage : ce sont ces liens qui portent le référencement
+              local. */}
+          <div className="mt-12">
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {villesDuPays(getMarket(locale as Market).country as CodePays)
+                .slice(0, VILLES_ACCUEIL)
+                .map((ville) => (
+                  <li key={ville.slug}>
+                    <TuileLien
+                      href={{
+                        pathname: "/location-remorque/[ville]",
+                        params: { ville: ville.slug },
+                      }}
+                    >
+                      {ville.nom}
+                    </TuileLien>
+                  </li>
+                ))}
+            </ul>
           </div>
         </div>
       </section>

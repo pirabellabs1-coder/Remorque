@@ -1,5 +1,6 @@
 import { CATEGORIES } from "@/config/categories";
-import { VILLES } from "@/config/villes";
+import { getMarket, type Market } from "@/config/markets";
+import { villesDuPays, type CodePays } from "@/config/villes";
 import type { pathnames } from "@/i18n/routing";
 
 /**
@@ -26,8 +27,18 @@ export type LienMenu = {
   href: AdresseStatique;
 };
 
-/** Les huit premières villes du catalogue, pour le maillage depuis l'en-tête. */
-export const VILLES_EN_AVANT = VILLES.slice(0, 8);
+/**
+ * Villes mises en avant dans l'en-tête, pour le maillage interne.
+ *
+ * Elles dépendent du marché : le catalogue étant cloisonné par pays
+ * (règle 7), proposer Anvers à un visiteur français l'envoie sur une page
+ * dont le catalogue lui est fermé. La liste était figée sur les huit
+ * premières villes du fichier — c'est-à-dire sur la Belgique, qui ouvre le
+ * tableau.
+ */
+export function villesEnAvant(marche: Market) {
+  return villesDuPays(getMarket(marche).country as CodePays).slice(0, 8);
+}
 
 /** Les six catégories les plus recherchées, en tête de colonne. */
 export const CATEGORIES_EN_AVANT = CATEGORIES.slice(0, 6);

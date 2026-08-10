@@ -7,7 +7,8 @@ import { Bouton } from "@/components/ui/bouton";
 import { Champ } from "@/components/ui/champ";
 import { Illustration } from "@/components/ui/illustration";
 import { CATEGORIES } from "@/config/categories";
-import { PAYS, villesDuPays } from "@/config/villes";
+import { getMarket, type Market } from "@/config/markets";
+import { villesDuPays, type CodePays } from "@/config/villes";
 import {
   PHOTOS_MAXIMUM,
   PHOTOS_MINIMUM,
@@ -295,6 +296,12 @@ async function EtapeMateriel({
           <label htmlFor="ville-annonce" className="text-sm font-medium">
             {t("ville")}
           </label>
+          {/* Les villes du marché courant, sans choix de pays. Proposer
+              l'Europe entière laissait publier depuis le site français une
+              remorque garée à Charleroi : elle partait alors sur le marché
+              belge, où son propriétaire ne la retrouvait plus. Le pays n'est
+              pas une question posée au loueur, c'est une conséquence de
+              l'endroit d'où il publie. */}
           <select
             id="ville-annonce"
             name="villeSlug"
@@ -302,15 +309,13 @@ async function EtapeMateriel({
             defaultValue={brouillon?.villeSlug}
             className={champ}
           >
-            {PAYS.map((pays) => (
-              <optgroup key={pays} label={pays}>
-                {villesDuPays(pays).map((ville) => (
-                  <option key={ville.slug} value={ville.slug}>
-                    {ville.nom}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
+            {villesDuPays(getMarket(locale as Market).country as CodePays).map(
+              (ville) => (
+                <option key={ville.slug} value={ville.slug}>
+                  {ville.nom} ({ville.province})
+                </option>
+              ),
+            )}
           </select>
           <p className="mt-2 text-sm text-texte-attenue">{t("villeAide")}</p>
         </div>
