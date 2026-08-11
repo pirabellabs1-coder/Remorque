@@ -329,6 +329,12 @@ export const chercher = cache(async function chercher(options: {
     conditions.push(sql`${annonce.chargeUtileKg} >= ${chargeMin}`);
   }
 
+  // Les bornes partent en chaîne datée puis sont typées en SQL, et non en
+  // objet `Date` : dans un fragment brut, Drizzle ne convertit pas les valeurs
+  // — il ne le fait que pour les colonnes qu'il connaît —, et le pilote refuse
+  // une `Date` telle quelle. La recherche par période répondait donc par une
+  // erreur 500 dès qu'on saisissait deux dates.
+  //
   // Écarte les annonces déjà prises sur la période demandée. La liste des
   // statuts qui bloquent vient du domaine, partagée avec la validation d'une
   // demande : deux définitions de « la remorque est prise » finiraient par
@@ -340,8 +346,8 @@ export const chercher = cache(async function chercher(options: {
         and r.statut in ${sql.raw(
           `(${STATUTS_OCCUPANTS.map((statut) => `'${statut}'`).join(",")})`,
         )}
-        and r.debut <= ${disponibleAu}
-        and r.fin >= ${disponibleDu}
+        and r.debut <= ${disponibleAu.toISOString()}::timestamptz
+        and r.fin >= ${disponibleDu.toISOString()}::timestamptz
     )`);
   }
 

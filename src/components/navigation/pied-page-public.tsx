@@ -65,8 +65,11 @@ export function PiedPagePublic() {
             page profonde. */}
         <div className="md:col-span-1">
           {/* Sur fond profond : `clair` inverse l'encre du mot, qui s'y
-              perdait entièrement. */}
-          <Logo clair />
+              perdait entièrement. Et il ramène à l'accueil — un logo qui ne
+              clique pas déçoit un geste que tout le monde fait. */}
+          <Link href="/" aria-label={t("navigation.accueil")} className="inline-block">
+            <Logo clair />
+          </Link>
           <p className="mt-4 text-sm leading-relaxed text-encre-texte-attenue">
             {t("piedPage.presentation")}
           </p>
