@@ -764,7 +764,7 @@
     "situation": {
       "titre": "Où se trouve le matériel",
       "alternative": "Carte situant le matériel à {quartier}, {ville}",
-      "imprecision": "Zone approximative d’environ {rayon} km. L’adresse exacte vous est communiquée une fois la réservation confirmée.",
+      "imprecision": "Zone approximative d’environ {rayon, number} km. L’adresse exacte vous est communiquée une fois la réservation confirmée.",
       "fondAbsent": "Le matériel se trouve à {quartier}, {ville}. Le fond de carte n’est pas encore configuré."
     }
   },
