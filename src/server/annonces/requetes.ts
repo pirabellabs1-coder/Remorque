@@ -6,6 +6,7 @@ import { and, eq, sql } from "drizzle-orm";
 
 import type { SlugCategorie } from "@/config/categories";
 import { trouverVille } from "@/config/villes";
+import { STATUTS_OCCUPANTS } from "@/domain/reservation/occupation";
 import { db } from "@/server/db";
 import {
   annonce,
@@ -273,6 +274,9 @@ export const chercher = cache(async function chercher(options: {
   freineeSeulement?: boolean;
   /** N'afficher que les annonces réservables sans accord préalable. */
   instantaneeSeulement?: boolean;
+  /** Période souhaitée : les annonces déjà prises en sont écartées. */
+  disponibleDu?: Date;
+  disponibleAu?: Date;
 }): Promise<LigneResume[]> {
   const {
     villeSlug,
@@ -286,6 +290,8 @@ export const chercher = cache(async function chercher(options: {
     chargeMin,
     freineeSeulement,
     instantaneeSeulement,
+    disponibleDu,
+    disponibleAu,
   } = options;
 
   // Le point de référence est la position du visiteur quand il l'a donnée,
@@ -321,6 +327,22 @@ export const chercher = cache(async function chercher(options: {
   // poids de la remorque elle-même et induit en erreur.
   if (chargeMin !== undefined) {
     conditions.push(sql`${annonce.chargeUtileKg} >= ${chargeMin}`);
+  }
+
+  // Écarte les annonces déjà prises sur la période demandée. La liste des
+  // statuts qui bloquent vient du domaine, partagée avec la validation d'une
+  // demande : deux définitions de « la remorque est prise » finiraient par
+  // diverger, et l'on annoncerait libre ce qui serait refusé à la réservation.
+  if (disponibleDu && disponibleAu) {
+    conditions.push(sql`not exists (
+      select 1 from reservation r
+      where r.annonce_id = ${annonce.id}
+        and r.statut in ${sql.raw(
+          `(${STATUTS_OCCUPANTS.map((statut) => `'${statut}'`).join(",")})`,
+        )}
+        and r.debut <= ${disponibleAu}
+        and r.fin >= ${disponibleDu}
+    )`);
   }
 
   if (freineeSeulement) conditions.push(eq(annonce.freinee, true));

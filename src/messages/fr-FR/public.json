@@ -96,7 +96,11 @@
     "formulaire": {
       "ou": "Où ?",
       "ouPlaceholder": "Ville ou code postal",
-      "rechercher": "Rechercher"
+      "rechercher": "Rechercher",
+      "type": "Type de remorque",
+      "toutes": "Toutes",
+      "retrait": "Retrait",
+      "retour": "Retour"
     },
     "metaTitre": "Rechercher une remorque à louer",
     "metaDescription": "Trouvez une remorque disponible près de chez vous, aux dates qui vous arrangent. Paiement sécurisé, caution non débitée.",

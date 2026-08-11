@@ -100,6 +100,19 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     ? chargeDemandee
     : undefined;
 
+  // Période demandée. Les deux dates ne valent qu'ensemble : une période
+  // ouverte d'un côté ne dit rien d'une disponibilité.
+  const duBrut = lire(parametres.du);
+  const auBrut = lire(parametres.au);
+  const disponibleDu = duBrut ? new Date(duBrut) : undefined;
+  const disponibleAu = auBrut ? new Date(auBrut) : undefined;
+  const periodeValide =
+    disponibleDu !== undefined &&
+    disponibleAu !== undefined &&
+    !Number.isNaN(disponibleDu.getTime()) &&
+    !Number.isNaN(disponibleAu.getTime()) &&
+    disponibleDu <= disponibleAu;
+
   const freineeSeulement = lire(parametres.freinee) === "oui";
   const instantaneeSeulement = lire(parametres.instantanee) === "oui";
 
@@ -111,6 +124,8 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     chargeMin,
     freineeSeulement,
     instantaneeSeulement,
+    disponibleDu: periodeValide ? disponibleDu : undefined,
+    disponibleAu: periodeValide ? disponibleAu : undefined,
     // Une position réelle ordonne par distance : c'est ce qu'on demande en
     // cliquant « autour de moi ».
     tri: position && triDemande === undefined ? "distance" : tri,
@@ -168,6 +183,10 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     if (chargeMin) requete.chargeMin = String(chargeMin);
     if (freineeSeulement) requete.freinee = "oui";
     if (instantaneeSeulement) requete.instantanee = "oui";
+    if (periodeValide) {
+      requete.du = duBrut as string;
+      requete.au = auBrut as string;
+    }
     // La position suit les changements de filtre : la perdre en cliquant sur
     // une catégorie obligerait à la redemander, et donc à réautoriser.
     if (position) {

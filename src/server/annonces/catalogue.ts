@@ -453,6 +453,9 @@ export type CriteresRecherche = {
   chargeMin?: number;
   freineeSeulement?: boolean;
   instantaneeSeulement?: boolean;
+  /** Période souhaitée : les annonces déjà prises en sont écartées. */
+  disponibleDu?: Date;
+  disponibleAu?: Date;
 };
 
 /**
@@ -543,6 +546,8 @@ export async function rechercherAnnonces(
     chargeMin: criteres.chargeMin,
     freineeSeulement: criteres.freineeSeulement,
     instantaneeSeulement: criteres.instantaneeSeulement,
+    disponibleDu: criteres.disponibleDu,
+    disponibleAu: criteres.disponibleAu,
   });
 
   const annonces = lignes.map((ligne) => versResume(ligne, altDe(ligne.categorie)));
