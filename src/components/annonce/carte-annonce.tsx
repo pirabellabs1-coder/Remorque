@@ -11,6 +11,12 @@ import type { AnnonceResume } from "@/server/annonces/catalogue";
  * Densité d'information, pas de prose : photo, prix, poids utile, distance,
  * note. Le visiteur compare une dizaine de cartes en quelques secondes — tout
  * ce qui n'est pas comparable d'un coup d'œil n'a rien à y faire.
+ *
+ * La bordure est celle des cartes, un cran plus soutenue que la bordure
+ * ordinaire : une carte est un objet posé sur la page, non une séparation
+ * entre deux zones, et un trait trop clair la laissait flotter sur le blanc.
+ * Elle prend la couleur d'accent au survol — le rectangle entier étant
+ * cliquable, c'est lui qu'il faut désigner, pas seulement son titre.
  */
 export function CarteAnnonce({ annonce }: { annonce: AnnonceResume }) {
   const t = useTranslations("annonce");
@@ -22,7 +28,7 @@ export function CarteAnnonce({ annonce }: { annonce: AnnonceResume }) {
   });
 
   return (
-    <article className="group relative h-full overflow-hidden rounded-carte border border-bordure bg-fond-eleve shadow-(--ombre-carte) transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-(--ombre-carte-active)">
+    <article className="group relative h-full overflow-hidden rounded-carte border border-bordure-carte bg-fond-eleve shadow-(--ombre-carte) transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-accent hover:shadow-(--ombre-carte-active)">
       <Illustration
         src={annonce.photo}
         alt={annonce.photoAlt}

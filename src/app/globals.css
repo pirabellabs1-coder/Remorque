@@ -86,6 +86,13 @@
   --texte: var(--color-ardoise-900);
   --texte-attenue: var(--color-ardoise-600);
   --bordure: var(--color-ardoise-200);
+  /* Bordure appuyée, pour les cartes.
+     La bordure ordinaire suffit à séparer deux zones d'une même page ; une
+     carte d'annonce, elle, est un objet posé dessus — un rectangle qu'on
+     survole, qu'on clique et qu'on compare à son voisin. Un trait trop clair
+     la laisse flotter, surtout sur fond blanc où il disparaît presque. Un cran
+     plus soutenu la pose sans l'alourdir. */
+  --bordure-carte: var(--color-ardoise-300);
   --accent: var(--color-marque-600);
   --accent-contraste: #ffffff;
   --anneau-focus: var(--color-marque-500);
@@ -127,6 +134,7 @@
   --color-texte: var(--texte);
   --color-texte-attenue: var(--texte-attenue);
   --color-bordure: var(--bordure);
+  --color-bordure-carte: var(--bordure-carte);
   --color-accent: var(--accent);
   --color-accent-contraste: var(--accent-contraste);
   --color-encre: var(--encre);
