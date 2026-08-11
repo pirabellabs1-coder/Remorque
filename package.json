@@ -22,7 +22,8 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:situer": "tsx --env-file-if-exists=.env.local scripts/situer-annonces.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1106.0",

@@ -175,23 +175,28 @@ export function EnTetePublic() {
         </nav>
 
         <div className="flex items-center gap-2 justify-self-end">
-          <Bouton
-            as={Link}
-            href="/connexion"
-            variante="secondaire"
-            taille="petit"
-            className="hidden sm:inline-flex"
-          >
-            {tNav("connexion")}
-          </Bouton>
-          <Bouton
-            as={Link}
-            href="/inscription"
-            taille="petit"
-            className="hidden sm:inline-flex"
-          >
-            {tNav("inscription")}
-          </Bouton>
+          {/* Les deux boutons vivent dans une enveloppe, et c'est elle qui
+              porte le `hidden`. Posé sur les boutons eux-mêmes, il était
+              écrasé : `Bouton` applique déjà sa propre classe d'affichage, et
+              `cn` se contente de concaténer sans arbitrer. Les boutons
+              restaient donc visibles en mobile, larges de 220 pixels dans une
+              fenêtre de 375 — la barre débordait, et toute la page avec elle.
+
+              Le seuil suit celui de la bascule ci-dessous : à toute largeur,
+              l'un des deux est visible, jamais les deux, jamais aucun. */}
+          <div className="hidden items-center gap-2 md:flex">
+            <Bouton
+              as={Link}
+              href="/connexion"
+              variante="secondaire"
+              taille="petit"
+            >
+              {tNav("connexion")}
+            </Bouton>
+            <Bouton as={Link} href="/inscription" taille="petit">
+              {tNav("inscription")}
+            </Bouton>
+          </div>
 
           {/* --- Bascule du tiroir mobile --- */}
           <button

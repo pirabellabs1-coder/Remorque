@@ -181,7 +181,10 @@ export default async function PageAccueil({ params }: Props) {
 
           {/* Deux colonnes dès le mobile : le défilement horizontal cachait
               la moitié des annonces derrière un geste que rien n'annonçait. */}
-          <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {/* Une carte par ligne sur téléphone, trois sur ordinateur. Deux
+              colonnes sur un écran de 375 pixels réduisaient la photo à une
+              vignette, et c'est la photo qui vend la remorque. */}
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {vitrine.map((annonce) => (
               <li key={annonce.id}>
                 <CarteAnnonce annonce={annonce} />

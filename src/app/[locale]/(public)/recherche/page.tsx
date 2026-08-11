@@ -189,7 +189,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
         </div>
 
         {annonces.length > 0 ? (
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {annonces.map((annonce) => (
               <li key={annonce.id}>
                 <CarteAnnonce annonce={annonce} />
