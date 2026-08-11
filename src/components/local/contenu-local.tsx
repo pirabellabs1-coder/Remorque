@@ -128,12 +128,27 @@ export async function ContenuLocal({
             </ol>
           </nav>
 
-          <h1 className={cn(TITRE.section, "mt-6 max-w-2xl text-balance")}>
+          {/* Le nom de la ville est souligné d'un trait d'accent plutôt que
+              posé sur un aplat de couleur : un surligneur derrière un titre
+              écrase la typographie et abîme le contraste du texte. Le trait
+              marque tout aussi bien, sans rien coûter à la lisibilité. */}
+          <h1 className={cn(TITRE.section, "mt-6 max-w-3xl text-balance")}>
             {titre}
           </h1>
+          <span
+            aria-hidden
+            className="mt-3 block h-1 w-16 rounded-full bg-accent"
+          />
+
+          {/* Une accroche en gras, puis le détail. C'est l'ordre dans lequel
+              on lit une page trouvée depuis un moteur : la promesse, puis ce
+              qui l'étaye. */}
+          <p className="mt-5 max-w-2xl text-[1.125rem] leading-snug font-semibold text-encre-texte sm:text-[1.25rem]">
+            {t("accroche", { ville: ville.nom })}
+          </p>
 
           {/* Aucun chiffre n'est affiché s'il n'existe pas. */}
-          <p className="mt-4 max-w-xl text-[1.0625rem] text-encre-texte-attenue">
+          <p className="mt-3 max-w-2xl text-[1.0625rem] text-encre-texte-attenue">
             {annonces.length > 0
               ? t("resume", {
                   nombre: annonces.length,
@@ -142,6 +157,39 @@ export async function ContenuLocal({
                 })
               : t("resumeVide", { ville: ville.nom })}
           </p>
+
+          {/* Trois chiffres plutôt qu'un paragraphe de plus : ce sont eux qui
+              répondent aux questions qu'on se pose avant de chercher. */}
+          {annonces.length > 0 ? (
+            <dl className="mt-7 flex flex-wrap gap-x-10 gap-y-4">
+              <div>
+                <dt className="text-sm text-encre-texte-attenue">
+                  {t("chiffres.disponibles")}
+                </dt>
+                <dd className="mt-0.5 text-2xl font-semibold tabular-nums">
+                  {annonces.length}
+                </dd>
+              </div>
+              {prixMinimum ? (
+                <div>
+                  <dt className="text-sm text-encre-texte-attenue">
+                    {t("chiffres.apartir")}
+                  </dt>
+                  <dd className="mt-0.5 text-2xl font-semibold tabular-nums">
+                    {prix(prixMinimum)}
+                  </dd>
+                </div>
+              ) : null}
+              <div>
+                <dt className="text-sm text-encre-texte-attenue">
+                  {t("chiffres.caution")}
+                </dt>
+                <dd className="mt-0.5 text-2xl font-semibold">
+                  {t("chiffres.cautionValeur")}
+                </dd>
+              </div>
+            </dl>
+          ) : null}
 
           <div className="mt-8 max-w-2xl">
             <FormulaireRecherche variante="carte" valeurInitiale={ville.nom} />

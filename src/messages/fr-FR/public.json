@@ -833,6 +833,13 @@
       "r2": "Oui. Chaque réservation confirmée couvre le matériel pendant toute la location, et l’attestation est téléchargeable avant le départ.",
       "q3": "Où récupérer la remorque à {ville} ?",
       "r3": "Chez le propriétaire. Le quartier est indiqué sur l’annonce ; l’adresse exacte vous est communiquée après confirmation."
+    },
+    "accroche": "Louez la remorque qu'il vous faut à {ville}, à des particuliers et des professionnels vérifiés.",
+    "chiffres": {
+      "disponibles": "Remorques disponibles",
+      "apartir": "À partir de",
+      "caution": "Caution",
+      "cautionValeur": "Non débitée"
     }
   },
   "legal": {
