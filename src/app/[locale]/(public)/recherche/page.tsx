@@ -10,6 +10,7 @@ import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche
 import { VoletCarte } from "@/components/recherche/volet-carte";
 import { Bouton } from "@/components/ui/bouton";
 import { CATEGORIES } from "@/config/categories";
+import { trouverVille } from "@/config/villes";
 import { clientEnv } from "@/config/env-client";
 import type { Market } from "@/config/markets";
 import { getPathname, Link } from "@/i18n/navigation";
@@ -56,6 +57,22 @@ export default async function PageRecherche({ params, searchParams }: Props) {
   const format = await getFormatter();
 
   const ville = lire(parametres.ville);
+
+  // Le nom propre de la ville, pas la saisie brute. Le titre affichait
+  // « Remorques à louer à paris » — ce que le visiteur avait tapé, minuscule
+  // comprise. On cherche la ville au catalogue et l'on retombe sur la saisie
+  // seulement si elle n'y figure pas.
+  const villeConnue = ville
+    ? trouverVille(
+        ville
+          .normalize("NFD")
+          .replace(/[̀-ͯ]/g, "")
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, "-"),
+      )
+    : undefined;
+  const villeAffichee = villeConnue?.nom ?? ville ?? "";
   const slugCategorie = lire(parametres.categorie);
   const triDemande = lire(parametres.tri);
   const tri = estTri(triDemande) ? triDemande : "pertinence";
@@ -125,10 +142,10 @@ export default async function PageRecherche({ params, searchParams }: Props) {
 
   const titre = categorie
     ? ville
-      ? t("titreCategorieVille", { categorie: categorie.nom, ville })
+      ? t("titreCategorieVille", { categorie: categorie.nom, ville: villeAffichee })
       : t("titreCategorie", { categorie: categorie.nom })
     : ville
-      ? t("titreVille", { ville })
+      ? t("titreVille", { ville: villeAffichee })
       : t("titre");
 
   /** Conserve les critères courants en changeant une seule clé. */
@@ -198,7 +215,36 @@ export default async function PageRecherche({ params, searchParams }: Props) {
       </div>
 
       <div className="mx-auto w-full max-w-[100rem] px-4 py-8 sm:px-6">
-        <div className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
+        {/* ---------- Bandeau de résultats ----------
+            Pas de photographie ici, contrairement aux pages de ville : celles-ci
+            accueillent quelqu'un qui arrive d'un moteur, celle-ci sert quelqu'un
+            qui cherche déjà. Une image pousserait les résultats sous la ligne de
+            flottaison pour ne rien lui apprendre. Le même langage — trait
+            d'accent, accroche — dans une version compacte. */}
+        <div className="border-b border-bordure pb-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                {titre}
+              </h1>
+              <span
+                aria-hidden
+                className="mt-3 block h-1 w-12 rounded-full bg-accent"
+              />
+              <p className="mt-3 text-[1.0625rem] text-texte-attenue">
+                {total > 0
+                  ? t("accroche", { nombre: total })
+                  : t("resultats", { nombre: total })}
+              </p>
+            </div>
+
+            {total > 0 ? (
+              <TriResultats parametres={avec({})} valeur={tri} tris={TRIS} />
+            ) : null}
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
         <FiltresRecherche
           parametres={avec({})}
           actifs={{
@@ -214,21 +260,6 @@ export default async function PageRecherche({ params, searchParams }: Props) {
         />
 
         <div>
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              {titre}
-            </h1>
-            <p className="mt-1 text-sm text-texte-attenue">
-              {t("resultats", { nombre: total })}
-            </p>
-          </div>
-
-          {total > 0 ? (
-            <TriResultats parametres={avec({})} valeur={tri} tris={TRIS} />
-          ) : null}
-        </div>
-
         <div className="mt-8">
         <VoletCarte points={pointsCarte} styleUrl={clientEnv.NEXT_PUBLIC_MAP_STYLE_URL}>
         {annonces.length > 0 ? (
@@ -243,7 +274,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
           <section className="mt-8 rounded-carte border border-bordure bg-fond-doux p-8 sm:p-12">
             <h2 className="text-lg font-semibold">{t("vide.titre")}</h2>
             <p className="mt-2 max-w-xl text-texte-attenue">
-              {ville ? t("vide.texteVille", { ville }) : t("vide.texte")}
+              {ville ? t("vide.texteVille", { ville: villeAffichee }) : t("vide.texte")}
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Bouton as={Link} href="/mettre-en-location">

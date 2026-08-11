@@ -151,7 +151,8 @@
     "carte": {
       "liste": "Liste",
       "carte": "Carte"
-    }
+    },
+    "accroche": "{nombre, plural, one {# remorque disponible, prête à réserver} other {# remorques disponibles, prêtes à réserver}} — caution non débitée, état des lieux à chaque location."
   },
   "commentCaMarche": {
     "metaTitre": "Comment ça marche",
