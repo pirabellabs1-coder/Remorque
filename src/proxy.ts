@@ -27,15 +27,22 @@ import { routing } from "@/i18n/routing";
 const intl = createMiddleware(routing);
 
 /**
- * Marché retenu de la visite précédente.
+ * Choix explicite du visiteur, posé par la bannière de suggestion.
  *
- * Un an, et lisible par le JavaScript de la page : il ne protège rien, il se
- * souvient d'une préférence. C'est lui qui évite de contredire, au
- * rechargement suivant, quelqu'un qui a explicitement demandé un autre marché
- * que celui de son adresse IP.
+ * **Le proxy le lit et ne l'écrit jamais.** La première version écrivait son
+ * propre cookie à chaque réponse, y compris lorsqu'elle servait le marché par
+ * défaut — elle persistait une déduction comme si c'était une décision. Il
+ * suffisait alors qu'une seule requête ait été servie en français (un
+ * préchargement, l'aperçu d'un lien dans une messagerie, une visite antérieure
+ * à l'ouverture du marché belge) pour épingler le visiteur sur la France
+ * pendant un an : le cookie primant sur la géolocalisation, il n'était plus
+ * jamais redirigé.
+ *
+ * Le seul choix qui mérite d'être retenu est celui que quelqu'un a exprimé.
+ * C'est le rôle de `marche-choisi`, écrit par `server/marches/suggestion.ts`
+ * quand le visiteur clique la bannière — et par lui seul.
  */
-const COOKIE_MARCHE = "remorque_marche";
-const DUREE_COOKIE = 60 * 60 * 24 * 365;
+const COOKIE_CHOIX = "marche-choisi";
 
 /** Le marché désigné par le préfixe de l'adresse, s'il y en a un. */
 function marcheDuChemin(chemin: string): Market | undefined {
@@ -48,7 +55,7 @@ function marcheDuChemin(chemin: string): Market | undefined {
 export default function proxy(requete: NextRequest) {
   const decision = deciderMarche({
     marcheDeLAdresse: marcheDuChemin(requete.nextUrl.pathname),
-    marcheMemorise: requete.cookies.get(COOKIE_MARCHE)?.value,
+    marcheMemorise: requete.cookies.get(COOKIE_CHOIX)?.value,
     // En-tête posé par l'hébergeur. Absent en développement : aucune
     // redirection ne se déclenche alors, ce qui est le comportement voulu.
     paysDetecte: requete.headers.get("x-vercel-ip-country") ?? undefined,
@@ -62,22 +69,10 @@ export default function proxy(requete: NextRequest) {
     // 307 et non 308 : le marché d'un visiteur peut changer — il voyage, il
     // change d'avis — et une redirection permanente resterait dans son cache
     // et dans celui des intermédiaires bien après.
-    const reponse = NextResponse.redirect(destination, 307);
-    reponse.cookies.set(COOKIE_MARCHE, decision.marche, {
-      path: "/",
-      maxAge: DUREE_COOKIE,
-      sameSite: "lax",
-    });
-    return reponse;
+    return NextResponse.redirect(destination, 307);
   }
 
-  const reponse = intl(requete);
-  reponse.cookies.set(COOKIE_MARCHE, decision.marche, {
-    path: "/",
-    maxAge: DUREE_COOKIE,
-    sameSite: "lax",
-  });
-  return reponse;
+  return intl(requete);
 }
 
 export const config = {

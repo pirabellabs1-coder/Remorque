@@ -81,13 +81,18 @@ export function deciderMarche(contexte: ContexteVisiteur): DecisionMarche {
 /**
  * Reconnaît un robot d'indexation à sa signature.
  *
- * Volontairement large : le coût d'une erreur est asymétrique. Prendre un
- * humain pour un robot lui fait voir le marché de référence, qu'il peut
- * changer d'un clic ; prendre un robot pour un humain le fait sortir de
- * l'index.
+ * Large, mais plus « preview » ni « monitoring » tout seuls : ces mots
+ * apparaissent dans les navigateurs intégrés des messageries, et un humain
+ * pris pour un robot voyait le marché français sans jamais être redirigé vers
+ * le sien. Les signatures retenues désignent des explorateurs, pas des mots
+ * qui traînent dans une chaîne d'agent.
+ *
+ * Le reste du compromis tient : prendre un humain pour un robot lui fait voir
+ * le marché de référence, qu'il peut changer d'un clic depuis la bannière ;
+ * prendre un robot pour un humain le fait sortir de l'index.
  */
 const SIGNATURES_ROBOTS =
-  /bot|crawler|crawling|spider|slurp|mediapartners|facebookexternalhit|embedly|preview|lighthouse|pagespeed|headless|monitoring|pingdom|uptime/i;
+  /bot|crawler|crawling|spider|slurp|mediapartners|facebookexternalhit|embedly|bingpreview|lighthouse|pagespeed|headless|pingdom|uptime/i;
 
 export function estRobot(agentUtilisateur: string | null): boolean {
   return agentUtilisateur ? SIGNATURES_ROBOTS.test(agentUtilisateur) : true;

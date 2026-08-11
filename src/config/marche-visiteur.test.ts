@@ -114,6 +114,19 @@ describe("reconnaissance des robots", () => {
     ).toBe(false);
   });
 
+  it("ne prend pas un navigateur de messagerie pour un robot", () => {
+    // « preview » et « monitoring » attrapaient ces agents : le visiteur belge
+    // qui ouvrait le lien depuis une messagerie voyait le marché français, et
+    // n'était jamais redirigé vers le sien.
+    for (const agent of [
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1 [FBAN/FBIOS;FBAV/450.0]",
+      "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36 Instagram 300.0",
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36 Edg/131.0",
+    ]) {
+      expect(estRobot(agent), agent.slice(0, 40)).toBe(false);
+    }
+  });
+
   it("traite une signature absente comme un robot", () => {
     // Le coût d'une erreur est asymétrique : un humain pris pour un robot voit
     // le marché de référence et en change d'un clic ; un robot pris pour un
