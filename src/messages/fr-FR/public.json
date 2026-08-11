@@ -147,7 +147,11 @@
     "localisation": "Localisation…",
     "positionRefusee": "Position non autorisée. Vous pouvez chercher par nom de ville.",
     "positionIndisponible": "Votre navigateur ne sait pas donner votre position. Cherchez par nom de ville.",
-    "rayon": "{km} km"
+    "rayon": "{km} km",
+    "carte": {
+      "liste": "Liste",
+      "carte": "Carte"
+    }
   },
   "commentCaMarche": {
     "metaTitre": "Comment ça marche",

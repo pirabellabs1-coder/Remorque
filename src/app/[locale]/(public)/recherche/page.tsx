@@ -1,4 +1,4 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BoutonAutourDeMoi } from "@/components/annonce/bouton-autour-de-moi";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
@@ -7,12 +7,14 @@ import {
   TriResultats,
 } from "@/components/recherche/filtres-recherche";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
+import { VoletCarte } from "@/components/recherche/volet-carte";
 import { Bouton } from "@/components/ui/bouton";
 import { CATEGORIES } from "@/config/categories";
+import { clientEnv } from "@/config/env-client";
 import type { Market } from "@/config/markets";
-import { Link } from "@/i18n/navigation";
+import { getPathname, Link } from "@/i18n/navigation";
 import { metadonneesPage } from "@/lib/metadonnees";
-import { cn } from "@/lib/cn";
+import { cn, PRIX_AFFICHE } from "@/lib/cn";
 import {
   PALIERS_CHARGE,
   PALIERS_PRIX,
@@ -51,6 +53,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
 
   const parametres = await searchParams;
   const t = await getTranslations("recherche");
+  const format = await getFormatter();
 
   const ville = lire(parametres.ville);
   const slugCategorie = lire(parametres.categorie);
@@ -97,6 +100,28 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     latitude: position?.latitude,
     rayonKm: position ? rayonKm : undefined,
   });
+
+  // Les mêmes annonces que la liste, sous la forme qu'attend la carte. Rien à
+  // synchroniser entre les deux volets : ils descendent du même rendu.
+  const pointsCarte = annonces.map((annonce) => ({
+    id: annonce.id,
+    titre: annonce.titre,
+    ville: annonce.ville,
+    prix: format.number(annonce.prixJour / 100, {
+      ...PRIX_AFFICHE,
+      currency: annonce.devise,
+    }),
+    photo: annonce.photo,
+    longitude: annonce.situation.longitude,
+    latitude: annonce.situation.latitude,
+    href: getPathname({
+      locale: locale as Market,
+      href: {
+        pathname: "/remorque/[ville]/[slug]",
+        params: { ville: annonce.villeSlug, slug: annonce.slug },
+      },
+    }),
+  }));
 
   const titre = categorie
     ? ville
@@ -172,7 +197,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
         </div>
       </div>
 
-      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
+      <div className="mx-auto w-full max-w-[100rem] px-4 py-8 sm:px-6">
         <div className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
         <FiltresRecherche
           parametres={avec({})}
@@ -204,8 +229,10 @@ export default async function PageRecherche({ params, searchParams }: Props) {
           ) : null}
         </div>
 
+        <div className="mt-8">
+        <VoletCarte points={pointsCarte} styleUrl={clientEnv.NEXT_PUBLIC_MAP_STYLE_URL}>
         {annonces.length > 0 ? (
-          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-2">
             {annonces.map((annonce) => (
               <li key={annonce.id}>
                 <CarteAnnonce annonce={annonce} />
@@ -232,6 +259,8 @@ export default async function PageRecherche({ params, searchParams }: Props) {
             </div>
           </section>
         )}
+        </VoletCarte>
+        </div>
         </div>
         </div>
       </div>
