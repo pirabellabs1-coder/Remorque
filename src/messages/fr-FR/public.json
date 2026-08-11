@@ -86,7 +86,7 @@
       }
     },
     "carte": {
-      "titre": "Le matériel disponible près de chez vous",
+      "titre": "Les remorques disponibles près de chez vous",
       "chapo": "Chaque pastille est une remorque à louer, à son prix par jour. Cliquez pour ouvrir l’annonce.",
       "etiquette": "Carte de {nombre} annonces disponibles",
       "mention": "Les emplacements sont approximatifs : l’adresse exacte du retrait vous est communiquée une fois la réservation confirmée."
