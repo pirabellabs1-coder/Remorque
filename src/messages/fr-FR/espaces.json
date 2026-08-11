@@ -5,7 +5,7 @@
     "fermerMenu": "Fermer le menu",
     "locataire": {
       "nom": "Mes locations",
-      "bascule": "Passer en loueur",
+      "bascule": "Passer en propriétaire",
       "nav": {
         "tableauDeBord": "Tableau de bord",
         "reservations": "Mes réservations",
@@ -57,7 +57,7 @@
         "passees": "Passées",
         "reference": "Référence",
         "materiel": "Matériel",
-        "proprietaire": "Loueur",
+        "proprietaire": "Propriétaire",
         "dates": "Dates",
         "montant": "Montant",
         "caution": "Caution",
@@ -85,18 +85,18 @@
         "retirer": "Retirer des favoris",
         "vide": {
           "titre": "Aucun favori",
-          "texte": "Le cœur sur une annonce la range ici. Pratique pour comparer avant de réserver, ou pour retrouver un loueur qui vous a convenu.",
+          "texte": "Le cœur sur une annonce la range ici. Pratique pour comparer avant de réserver, ou pour retrouver un propriétaire qui vous a convenu.",
           "action": "Explorer les annonces"
         }
       },
       "messages": {
         "titre": "Messages",
-        "chapo": "Vos échanges avec les loueurs, rattachés à chaque réservation.",
+        "chapo": "Vos échanges avec les propriétaires, rattachés à chaque réservation.",
         "nonLus": "{nombre, plural, =1 {1 message non lu} other {# messages non lus}}",
         "vous": "Vous :",
         "vide": {
           "titre": "Aucun message",
-          "texte": "Vos échanges avec les loueurs apparaîtront ici. Chaque conversation reste rattachée à sa réservation."
+          "texte": "Vos échanges avec les propriétaires apparaîtront ici. Chaque conversation reste rattachée à sa réservation."
         }
       },
       "paiements": {
@@ -146,7 +146,7 @@
         "ecrire": "Écrire un avis",
         "publies": "Vos avis publiés",
         "chez": "Chez {prenom}",
-        "reponse": "Réponse du loueur",
+        "reponse": "Réponse du propriétaire",
         "note": "{note} sur 5",
         "vide": {
           "titre": "Aucun avis publié",
@@ -191,7 +191,7 @@
         "verification": "Vérification d’identité",
         "verifie": "Identité vérifiée",
         "verifieLe": "Vérifiée le {date}",
-        "verifieTexte": "La vérification est exigée avant la première location. Elle protège les loueurs, et vous ouvre la réservation instantanée.",
+        "verifieTexte": "La vérification est exigée avant la première location. Elle protège les propriétaires, et vous ouvre la réservation instantanée.",
         "permis": "Permis de conduire",
         "permisAide": "La catégorie de votre permis détermine le poids que vous pouvez tracter. Nous la vérifions à chaque réservation : une annonce trop lourde pour votre permis ne vous sera pas proposée.",
         "permisCategorie": "Catégorie",
@@ -237,7 +237,7 @@
         "parCourriel": "Par courriel",
         "parSms": "Par SMS",
         "reservations": "Confirmations et rappels de réservation",
-        "messagesNotif": "Nouveaux messages d’un loueur",
+        "messagesNotif": "Nouveaux messages d’un propriétaire",
         "cautions": "Libération d’une caution",
         "promotions": "Offres et nouveautés",
         "langue": "Langue et région",
@@ -257,7 +257,7 @@
       }
     },
     "loueur": {
-      "nom": "Espace loueur",
+      "nom": "Espace propriétaire",
       "bascule": "Passer en locataire",
       "nav": {
         "tableauDeBord": "Tableau de bord",
@@ -754,7 +754,7 @@
         "suspendu": "Suspendu",
         "roles": {
           "locataire": "Locataire",
-          "loueur": "Loueur",
+          "loueur": "Propriétaire",
           "les_deux": "Les deux"
         },
         "verifications": {
@@ -766,7 +766,7 @@
         "filtres": {
           "tous": "Tous",
           "aVerifier": "À vérifier",
-          "loueurs": "Loueurs",
+          "loueurs": "Propriétaires",
           "suspendus": "Suspendus"
         }
       },
@@ -803,15 +803,15 @@
         "volumePrecision": "Somme des locations encaissées",
         "commission": "Commission perçue",
         "commissionPrecision": "Revenu brut de la plateforme",
-        "reverse": "Reversé aux loueurs",
+        "reverse": "Reversé aux propriétaires",
         "reversePrecision": "Net après commission",
         "gel": "Fonds gelés",
         "gelPrecision": "Immobilisés par un litige ou un sinistre",
         "courbeTitre": "Volume d’affaires par mois",
         "courbeLegende": "Volume d’affaires mensuel sur les douze derniers mois",
         "repartitionTitre": "Où va l’argent encaissé",
-        "repartitionLegende": "Répartition entre le net reversé aux loueurs et la commission de la plateforme",
-        "partLoueurs": "Reversé aux loueurs",
+        "repartitionLegende": "Répartition entre le net reversé aux propriétaires et la commission de la plateforme",
+        "partLoueurs": "Reversé aux propriétaires",
         "partCommission": "Commission de la plateforme",
         "detailTitre": "Détail mensuel",
         "mois": "Mois",
@@ -884,7 +884,7 @@
         "delaiTexte": "Un sinistre doit être transmis au partenaire assureur sous cinq jours ouvrables. Au-delà, la prise en charge peut être refusée pour déclaration tardive.",
         "vide": {
           "titre": "Aucun sinistre déclaré",
-          "texte": "Les sinistres déclarés par les loueurs ou les locataires apparaîtront ici."
+          "texte": "Les sinistres déclarés par les propriétaires ou les locataires apparaîtront ici."
         }
       },
       "pays": {
@@ -984,7 +984,7 @@
         "general": "Général",
         "nomPlateforme": "Nom de la plateforme",
         "courrielContact": "Adresse de contact",
-        "delaiReponse": "Délai laissé au loueur pour répondre à une demande",
+        "delaiReponse": "Délai laissé au propriétaire pour répondre à une demande",
         "delaiAvis": "Délai de dépôt d’un avis après restitution",
         "heures": "{nombre, plural, =1 {1 heure} other {# heures}}",
         "jours": "{nombre, plural, =1 {1 jour} other {# jours}}",

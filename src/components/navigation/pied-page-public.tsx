@@ -64,7 +64,9 @@ export function PiedPagePublic() {
             souvent la première chose lue par qui arrive d'un moteur sur une
             page profonde. */}
         <div className="md:col-span-1">
-          <Logo />
+          {/* Sur fond profond : `clair` inverse l'encre du mot, qui s'y
+              perdait entièrement. */}
+          <Logo clair />
           <p className="mt-4 text-sm leading-relaxed text-encre-texte-attenue">
             {t("piedPage.presentation")}
           </p>

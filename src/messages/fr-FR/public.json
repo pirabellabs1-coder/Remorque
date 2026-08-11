@@ -63,7 +63,7 @@
       "titre": "Rentabilisez votre remorque",
       "chapo": "Publication gratuite : vous fixez vos tarifs, vos dates et acceptez chaque demande.",
       "action": "Publier une annonce",
-      "actionPro": "Je suis loueur professionnel",
+      "actionPro": "Je suis propriétaire professionnel",
       "actionSecondaire": "Comprendre le fonctionnement"
     },
     "vitrine": {
@@ -183,7 +183,7 @@
     "g3Titre": "État des lieux photographié",
     "g3Texte": "Au départ et au retour, à deux. C'est lui qui tranche en cas de désaccord, pas la parole de l'un contre l'autre.",
     "g4Titre": "Paiement par la plateforme",
-    "g4Texte": "Aucun règlement de la main à la main. Le loueur est payé après la location, le locataire est remboursé si elle n'a pas lieu.",
+    "g4Texte": "Aucun règlement de la main à la main. Le propriétaire est payé après la location, le locataire est remboursé si elle n'a pas lieu.",
     "actionTitre": "Prêt à commencer ?",
     "actionTexte": "Cherchez une remorque près de chez vous, ou estimez ce que la vôtre pourrait rapporter.",
     "actionLouer": "Chercher une remorque",
@@ -223,7 +223,7 @@
       "cautionTitre": "Caution non débitée",
       "etatDesLieuxTitre": "État des lieux contradictoire",
       "litigeTitre": "Litige et gel des fonds",
-      "chapo": "Ce qui vous protège à chaque étape, et qui ne dépend pas du loueur en face."
+      "chapo": "Ce qui vous protège à chaque étape, et qui ne dépend pas du propriétaire en face."
     },
     "action": "Chercher une remorque",
     "etapesTitre": "Le parcours, étape par étape",
@@ -400,9 +400,9 @@
     "actionAide": "La caution et l'état des lieux s'appliquent à chaque location."
   },
   "pro": {
-    "metaTitre": "Offre loueurs professionnels",
-    "metaDescription": "Un canal de réservation supplémentaire pour les loueurs de matériel : visibilité locale, paiement garanti avant le retrait, contrat et états des lieux automatisés.",
-    "surtitre": "Loueurs professionnels",
+    "metaTitre": "Offre propriétaires professionnels",
+    "metaDescription": "Un canal de réservation supplémentaire pour les propriétaires de matériel : visibilité locale, paiement garanti avant le retrait, contrat et états des lieux automatisés.",
+    "surtitre": "Propriétaires professionnels",
     "titre": "Un canal de réservation de plus, sans charge de gestion",
     "chapo": "Vous louez déjà du matériel. La plateforme vous apporte une demande locale que vous ne captez pas aujourd'hui, avec le paiement encaissé avant le retrait et les documents de location produits automatiquement.",
     "action": "Parler à un interlocuteur",
@@ -485,7 +485,7 @@
     },
     "lancement": {
       "titre": "Partenaires de lancement",
-      "chapo": "Le service ouvre ville par ville, et les premiers loueurs professionnels d'une zone comptent davantage que tous les suivants : ce sont eux qui rendent la recherche utile aux locataires, et donc la zone viable.",
+      "chapo": "Le service ouvre ville par ville, et les premiers propriétaires professionnels d'une zone comptent davantage que tous les suivants : ce sont eux qui rendent la recherche utile aux locataires, et donc la zone viable.",
       "accompagnement": "Un interlocuteur dédié pour la mise en ligne de votre parc et le suivi de vos premières locations.",
       "reprise": "Reprise de vos fiches matériel existantes, photos comprises, sans ressaisie de votre part.",
       "influence": "Vos retours orientent en priorité les fonctionnalités professionnelles listées ci-dessus.",
@@ -494,7 +494,7 @@
     "faq": {
       "titre": "Questions fréquentes",
       "q1": "Suis-je obligé de tout mettre sur la plateforme ?",
-      "r1": "Non. Vous choisissez les matériels que vous publiez et les périodes que vous ouvrez. Beaucoup de loueurs commencent par ouvrir les week-ends et la basse saison.",
+      "r1": "Non. Vous choisissez les matériels que vous publiez et les périodes que vous ouvrez. Beaucoup de propriétaires commencent par ouvrir les week-ends et la basse saison.",
       "q2": "Comment éviter les doubles réservations avec mon logiciel actuel ?",
       "r2": "À l'ouverture, en bloquant vos dates depuis le calendrier de la plateforme. La synchronisation iCal, qui automatise ce point, fait partie des fonctionnalités en préparation.",
       "q3": "Quelle commission s'applique à un professionnel ?",
@@ -610,7 +610,7 @@
       }
     },
     "pro": {
-      "titre": "Vous êtes loueur professionnel ?",
+      "titre": "Vous êtes propriétaire professionnel ?",
       "chapo": "Gestion de flotte, agences multiples, comptes collaborateurs, facturation avec TVA et synchronisation de calendriers : l'offre professionnelle répond à des besoins différents de ceux d'un particulier.",
       "action": "Découvrir l'offre professionnelle"
     },
@@ -694,8 +694,8 @@
         "dureeInvalide": "La date de retour doit suivre celle de départ.",
         "annonceIndisponible": "Cette annonce n’est plus disponible.",
         "proprePropriete": "Vous ne pouvez pas louer votre propre matériel.",
-        "dureeTropCourte": "La durée est inférieure au minimum demandé par le loueur.",
-        "dureeTropLongue": "La durée dépasse le maximum accepté par le loueur.",
+        "dureeTropCourte": "La durée est inférieure au minimum demandé par le propriétaire.",
+        "dureeTropLongue": "La durée dépasse le maximum accepté par le propriétaire.",
         "indisponible": "Ces dates sont déjà prises. Essayez d’autres dates.",
         "echec": "La demande n’a pas pu être envoyée. Réessayez."
       },
@@ -719,11 +719,11 @@
     "avisNombre": "{nombre, plural, =0 {Aucun avis} =1 {1 avis} other {# avis}}",
     "avisAucun": "Cette remorque n'a pas encore reçu d'avis.",
     "avisAucunTexte": "Les avis sont écrits par les locataires après une location terminée, jamais avant.",
-    "reponseProprietaire": "Réponse du loueur",
+    "reponseProprietaire": "Réponse du propriétaire",
     "voirTousLesAvis": "Voir les {nombre} avis",
     "noteRepartition": "Répartition des notes",
     "etoiles": "{nombre, plural, =1 {1 étoile} other {# étoiles}}",
-    "loueurDepuis": "Loueur depuis {annee}",
+    "loueurDepuis": "Propriétaire depuis {annee}",
     "repondEn": "Répond en général sous {duree}",
     "quelquesHeures": "quelques heures",
     "annoncesDuLoueur": "{nombre, plural, =1 {1 annonce} other {# annonces}}",
@@ -901,7 +901,7 @@
         },
         "responsabilite": {
           "titre": "Responsabilité éditoriale",
-          "p1": "La plateforme met en relation des particuliers et des professionnels. Elle n’est ni propriétaire ni loueur du matériel proposé, et n’intervient pas dans son entretien.",
+          "p1": "La plateforme met en relation des particuliers et des professionnels. Elle n’est ni propriétaire ni propriétaire du matériel proposé, et n’intervient pas dans son entretien.",
           "encadre": "Les descriptions, photographies et caractéristiques techniques des annonces sont fournies par leurs auteurs, qui en répondent. La plateforme les modère mais ne peut en garantir l’exactitude."
         },
         "liens": {
@@ -1348,7 +1348,7 @@
       },
       "partenariats": {
         "titre": "Partenariats",
-        "texte": "Loueurs professionnels, assureurs, collectivités."
+        "texte": "Propriétaires professionnels, assureurs, collectivités."
       },
       "securite": {
         "titre": "Sécurité",
@@ -1571,7 +1571,7 @@
       "tarifs": "Tarifs et frais",
       "mettreEnLocation": "Mettre ma remorque en location",
       "commentMettre": "Comment mettre en location",
-      "pro": "Loueurs professionnels",
+      "pro": "Propriétaires professionnels",
       "commentCaMarche": "Comment ça marche",
       "assurance": "Qui assure la remorque",
       "permis": "Quel permis pour quelle remorque",

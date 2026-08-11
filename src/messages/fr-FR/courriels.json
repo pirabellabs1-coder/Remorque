@@ -79,7 +79,7 @@
       },
       "avisAecrire": {
         "sujet": "Votre avis sur {annonceTitre}",
-        "corps": "Bonjour {prenom},\n\nVotre location « {annonceTitre} » ({reference}) est terminée. Votre avis aide les locataires suivants à choisir — et le loueur à s’améliorer. Vous avez quatorze jours pour le déposer."
+        "corps": "Bonjour {prenom},\n\nVotre location « {annonceTitre} » ({reference}) est terminée. Votre avis aide les locataires suivants à choisir — et le propriétaire à s’améliorer. Vous avez quatorze jours pour le déposer."
       }
     },
     "messagerie": {
