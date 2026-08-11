@@ -419,6 +419,11 @@ const schemaRetrait = z.object({
   codePostal: z.string().trim().min(4).max(10),
   rayonApproximatifM: z.number().int().min(200).max(5000),
   reglesUtilisation: z.string().trim().max(1000).optional(),
+  // Bornes du monde habité : elles n'attrapent pas une erreur de saisie fine,
+  // elles empêchent une position absurde d'entrer en base — un champ vide
+  // deviendrait le point zéro, au large du golfe de Guinée.
+  longitude: z.number().min(-180).max(180),
+  latitude: z.number().min(-85).max(85),
 });
 
 export async function enregistrerEtapeRetrait(
@@ -434,6 +439,8 @@ export async function enregistrerEtapeRetrait(
     codePostal: donnees.get("codePostal"),
     rayonApproximatifM: nombre(donnees.get("rayonApproximatifM")),
     reglesUtilisation: donnees.get("reglesUtilisation") || undefined,
+    longitude: nombre(donnees.get("longitude")),
+    latitude: nombre(donnees.get("latitude")),
   });
 
   if (!analyse.success) {
@@ -447,6 +454,10 @@ export async function enregistrerEtapeRetrait(
   const enregistre = await enregistrerRetrait(annonceId, proprietaireId, {
     ...analyse.data,
     reglesUtilisation: analyse.data.reglesUtilisation ?? null,
+    position: {
+      longitude: analyse.data.longitude,
+      latitude: analyse.data.latitude,
+    },
   });
 
   if (!enregistre) adresseEtape(locale, { etape: "1", erreur: "introuvable" });

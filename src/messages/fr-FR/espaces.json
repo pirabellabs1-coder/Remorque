@@ -456,6 +456,15 @@
           "enregistrer": "Enregistrer les modifications",
           "terminer": "Terminer",
           "categorieFigee": "La catégorie ne se change pas après publication : elle commande la page locale de l’annonce et les filtres qui la font ressortir."
+        },
+        "position": {
+          "titre": "Emplacement précis",
+          "aide": "Placez l’épingle sur la cour, le garage ou le portail où se fait la remise. Le public ne verra qu’un cercle autour de ce point, jamais l’épingle elle-même.",
+          "situer": "Placer d’après l’adresse",
+          "recherche": "Recherche…",
+          "etiquette": "Carte permettant de déplacer l’épingle d’emplacement",
+          "introuvable": "Adresse introuvable. Placez l’épingle à la main sur la carte.",
+          "fondAbsent": "Le fond de carte n’est pas configuré : l’emplacement reste au centre de la commune."
         }
       },
       "reservations": {

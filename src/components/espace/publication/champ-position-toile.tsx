@@ -36,7 +36,13 @@ export default function ChampPositionToile({
   // formulaire. On les garde dans une référence, que l'effet lit sans en
   // dépendre.
   const rappels = useRef({ surDeplacement, inscrireDeplacement });
-  rappels.current = { surDeplacement, inscrireDeplacement };
+
+  // L'affectation a lieu dans un effet et non pendant le rendu : lire ou
+  // écrire une référence pendant le rendu est un contresens, React ne
+  // garantissant ni le moment ni l'unicité de l'appel.
+  useEffect(() => {
+    rappels.current = { surDeplacement, inscrireDeplacement };
+  });
 
   useEffect(() => {
     if (!cadre.current) return;

@@ -1,12 +1,14 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { DepotPhotos } from "@/components/espace/publication/depot-photos";
+import { ChampPosition } from "@/components/espace/publication/champ-position";
 import { FilEtapes } from "@/components/espace/publication/fil-etapes";
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { Bouton } from "@/components/ui/bouton";
 import { Champ } from "@/components/ui/champ";
 import { Illustration } from "@/components/ui/illustration";
 import { CATEGORIES } from "@/config/categories";
+import { clientEnv } from "@/config/env-client";
 import { getMarket, type Market } from "@/config/markets";
 import { villesDuPays, type CodePays } from "@/config/villes";
 import {
@@ -770,6 +772,14 @@ async function EtapeRetrait({
           </select>
           <p className="mt-2 text-sm text-texte-attenue">{t("rayonAide")}</p>
         </div>
+
+        {/* L'épingle vient après l'adresse : on la pose d'après ce qui vient
+            d'être saisi, et on l'ajuste si le géocodage tombe à côté. */}
+        <ChampPosition
+          longitude={brouillon.position.longitude}
+          latitude={brouillon.position.latitude}
+          styleUrl={clientEnv.NEXT_PUBLIC_MAP_STYLE_URL}
+        />
 
         <div className="sm:col-span-2">
           <label htmlFor="regles-annonce" className="text-sm font-medium">

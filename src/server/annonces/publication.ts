@@ -49,6 +49,8 @@ export type Brouillon = {
   /** Code ISO du pays de l'annonce : il désigne son marché. */
   pays: string;
   devise: string;
+  /** Position actuelle, point de départ de l'épingle à l'étape « Retrait ». */
+  position: { longitude: number; latitude: number };
   bornesCaution: BornesCaution;
   photos: { id: string; url: string; ordre: number }[];
   /** Champs saisis, tels qu'ils doivent revenir dans les formulaires. */
@@ -119,6 +121,8 @@ export async function chargerBrouillon(
       slug: tableAnnonce.slug,
       pays: tablePays.code,
       devise: tableAnnonce.devise,
+      longitude: raw<number>`st_x(${tableAnnonce.position}::geometry)`,
+      latitude: raw<number>`st_y(${tableAnnonce.position}::geometry)`,
       cautionMinimum: tablePays.cautionMinimum,
       cautionMaximum: tablePays.cautionMaximum,
       titre: tableAnnonce.titre,
@@ -183,6 +187,7 @@ export async function chargerBrouillon(
     slug: ligne.slug,
     pays: ligne.pays,
     devise: ligne.devise,
+    position: { longitude: ligne.longitude, latitude: ligne.latitude },
     bornesCaution: {
       minimum: ligne.cautionMinimum,
       maximum: ligne.cautionMaximum,
@@ -466,6 +471,15 @@ export async function enregistrerRetrait(
     codePostal: string;
     rayonApproximatifM: number;
     reglesUtilisation: string | null;
+    /**
+     * Position précise du matériel.
+     *
+     * Elle remplace le centre de la commune posé à la création du brouillon.
+     * C'est elle qui centre le cercle d'imprécision sur la fiche publique, et
+     * elle qui rend exacte la recherche par distance : jusqu'ici, toutes les
+     * annonces d'une même ville partageaient le même point.
+     */
+    position: { longitude: number; latitude: number };
   },
 ): Promise<boolean> {
   const modifiees = await db
@@ -475,6 +489,7 @@ export async function enregistrerRetrait(
       codePostal: saisie.codePostal,
       rayonApproximatifM: saisie.rayonApproximatifM,
       reglesUtilisation: saisie.reglesUtilisation,
+      position: saisie.position,
     })
     .where(
       and(
