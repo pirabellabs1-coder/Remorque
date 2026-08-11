@@ -803,6 +803,12 @@
       "alternative": "Carte situant le matériel à {quartier}, {ville}",
       "imprecision": "Zone approximative d’environ {rayon, number} km. L’adresse exacte vous est communiquée une fois la réservation confirmée.",
       "fondAbsent": "Le matériel se trouve à {quartier}, {ville}. Le fond de carte n’est pas encore configuré."
+    },
+    "galerie": {
+      "precedente": "Photo précédente",
+      "suivante": "Photo suivante",
+      "rang": "{rang} / {total}",
+      "vue": "{titre}, vue {rang}"
     }
   },
   "pageLocale": {

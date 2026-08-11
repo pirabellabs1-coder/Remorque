@@ -196,6 +196,24 @@ function versResume(ligne: LigneResume, alt: string): AnnonceResume {
 }
 
 /**
+ * Toutes les photos d'une annonce, dans l'ordre choisi par le propriétaire.
+ *
+ * La projection des résumés ne remonte que la couverture — une jointure sur
+ * les photos y multiplierait chaque annonce par son nombre de clichés. La
+ * fiche, elle, n'en affiche qu'une à la fois : une seconde requête, sur un
+ * index, est le prix juste.
+ */
+export async function photosDeLAnnonce(annonceId: string): Promise<string[]> {
+  const lignes = await db
+    .select({ url: annoncePhoto.url })
+    .from(annoncePhoto)
+    .where(eq(annoncePhoto.annonceId, annonceId))
+    .orderBy(annoncePhoto.ordre);
+
+  return lignes.map((ligne) => ligne.url);
+}
+
+/**
  * Ordre de tri.
  *
  * Il porte sur l'expression elle-même, jamais sur un alias : PostgreSQL

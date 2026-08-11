@@ -5,6 +5,7 @@ import { BoutonFavori } from "@/components/annonce/bouton-favori";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { CarteReference } from "@/components/annonce/carte-reference";
 import { CarteSituation } from "@/components/annonce/carte-situation";
+import { Galerie } from "@/components/annonce/galerie";
 import { CarteReservation } from "@/components/annonce/carte-reservation";
 import {
   BlocFiche,
@@ -14,7 +15,6 @@ import {
 } from "@/components/annonce/sections-fiche";
 import { Etoiles } from "@/components/espace/statut";
 import { DonneesStructurees } from "@/components/ui/carte";
-import { Illustration } from "@/components/ui/illustration";
 import { BAREME_PAR_DEFAUT } from "@/config/baremes";
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
@@ -290,13 +290,16 @@ export default async function PageAnnonce({ params }: Props) {
         <BoutonFavori annonceId={annonce.id} />
       </header>
 
-      <Illustration
-        src={annonce.photo}
-        alt={annonce.photoAlt}
-        priorite
-        className="mt-5 aspect-16/9 w-full rounded-carte border border-bordure"
-        tailles="(min-width: 1024px) 66vw, 100vw"
-      />
+      {/* Toutes les photos, et non la seule couverture : sur une place de
+          marché de matériel, elles *sont* la description — l'état d'un
+          plancher ou la corrosion d'un timon ne se disent pas en une ligne. */}
+      <div className="mt-5">
+        <Galerie
+          photos={annonce.photos}
+          alt={annonce.photoAlt}
+          titre={annonce.titre}
+        />
+      </div>
 
       {/* Les quatre nombres qui décident de la location, à l'endroit où l'œil
           arrive après l'image. */}

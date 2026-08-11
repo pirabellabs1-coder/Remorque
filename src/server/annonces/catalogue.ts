@@ -57,6 +57,14 @@ export type AnnonceResume = {
 };
 
 export type AnnonceDetail = AnnonceResume & {
+  /**
+   * Toutes les photos, dans l'ordre choisi par le propriétaire.
+   *
+   * `photo` reste la couverture — celle des cartes et des partages. Celles-ci
+   * sont pour la fiche, qui n'en montrait qu'une : un propriétaire pouvait en
+   * déposer douze et n'en voir jamais qu'une seule publiée.
+   */
+  photos: string[];
   description: string;
   poidsVideKg: number;
   longueurUtileMm: number;
@@ -81,6 +89,7 @@ export type AnnonceDetail = AnnonceResume & {
 import { paysDuMarche } from "@/server/annonces/marche";
 
 import {
+  photosDeLAnnonce,
   adresses,
   chercher,
   compterParVille,
@@ -110,7 +119,14 @@ const situeA = (villeSlug: string) => {
 
 const photoDe = (slug: SlugCategorie) => {
   const categorie = CATEGORIES.find((entree) => entree.slug === slug)!;
-  return { photo: categorie.photo, photoAlt: categorie.alt };
+  // La galerie du jeu d'essai n'a qu'une image : c'est la photo générique de
+  // la catégorie, et la répéter trois fois donnerait un carrousel qui tourne
+  // sur lui-même.
+  return {
+    photo: categorie.photo,
+    photoAlt: categorie.alt,
+    photos: [categorie.photo],
+  };
 };
 
 /** Graine du dépôt (`depot.ts`), et non source de lecture directe. */
@@ -628,6 +644,7 @@ export const trouverAnnonce = cache(async function trouverAnnonce(
 
   return {
     ...resume,
+    photos: await photosDeLAnnonce(ligne.id),
     description: ligne.description ?? "",
     poidsVideKg: ligne.poidsVideKg ?? 0,
     longueurUtileMm: ligne.longueurUtileMm ?? 0,
