@@ -70,6 +70,8 @@ export type AnnonceDetail = AnnonceResume & {
   longueurUtileMm: number;
   largeurUtileMm: number;
   hauteurUtileMm: number | null;
+  /** Nombre d'essieux, tel que saisi. Un seul par défaut. */
+  nombreEssieux: number;
   typeAttelage: string;
   faisceauBroches: number;
   /** Caution demandée, en centimes. */
@@ -154,6 +156,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     largeurUtileMm: 1_300,
     hauteurUtileMm: 400,
     freinee: false,
+    nombreEssieux: 1,
     typeAttelage: "Boule Ø 50 mm",
     faisceauBroches: 13,
     caution: 40_000,
@@ -191,6 +194,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     largeurUtileMm: 1_500,
     hauteurUtileMm: null,
     freinee: true,
+    nombreEssieux: 1,
     typeAttelage: "Boule Ø 50 mm",
     faisceauBroches: 13,
     caution: 60_000,
@@ -228,6 +232,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     largeurUtileMm: 1_900,
     hauteurUtileMm: null,
     freinee: true,
+    nombreEssieux: 1,
     typeAttelage: "Boule Ø 50 mm",
     faisceauBroches: 13,
     caution: 100_000,
@@ -265,6 +270,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     largeurUtileMm: 1_150,
     hauteurUtileMm: 900,
     freinee: false,
+    nombreEssieux: 1,
     typeAttelage: "Boule Ø 50 mm",
     faisceauBroches: 7,
     caution: 30_000,
@@ -302,6 +308,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     largeurUtileMm: 1_700,
     hauteurUtileMm: 2_300,
     freinee: true,
+    nombreEssieux: 1,
     typeAttelage: "Boule Ø 50 mm",
     faisceauBroches: 13,
     caution: 120_000,
@@ -339,6 +346,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     largeurUtileMm: 2_100,
     hauteurUtileMm: null,
     freinee: true,
+    nombreEssieux: 1,
     typeAttelage: "Boule Ø 50 mm",
     faisceauBroches: 13,
     caution: 80_000,
@@ -376,6 +384,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     largeurUtileMm: 1_100,
     hauteurUtileMm: null,
     freinee: false,
+    nombreEssieux: 1,
     typeAttelage: "Boule Ø 50 mm",
     faisceauBroches: 7,
     caution: 30_000,
@@ -413,6 +422,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     largeurUtileMm: 1_300,
     hauteurUtileMm: 1_600,
     freinee: false,
+    nombreEssieux: 1,
     typeAttelage: "Boule Ø 50 mm",
     faisceauBroches: 13,
     caution: 90_000,
@@ -650,6 +660,7 @@ export const trouverAnnonce = cache(async function trouverAnnonce(
     longueurUtileMm: ligne.longueurUtileMm ?? 0,
     largeurUtileMm: ligne.largeurUtileMm ?? 0,
     hauteurUtileMm: ligne.hauteurUtileMm,
+    nombreEssieux: ligne.nombreEssieux ?? 1,
     typeAttelage: ligne.typeAttelage ?? "",
     faisceauBroches: ligne.faisceauBroches ?? 13,
     caution: ligne.caution,

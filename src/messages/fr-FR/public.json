@@ -809,6 +809,19 @@
       "suivante": "Photo suivante",
       "rang": "{rang} / {total}",
       "vue": "{titre}, vue {rang}"
+    },
+    "schema": {
+      "titre": "Encombrement",
+      "chapo": "Dessiné à l’échelle depuis les dimensions de cette remorque. Comparez-le à ce que vous devez charger, ou à la place dont vous disposez.",
+      "dessus": "Vue de dessus",
+      "cote": "Vue de côté",
+      "longueur": "Longueur utile",
+      "largeur": "Largeur utile",
+      "hauteur": "Hauteur utile",
+      "centimetres": "{valeur} cm",
+      "sansHauteur": "Cette remorque est un plateau : elle n’a pas de hauteur utile, le chargement dépasse librement au-dessus du plancher.",
+      "alternativeDessus": "Schéma de la remorque vue de dessus, avec sa longueur et sa largeur cotées",
+      "alternativeCote": "Schéma de la remorque vue de côté, avec sa hauteur cotée et ses roues"
     }
   },
   "pageLocale": {

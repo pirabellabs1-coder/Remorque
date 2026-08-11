@@ -376,6 +376,7 @@ export const detail = cache(async function detail(
   longueurUtileMm: number | null;
   largeurUtileMm: number | null;
   hauteurUtileMm: number | null;
+  nombreEssieux: number | null;
   typeAttelage: string | null;
   faisceauBroches: number | null;
   caution: number;
@@ -404,6 +405,7 @@ export const detail = cache(async function detail(
       longueurUtileMm: annonce.longueurUtileMm,
       largeurUtileMm: annonce.largeurUtileMm,
       hauteurUtileMm: annonce.hauteurUtileMm,
+      nombreEssieux: annonce.nombreEssieux,
       typeAttelage: annonce.typeAttelage,
       faisceauBroches: annonce.faisceauBroches,
       caution: annonce.caution,

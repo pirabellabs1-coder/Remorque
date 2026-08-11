@@ -6,6 +6,7 @@ import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { CarteReference } from "@/components/annonce/carte-reference";
 import { CarteSituation } from "@/components/annonce/carte-situation";
 import { Galerie } from "@/components/annonce/galerie";
+import { SchemaRemorque } from "@/components/annonce/schema-remorque";
 import { CarteReservation } from "@/components/annonce/carte-reservation";
 import {
   BlocFiche,
@@ -501,6 +502,20 @@ export default async function PageAnnonce({ params }: Props) {
           />
         </div>
       </div>
+
+      {/* ---------- Encombrement ----------
+          Dessiné depuis les dimensions saisies : rien n'est demandé de plus
+          au propriétaire, et le schéma ne peut pas contredire l'annonce. */}
+      <section className="mt-12 border-t border-bordure pt-8">
+        <SchemaRemorque
+          dimensions={{
+            longueurMm: annonce.longueurUtileMm,
+            largeurMm: annonce.largeurUtileMm,
+            hauteurMm: annonce.hauteurUtileMm,
+            nombreEssieux: annonce.nombreEssieux,
+          }}
+        />
+      </section>
 
       {/* ---------- Où se trouve le matériel ---------- */}
       <section className="mt-12 border-t border-bordure pt-8">
