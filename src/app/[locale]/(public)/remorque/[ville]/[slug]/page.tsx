@@ -3,6 +3,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { BoutonFavori } from "@/components/annonce/bouton-favori";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
+import { CarteReference } from "@/components/annonce/carte-reference";
 import { CarteReservation } from "@/components/annonce/carte-reservation";
 import {
   BlocFiche,
@@ -17,9 +18,11 @@ import { BAREME_PAR_DEFAUT } from "@/config/baremes";
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
 import { ENABLED_MARKETS, type Market } from "@/config/markets";
+import { referenceAnnonce } from "@/domain/annonce/reference";
 import { BAREME_FR } from "@/domain/compatibilite/permis";
 import { getPathname, Link } from "@/i18n/navigation";
 import { avisDeLannonce } from "@/server/annonces/avis";
+import { codeQrSvg } from "@/server/annonces/code-qr";
 import { compteConnecte } from "@/server/authentification/session";
 import {
   annoncesDeLaVille,
@@ -117,6 +120,22 @@ export default async function PageAnnonce({ params }: Props) {
   const compte = await compteConnecte();
 
   const notes = await avisDeLannonce(annonce.id, 4);
+
+  // L'adresse canonique de la fiche : c'est elle qu'encode le code QR, et elle
+  // seule — ni identifiant technique, ni paramètre de suivi. Un code QR collé
+  // sur une remorque survit à bien des versions du site.
+  const adressePublique = new URL(
+    getPathname({
+      locale: locale as Market,
+      href: {
+        pathname: "/remorque/[ville]/[slug]",
+        params: { ville, slug },
+      },
+    }),
+    clientEnv.NEXT_PUBLIC_SITE_URL,
+  ).toString();
+
+  const qrSvg = await codeQrSvg(adressePublique);
 
   // Annonces voisines, la fiche courante exclue. Trois suffisent : au-delà, ce
   // n'est plus une suggestion mais une seconde page de résultats.
@@ -434,11 +453,22 @@ export default async function PageAnnonce({ params }: Props) {
 
         {/* Le barème descend depuis le serveur : il viendra de la table `pays`
             dès qu'elle sera branchée, sans toucher au composant. */}
-        <CarteReservation
-          annonce={annonce}
-          bareme={BAREME_PAR_DEFAUT}
-          connecte={compte !== null}
-        />
+        <div className="space-y-4">
+          <CarteReservation
+            annonce={annonce}
+            bareme={BAREME_PAR_DEFAUT}
+            connecte={compte !== null}
+          />
+
+          {/* Deux façons de désigner ce bien hors de l'écran : une référence
+              qu'on dicte au téléphone et qu'on recopie sur un constat, un code
+              QR qu'on colle sur le timon. */}
+          <CarteReference
+            reference={referenceAnnonce(annonce.id)}
+            adresse={adressePublique}
+            qrSvg={qrSvg}
+          />
+        </div>
       </div>
 
       {/* ---------- À proximité ---------- */}

@@ -6,6 +6,7 @@ import { Bouton } from "@/components/ui/bouton";
 import { Illustration } from "@/components/ui/illustration";
 import { marchePourPays } from "@/config/markets";
 import { NOMBRE_ETAPES } from "@/domain/annonce/publication";
+import { referenceAnnonce } from "@/domain/annonce/reference";
 import { Link } from "@/i18n/navigation";
 import { PRIX_AFFICHE } from "@/lib/cn";
 import { exigerProfil } from "@/server/authentification/garde";
@@ -130,6 +131,11 @@ export default async function PageAnnonces({ params }: Props) {
                   <p className="mt-0.5 text-sm text-texte-attenue">
                     {annonce.ville}
                     {annonce.ptacKg ? ` · ${annonce.ptacKg} kg` : ""}
+                  </p>
+                  {/* La même référence que sur la fiche publique : c'est elle
+                      que le loueur cite à l'assistance. */}
+                  <p className="mt-0.5 font-mono text-xs tracking-tight text-texte-attenue tabular-nums">
+                    {referenceAnnonce(annonce.id)}
                   </p>
                   {annonce.prixJour !== null ? (
                     <p className="mt-1 text-sm font-bold tabular-nums text-accent">

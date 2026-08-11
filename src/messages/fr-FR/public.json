@@ -693,7 +693,14 @@
     "assuranceTexte": "Chaque location est couverte pendant toute sa durée. La caution ne sert qu'en cas de dommage non couvert.",
     "enSavoirPlus": "En savoir plus",
     "similaires": "À proximité",
-    "similairesChapo": "D'autres remorques disponibles autour de {ville}."
+    "similairesChapo": "D'autres remorques disponibles autour de {ville}.",
+    "reference": {
+      "titre": "Référence de l’annonce",
+      "aide": "Citez-la à l’assistance. Le code QR renvoie à cette fiche : imprimez-le et collez-le sur le timon.",
+      "copier": "Copier le lien",
+      "copie": "Lien copié",
+      "telecharger": "Télécharger"
+    }
   },
   "pageLocale": {
     "metaTitre": "Location de remorque à {ville} ({zone})",
