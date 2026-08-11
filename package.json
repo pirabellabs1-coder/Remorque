@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "node scripts/copier-worker-carto.mjs && next build",
     "courriels": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/expedier-courriels.ts",
     "db:demo": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/amorcer-demonstration.ts",
     "db:generate": "drizzle-kit generate",
@@ -17,7 +17,7 @@
     "rappels": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/poser-rappels.ts",
     "taches": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/taches-quotidiennes.ts",
     "db:verifier": "tsx --env-file-if-exists=.env.local scripts/verifier-base.ts",
-    "dev": "next dev",
+    "dev": "node scripts/copier-worker-carto.mjs && next dev",
     "lint": "eslint",
     "start": "next start",
     "test": "vitest run",

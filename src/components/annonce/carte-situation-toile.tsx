@@ -39,6 +39,13 @@ export default function CarteSituationToile({
   useEffect(() => {
     if (!cadre.current) return;
 
+    // Le fil d'exécution est servi tel quel depuis `public/`, à côté du module
+    // partagé qu'il appelle par un chemin relatif. Laissé au bundler, il
+    // n'était pas servi du tout : le navigateur recevait la page d'erreur HTML
+    // à la place du script, et la carte restait un aplat sans jamais dessiner
+    // une route. Voir `scripts/copier-worker-carto.mjs`.
+    maplibregl.setWorkerUrl("/cartographie/maplibre-gl-worker.mjs");
+
     // Le zoom est déduit du rayon : un cercle de 300 mètres et un cercle de
     // 3 kilomètres ne se regardent pas de la même hauteur, et un zoom fixe
     // rendrait l'un minuscule et l'autre débordant.

@@ -43,3 +43,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# Copié à chaque compilation depuis node_modules — voir scripts/copier-worker-carto.mjs
+public/cartographie/

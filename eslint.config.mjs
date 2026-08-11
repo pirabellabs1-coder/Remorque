@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Fichiers servis tels quels, dont le fil d'exécution cartographique
+    // recopié depuis `node_modules` à chaque compilation. Ce n'est pas notre
+    // code : le passer au crible produit un millier d'avertissements sur du
+    // JavaScript minifié que personne ne corrigera.
+    "public/**",
   ]),
 ]);
 
