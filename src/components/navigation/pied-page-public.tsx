@@ -36,10 +36,10 @@ export function PiedPagePublic() {
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-6">
           <div>
             <p className="text-[1.0625rem] font-semibold">
-              {t("piedPage.aide.titre")}
+              {t("piedPage.bandeau.titre")}
             </p>
             <p className="mt-1 text-sm text-encre-texte-attenue">
-              {t("piedPage.aide.texte")}
+              {t("piedPage.bandeau.texte")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -47,13 +47,13 @@ export function PiedPagePublic() {
               href="/aide"
               className="inline-flex h-11 items-center rounded-champ border border-encre-bordure bg-white/10 px-4 text-sm font-medium backdrop-blur-sm transition-colors hover:bg-white/20"
             >
-              {t("piedPage.aide.centre")}
+              {t("piedPage.bandeau.centre")}
             </Link>
             <Link
               href="/contact"
               className="inline-flex h-11 items-center rounded-champ bg-accent px-4 text-sm font-medium text-accent-contraste transition-opacity hover:opacity-90"
             >
-              {t("piedPage.aide.contact")}
+              {t("piedPage.bandeau.contact")}
             </Link>
           </div>
         </div>

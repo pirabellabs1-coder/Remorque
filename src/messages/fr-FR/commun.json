@@ -39,12 +39,6 @@
     "droits": "© {annee} Remorque. Tous droits réservés.",
     "aPropos": "À propos",
     "contact": "Contact",
-    "aide": {
-      "titre": "Une question avant de réserver ?",
-      "texte": "Le centre d’aide répond aux plus fréquentes. Sinon, écrivez-nous.",
-      "centre": "Centre d’aide",
-      "contact": "Nous écrire"
-    },
     "cgu": "Conditions générales d’utilisation",
     "cgv": "Conditions générales de vente",
     "confidentialite": "Politique de confidentialité",
@@ -52,7 +46,14 @@
     "mediation": "Médiation de la consommation",
     "mentionsLegales": "Mentions légales",
     "planDuSite": "Plan du site",
-    "presentation": "La place de marché des remorques entre particuliers et professionnels. Réservation et paiement en ligne, caution encadrée, état des lieux photographique à chaque location."
+    "presentation": "La place de marché des remorques entre particuliers et professionnels. Réservation et paiement en ligne, caution encadrée, état des lieux photographique à chaque location.",
+    "aide": "Aide",
+    "bandeau": {
+      "titre": "Une question avant de réserver ?",
+      "texte": "Le centre d’aide répond aux plus fréquentes. Sinon, écrivez-nous.",
+      "centre": "Centre d’aide",
+      "contact": "Nous écrire"
+    }
   },
   "erreurs": {
     "titre": "Une erreur est survenue",
