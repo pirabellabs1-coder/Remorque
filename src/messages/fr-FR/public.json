@@ -90,6 +90,22 @@
       "chapo": "Chaque pastille est une remorque à louer, à son prix par jour. Cliquez pour ouvrir l’annonce.",
       "etiquette": "Carte de {nombre} annonces disponibles",
       "mention": "Les emplacements sont approximatifs : l’adresse exacte du retrait vous est communiquée une fois la réservation confirmée."
+    },
+    "avis": {
+      "titre": "Ce qu'en disent les locataires",
+      "chapo": "Chaque avis vient d'une location réellement effectuée sur la plateforme : un avis ne peut être déposé qu'après une restitution.",
+      "synthese": "{moyenne} sur 5 · {nombre, plural, one {# avis} other {# avis}}"
+    },
+    "faq": {
+      "titre": "Questions fréquentes",
+      "q1": "Faut-il un permis particulier pour tracter une remorque ?",
+      "r1": "Cela dépend du poids total autorisé de la remorque et de votre véhicule. Sous 750 kg, le permis B suffit presque toujours. Au-delà, tout se joue sur la somme des deux poids : notre calculateur de charge répond en trois questions, et chaque annonce affiche son PTAC.",
+      "q2": "La caution est-elle prélevée sur mon compte ?",
+      "r2": "Non. Une empreinte bancaire est enregistrée à la réservation, sans qu'aucune somme ne quitte votre compte. Elle n'est débitée qu'en cas de dommage établi par la comparaison des états des lieux de départ et de retour, et elle est libérée après la restitution.",
+      "q3": "Qui assure la remorque pendant la location ?",
+      "r3": "Son propriétaire, à qui la loi en fait obligation. La plateforme n'est pas assureur : elle fournit l'état des lieux photographique horodaté, gère la caution et conserve le paiement jusqu'à la remise. Vérifiez aussi ce que couvre votre propre contrat lorsque vous tractez.",
+      "q4": "Que se passe-t-il si le propriétaire refuse ma demande ?",
+      "r4": "Rien n'est débité. Le paiement n'est engagé qu'après son accord, et l'empreinte de caution est levée. Les annonces marquées « réservation instantanée » évitent cette attente : elles se réservent sans accord préalable."
     }
   },
   "recherche": {

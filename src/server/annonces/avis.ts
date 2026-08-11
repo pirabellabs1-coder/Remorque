@@ -5,7 +5,8 @@ import { cache } from "react";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 
 import { db } from "@/server/db";
-import { avis as tableAvis, utilisateur } from "@/server/db/schema";
+import { annonce, avis as tableAvis, utilisateur } from "@/server/db/schema";
+import { annonceDuMarche } from "@/server/annonces/marche";
 
 /**
  * Avis d'une annonce, pour la fiche publique.
@@ -62,6 +63,72 @@ const nomAffiche = sql<string>`
  * de quatre commentaires est exact, tandis qu'une moyenne calculée sur les
  * quatre affichés serait fausse et flatteuse.
  */
+/**
+ * Les avis les plus parlants du marché courant, pour l'accueil.
+ *
+ * Sélectionnés sur la longueur du commentaire et non sur la note : « Parfait »
+ * ne convainc personne, tandis qu'un locataire qui raconte son déménagement
+ * dit quelque chose de la plateforme. Les avis restent réels, publiés et non
+ * masqués — la vitrine n'a pas de jeu d'avis à elle.
+ *
+ * La moyenne et le décompte portent sur **tous** les avis du marché, jamais
+ * sur les quelques-uns montrés : afficher « 4,8 » calculé sur trois
+ * commentaires choisis serait une flatterie, et une fausse.
+ */
+export const avisEnVitrine = cache(async function avisEnVitrine(
+  limite = 3,
+): Promise<{ avis: AvisPublic[]; nombre: number; moyenne: number | null }> {
+  const publies = and(
+    isNotNull(tableAvis.publieLe),
+    eq(tableAvis.masque, false),
+    await annonceDuMarche(),
+  );
+
+  const [agregats, lignes] = await Promise.all([
+    db
+      .select({
+        nombre: sql<number>`count(*)::int`,
+        moyenne: sql<string | null>`avg(${tableAvis.note})`,
+      })
+      .from(tableAvis)
+      .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
+      .where(publies),
+
+    db
+      .select({
+        id: tableAvis.id,
+        auteur: nomAffiche,
+        note: tableAvis.note,
+        texte: tableAvis.commentaire,
+        date: tableAvis.publieLe,
+        reponse: tableAvis.reponse,
+      })
+      .from(tableAvis)
+      .innerJoin(utilisateur, eq(utilisateur.id, tableAvis.auteurId))
+      .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
+      .where(and(publies, sql`length(${tableAvis.commentaire}) > 80`))
+      .orderBy(desc(tableAvis.note), desc(sql`length(${tableAvis.commentaire})`))
+      .limit(limite),
+  ]);
+
+  const compte = agregats[0];
+
+  return {
+    avis: lignes.map((ligne) => ({
+      id: ligne.id,
+      auteur: ligne.auteur,
+      note: ligne.note,
+      texte: ligne.texte ?? "",
+      date: ligne.date as Date,
+      reponse: ligne.reponse,
+    })),
+    nombre: compte?.nombre ?? 0,
+    moyenne: compte?.moyenne === null || compte?.moyenne === undefined
+      ? null
+      : Number(compte.moyenne),
+  };
+});
+
 export const avisDeLannonce = cache(async function avisDeLannonce(
   annonceId: string,
   limite?: number,

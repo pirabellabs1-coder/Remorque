@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
+import { Etoiles } from "@/components/espace/statut";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
 import { DonneesStructurees } from "@/components/ui/carte";
@@ -25,6 +26,7 @@ import {
   annoncesACartographier,
   annoncesEnVitrine,
 } from "@/server/annonces/catalogue";
+import { avisEnVitrine } from "@/server/annonces/avis";
 
 /**
  * Villes montrées par pays sur l'accueil. Les autres restent atteignables par
@@ -60,6 +62,8 @@ export default async function PageAccueil({ params }: Props) {
   const t = await getTranslations("accueil");
   const tParcours = await getTranslations("parcoursLocataire");
   const tCarte = await getTranslations("accueil.carte");
+  const tAvis = await getTranslations("accueil.avis");
+  const tFaq = await getTranslations("accueil.faq");
   const format = await getFormatter();
   const base = clientEnv.NEXT_PUBLIC_SITE_URL;
 
@@ -70,6 +74,16 @@ export default async function PageAccueil({ params }: Props) {
   // Chaque pastille est un lien : son adresse est construite ici, côté
   // serveur, plutôt que reconstituée dans le navigateur — le routage localisé
   // n'a pas à être réimplémenté dans un composant de carte.
+  const vitrineAvis = await avisEnVitrine(3);
+
+  // Une seule source pour l'affichage et le balisage : deux listes séparées
+  // finiraient par ne plus dire la même chose, et Google verrait autre chose
+  // que le visiteur — ce qu'il sanctionne.
+  const questions = [1, 2, 3, 4].map((numero) => ({
+    question: tFaq(`q${numero}`),
+    reponse: tFaq(`r${numero}`),
+  }));
+
   const pointsCarte = (await annoncesACartographier()).map((annonce) => ({
     id: annonce.id,
     titre: annonce.titre,
@@ -359,6 +373,52 @@ export default async function PageAccueil({ params }: Props) {
         </div>
       </section>
 
+      {/* ================= Avis =================
+          La preuve par les pairs vient après l'argument de la plateforme :
+          c'est elle qui décide quelqu'un à confier sa voiture à une remorque
+          inconnue, bien davantage que ce que nous écrivons nous-mêmes. */}
+      {vitrineAvis.avis.length > 0 ? (
+        <section className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="max-w-2xl">
+              <TitreSection>{tAvis("titre")}</TitreSection>
+              <p className="mt-5 text-texte-attenue">{tAvis("chapo")}</p>
+            </div>
+
+            {/* Moyenne et décompte portent sur tous les avis du marché, jamais
+                sur les trois montrés — une moyenne calculée sur des avis
+                choisis serait une flatterie, et une fausse. */}
+            {vitrineAvis.moyenne !== null ? (
+              <p className="text-[0.9375rem] text-texte-attenue">
+                {tAvis("synthese", {
+                  moyenne: format.number(vitrineAvis.moyenne, {
+                    maximumFractionDigits: 1,
+                  }),
+                  nombre: vitrineAvis.nombre,
+                })}
+              </p>
+            ) : null}
+          </div>
+
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {vitrineAvis.avis.map((avis) => (
+              <li
+                key={avis.id}
+                className="flex flex-col rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte)"
+              >
+                <Etoiles note={avis.note} />
+                <blockquote className="mt-4 flex-1 text-[0.9375rem] leading-relaxed">
+                  {avis.texte}
+                </blockquote>
+                <p className="mt-4 text-sm font-medium text-texte-attenue">
+                  {avis.auteur}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {/* ================= Parcours ================= */}
       <section className="bg-fond-doux">
         <div className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
@@ -477,8 +537,39 @@ export default async function PageAccueil({ params }: Props) {
         </div>
       </section>
 
+      {/* ================= Questions fréquentes =================
+          Les quatre questions qu'on se pose avant de réserver, et qui font
+          renoncer sans réponse. Elles sont balisées plus bas : Google les
+          affiche alors dépliables sous le résultat, ce qui reste l'un des
+          rares gains de visibilité encore faciles à obtenir. */}
+      <section className="bg-fond-doux">
+        <div className={cn("mx-auto w-full max-w-4xl px-4 sm:px-6", ESPACEMENT.standard)}>
+          <TitreSection>{tFaq("titre")}</TitreSection>
+          <dl className="mt-10 divide-y divide-bordure border-y border-bordure">
+            {questions.map((entree) => (
+              <div key={entree.question} className="py-6">
+                <dt className="text-[1.0625rem] font-semibold">
+                  {entree.question}
+                </dt>
+                <dd className="mt-2 text-texte-attenue">{entree.reponse}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
       <DonneesStructurees
-        donnees={{
+        donnees={[
+          {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: questions.map((entree) => ({
+              "@type": "Question",
+              name: entree.question,
+              acceptedAnswer: { "@type": "Answer", text: entree.reponse },
+            })),
+          },
+          {
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: t("nomSite"),
@@ -492,7 +583,8 @@ export default async function PageAccueil({ params }: Props) {
             },
             "query-input": "required name=search_term_string",
           },
-        }}
+          },
+        ]}
       />
     </main>
   );
