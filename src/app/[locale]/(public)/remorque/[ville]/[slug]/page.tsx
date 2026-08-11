@@ -143,16 +143,32 @@ export default async function PageAnnonce({ params }: Props) {
   // aujourd'hui — n'a par définition aucune voisine, et la section
   // disparaissait au lieu de proposer la remorque de la ville d'à côté, à
   // vingt minutes de route.
-  const voisines = (
+  const autreQueCelleCi = (autre: { id: string }) => autre.id !== annonce.id;
+
+  const proches = (
     await rechercherAnnonces({
       longitude: annonce.situation.longitude,
       latitude: annonce.situation.latitude,
+      // Soixante kilomètres : la distance qu'on accepte de faire pour aller
+      // chercher une remorque. Au-delà, ce n'est plus une suggestion utile,
+      // c'est une consolation.
       rayonKm: 60,
       tri: "distance",
     })
-  ).annonces
-    .filter((autre) => autre.id !== annonce.id)
-    .slice(0, 3);
+  ).annonces.filter(autreQueCelleCi);
+
+  // Rien alentour ? On propose alors le même type de matériel ailleurs dans le
+  // pays. Une place de marché qui démarre est clairsemée : la plupart des
+  // villes n'ont qu'une annonce, et la section resterait vide en permanence
+  // alors qu'elle a précisément pour rôle de retenir le visiteur.
+  const memeType =
+    proches.length >= 3
+      ? []
+      : (await rechercherAnnonces({ categorie: annonce.categorie })).annonces
+          .filter(autreQueCelleCi)
+          .filter((autre) => !proches.some((proche) => proche.id === autre.id));
+
+  const voisines = [...proches, ...memeType].slice(0, 3);
 
   const mm = (valeur: number) =>
     t("cm", { cm: format.number(valeur / 10, { maximumFractionDigits: 0 }) });
