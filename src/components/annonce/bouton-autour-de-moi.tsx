@@ -1,6 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+
+import { cn } from "@/lib/cn";
 import { useState } from "react";
 
 import { useRouter } from "@/i18n/navigation";
@@ -17,7 +19,14 @@ import { useRouter } from "@/i18n/navigation";
  * En cas de refus ou d'échec, la recherche reste utilisable par nom de ville :
  * la position est un raccourci, jamais une condition.
  */
-export function BoutonAutourDeMoi({ rayonKm }: { rayonKm: number }) {
+export function BoutonAutourDeMoi({
+  rayonKm,
+  surFondSombre = false,
+}: {
+  rayonKm: number;
+  /** Posé sur une photographie : bordure et texte s'inversent. */
+  surFondSombre?: boolean;
+}) {
   const t = useTranslations("recherche");
   const router = useRouter();
   const [etat, setEtat] = useState<"repos" | "attente" | "refus" | "indisponible">(
@@ -60,7 +69,12 @@ export function BoutonAutourDeMoi({ rayonKm }: { rayonKm: number }) {
         type="button"
         onClick={localiser}
         disabled={etat === "attente"}
-        className="inline-flex items-center gap-2 rounded-champ border border-bordure px-4 py-2.5 text-sm font-medium transition-colors hover:border-accent hover:text-accent disabled:opacity-60"
+        className={cn(
+          "inline-flex items-center gap-2 rounded-champ border px-4 py-2.5 text-sm font-medium transition-colors hover:border-accent disabled:opacity-60",
+          surFondSombre
+            ? "border-encre-bordure bg-white/10 text-encre-texte backdrop-blur-sm"
+            : "border-bordure hover:text-accent",
+        )}
       >
         <svg
           viewBox="0 0 24 24"
@@ -77,7 +91,13 @@ export function BoutonAutourDeMoi({ rayonKm }: { rayonKm: number }) {
       </button>
 
       {etat === "refus" || etat === "indisponible" ? (
-        <p role="status" className="mt-2 text-sm text-texte-attenue">
+        <p
+          role="status"
+          className={cn(
+            "mt-2 text-sm",
+            surFondSombre ? "text-encre-texte-attenue" : "text-texte-attenue",
+          )}
+        >
           {etat === "refus" ? t("positionRefusee") : t("positionIndisponible")}
         </p>
       ) : null}

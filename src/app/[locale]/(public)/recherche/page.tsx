@@ -2,6 +2,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 
 import { BoutonAutourDeMoi } from "@/components/annonce/bouton-autour-de-moi";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
+import { Illustration } from "@/components/ui/illustration";
 import {
   FiltresRecherche,
   TriResultats,
@@ -181,8 +182,27 @@ export default async function PageRecherche({ params, searchParams }: Props) {
           un nom de ville, et occupait le premier écran sans rien annoncer. Le
           titre situe, la carte de recherche reste à la mesure de ce qu'on y
           tape. */}
-      <section className="border-b border-bordure bg-fond-doux">
-        <div className="mx-auto w-full max-w-[100rem] px-4 py-10 sm:px-6 sm:py-14">
+      <section className="relative overflow-hidden bg-encre text-encre-texte">
+        <div className="absolute inset-0">
+          <Illustration
+            src="/images/hero.webp"
+            alt=""
+            priorite
+            className="h-full w-full"
+            tailles="100vw"
+          />
+        </div>
+        {/* Deux voiles superposés plutôt qu'un seul plus dense : l'un pose le
+            contraste sur toute la surface, l'autre l'appuie du côté du texte
+            et laisse la photographie respirer à droite, là où l'œil ne lit
+            pas. Sans eux, le titre blanc se perd dans le ciel de l'image. */}
+        <div aria-hidden className="absolute inset-0 bg-marque-950/70" />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-linear-to-r from-marque-950/95 via-marque-950/70 to-marque-950/30"
+        />
+
+        <div className="relative mx-auto w-full max-w-[100rem] px-4 py-12 sm:px-6 sm:py-16">
           <h1 className="max-w-3xl text-2xl font-semibold tracking-tight text-balance sm:text-4xl">
             {titre}
           </h1>
@@ -190,7 +210,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
             aria-hidden
             className="mt-4 block h-1 w-12 rounded-full bg-accent"
           />
-          <p className="mt-4 max-w-2xl text-[1.0625rem] text-texte-attenue">
+          <p className="mt-4 max-w-2xl text-[1.0625rem] text-encre-texte-attenue">
             {total > 0
               ? t("accroche", { nombre: total })
               : t("resultats", { nombre: total })}
@@ -203,7 +223,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <BoutonAutourDeMoi rayonKm={RAYON_PAR_DEFAUT} />
+            <BoutonAutourDeMoi rayonKm={RAYON_PAR_DEFAUT} surFondSombre />
 
             {/* Le rayon ne s'affiche qu'une fois la position connue : proposer
                 « dans 25 km » de nulle part n'a pas de sens. */}
@@ -221,7 +241,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
                         "inline-flex rounded-full border px-3 py-1 text-sm transition-colors",
                         valeur === rayonKm
                           ? "border-accent bg-accent text-accent-contraste"
-                          : "border-bordure bg-fond-eleve hover:border-accent",
+                          : "border-encre-bordure bg-white/10 text-encre-texte backdrop-blur-sm hover:border-accent",
                       )}
                     >
                       {t("rayon", { km: valeur })}
