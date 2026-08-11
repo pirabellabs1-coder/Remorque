@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props) {
   ).toString();
 
   return {
-    title: t("metaTitre", { categorie: categorie.nom }),
+    title: t("metaTitre", { categorie: categorie.nomEnPhrase }),
     description: t("metaDescription", {
       categorie: categorie.nomEnPhrase,
       usages: categorie.usages.toLowerCase(),
@@ -129,7 +129,7 @@ export default async function PageCategorie({ params }: Props) {
           </nav>
 
           <h1 className="mt-6 max-w-3xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-            {t("titre", { categorie: categorie.nom })}
+            {t("titre", { categorie: categorie.nomEnPhrase })}
           </h1>
           <span
             aria-hidden
@@ -193,7 +193,7 @@ export default async function PageCategorie({ params }: Props) {
         {annonces.length > 0 ? (
           <>
             <h2 className="text-2xl font-semibold tracking-tight">
-              {t("annonces", { categorie: categorie.nom })}
+              {t("annonces", { categorie: categorie.nomEnPhrase })}
             </h2>
             <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {annonces.slice(0, 9).map((annonce) => (

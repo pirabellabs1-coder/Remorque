@@ -1504,7 +1504,7 @@
       "apartir": "À partir de"
     },
     "action": "Voir les annonces disponibles",
-    "annonces": "{categorie} à louer",
+    "annonces": "Les {categorie} à louer",
     "toutVoir": "Voir les {nombre} annonces",
     "usages": {
       "titre": "À quoi sert une {categorie}",
