@@ -4,6 +4,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { BoutonFavori } from "@/components/annonce/bouton-favori";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { CarteReference } from "@/components/annonce/carte-reference";
+import { CarteSituation } from "@/components/annonce/carte-situation";
 import { CarteReservation } from "@/components/annonce/carte-reservation";
 import {
   BlocFiche,
@@ -112,6 +113,8 @@ export default async function PageAnnonce({ params }: Props) {
   const categorie = CATEGORIES.find(
     (entree) => entree.slug === annonce.categorie,
   )!;
+
+  const tSituation = await getTranslations("annonce.situation");
 
   const notes = await avisDeLannonce(annonce.id, 4);
 
@@ -465,6 +468,23 @@ export default async function PageAnnonce({ params }: Props) {
           />
         </div>
       </div>
+
+      {/* ---------- Où se trouve le matériel ---------- */}
+      <section className="mt-12 border-t border-bordure pt-8">
+        <h2 className="text-xl font-semibold tracking-tight">
+          {tSituation("titre")}
+        </h2>
+        <div className="mt-5">
+          <CarteSituation
+            longitude={annonce.situation.longitude}
+            latitude={annonce.situation.latitude}
+            rayonM={annonce.situation.rayonM}
+            quartier={annonce.quartier}
+            ville={annonce.ville}
+            styleUrl={clientEnv.NEXT_PUBLIC_MAP_STYLE_URL}
+          />
+        </div>
+      </section>
 
       {/* ---------- À proximité ---------- */}
       {voisines.length > 0 ? (

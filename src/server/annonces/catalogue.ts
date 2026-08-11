@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { CATEGORIES, type SlugCategorie } from "@/config/categories";
+import { trouverVille } from "@/config/villes";
 import type { Market } from "@/config/markets";
 
 
@@ -38,6 +39,21 @@ export type AnnonceResume = {
   ptacKg: number;
   chargeUtileKg: number;
   freinee: boolean;
+  /**
+   * Où situer l'annonce, et avec quelle imprécision.
+   *
+   * Les deux vont ensemble et ne se séparent jamais : le point n'est publiable
+   * qu'au centre du cercle. L'afficher seul reviendrait à publier l'adresse du
+   * domicile — précisément ce que le réglage du propriétaire existe pour
+   * éviter, et ce que le cadrage interdit avant confirmation de la
+   * réservation.
+   */
+  situation: {
+    longitude: number;
+    latitude: number;
+    /** Rayon d'imprécision affiché publiquement, en mètres. */
+    rayonM: number;
+  };
 };
 
 export type AnnonceDetail = AnnonceResume & {
@@ -73,6 +89,25 @@ import {
   versResume,
 } from "./requetes";
 
+/**
+ * Situe une entrée de démonstration au centre de sa commune.
+ *
+ * Exactement ce que fait la publication réelle tant que l'adresse n'est pas
+ * géocodée : le point est celui de la ville, l'imprécision affichée fait le
+ * reste. Rien n'est inventé ici — les coordonnées sont celles de
+ * `config/villes.ts`, et le rayon est la valeur par défaut du schéma.
+ */
+const situeA = (villeSlug: string) => {
+  const ville = trouverVille(villeSlug)!;
+  return {
+    situation: {
+      longitude: ville.longitude,
+      latitude: ville.latitude,
+      rayonM: 800,
+    },
+  };
+};
+
 const photoDe = (slug: SlugCategorie) => {
   const categorie = CATEGORIES.find((entree) => entree.slug === slug)!;
   return { photo: categorie.photo, photoAlt: categorie.alt };
@@ -92,6 +127,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     prixJour: 3_500,
     devise: "EUR",
     ...photoDe("remorque-benne"),
+    ...situeA("bruxelles"),
     note: 4.8,
     nombreAvis: 24,
     reservationInstantanee: true,
@@ -128,6 +164,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     prixJour: 4_200,
     devise: "EUR",
     ...photoDe("remorque-plateau"),
+    ...situeA("bruxelles"),
     note: 4.9,
     nombreAvis: 41,
     reservationInstantanee: true,
@@ -164,6 +201,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     prixJour: 6_900,
     devise: "EUR",
     ...photoDe("porte-voiture"),
+    ...situeA("bruxelles"),
     note: 4.7,
     nombreAvis: 18,
     reservationInstantanee: false,
@@ -200,6 +238,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     prixJour: 2_400,
     devise: "EUR",
     ...photoDe("remorque-bagagere"),
+    ...situeA("bruxelles"),
     note: 4.6,
     nombreAvis: 9,
     reservationInstantanee: true,
@@ -236,6 +275,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     prixJour: 8_500,
     devise: "EUR",
     ...photoDe("van-a-chevaux"),
+    ...situeA("bruxelles"),
     note: 5,
     nombreAvis: 12,
     reservationInstantanee: false,
@@ -272,6 +312,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     prixJour: 5_500,
     devise: "EUR",
     ...photoDe("porte-bateau"),
+    ...situeA("bruxelles"),
     note: 4.5,
     nombreAvis: 6,
     reservationInstantanee: true,
@@ -308,6 +349,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     prixJour: 2_900,
     devise: "EUR",
     ...photoDe("porte-moto"),
+    ...situeA("bruxelles"),
     note: 4.9,
     nombreAvis: 15,
     reservationInstantanee: true,
@@ -344,6 +386,7 @@ export const JEU_DE_DEMONSTRATION: AnnonceDetail[] = [
     prixJour: 9_500,
     devise: "EUR",
     ...photoDe("remorque-frigorifique"),
+    ...situeA("bruxelles"),
     note: 4.8,
     nombreAvis: 31,
     reservationInstantanee: false,

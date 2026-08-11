@@ -133,6 +133,13 @@ function colonnesResume(
     ptacKg: annonce.ptacKg,
     chargeUtileKg: annonce.chargeUtileKg,
     freinee: annonce.freinee,
+    // Position et rayon d'imprécision voyagent ensemble, et ne se séparent
+    // jamais : la première ne s'affiche qu'au centre du second. Publier le
+    // point sans le cercle reviendrait à publier l'adresse du domicile,
+    // exactement ce que le réglage du propriétaire existe pour éviter.
+    longitude: sql<number>`st_x(${annonce.position}::geometry)`,
+    latitude: sql<number>`st_y(${annonce.position}::geometry)`,
+    rayonApproximatifM: annonce.rayonApproximatifM,
   };
 }
 
@@ -153,6 +160,9 @@ type LigneResume = {
   ptacKg: number | null;
   chargeUtileKg: number | null;
   freinee: boolean | null;
+  longitude: number;
+  latitude: number;
+  rayonApproximatifM: number;
 };
 
 function versResume(ligne: LigneResume, alt: string): AnnonceResume {
@@ -177,6 +187,11 @@ function versResume(ligne: LigneResume, alt: string): AnnonceResume {
     ptacKg: ligne.ptacKg ?? 0,
     chargeUtileKg: ligne.chargeUtileKg ?? 0,
     freinee: ligne.freinee ?? false,
+    situation: {
+      longitude: ligne.longitude,
+      latitude: ligne.latitude,
+      rayonM: ligne.rayonApproximatifM,
+    },
   };
 }
 
