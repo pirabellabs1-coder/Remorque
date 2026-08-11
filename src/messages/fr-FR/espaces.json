@@ -329,7 +329,8 @@
         "publier": "Mettre une remorque en location",
         "brouillons": "Brouillons en cours",
         "reprendre": "Reprendre",
-        "brouillonRang": "Étape {rang} sur {total}"
+        "brouillonRang": "Étape {rang} sur {total}",
+        "modifier": "Modifier"
       },
       "publication": {
         "titre": "Mettre une remorque en location",
@@ -448,7 +449,14 @@
         "instantanee": "Réservation instantanée",
         "instantaneeAide": "Le locataire réserve sans attendre votre accord. Les annonces instantanées sont réservées deux fois plus souvent.",
         "publier": "Publier l’annonce",
-        "enregistrerBrouillon": "Enregistrer et finir plus tard"
+        "enregistrerBrouillon": "Enregistrer et finir plus tard",
+        "edition": {
+          "titre": "Modifier l’annonce",
+          "chapo": "L’annonce reste en ligne pendant que vous la corrigez. Chaque étape enregistrée est reprise aussitôt par le catalogue public.",
+          "enregistrer": "Enregistrer les modifications",
+          "terminer": "Terminer",
+          "categorieFigee": "La catégorie ne se change pas après publication : elle commande la page locale de l’annonce et les filtres qui la font ressortir."
+        }
       },
       "reservations": {
         "titre": "Réservations",

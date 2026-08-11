@@ -20,11 +20,14 @@ export async function FilEtapes({
   courante,
   atteinte,
   annonceId,
+  enEdition = false,
 }: {
   courante: Etape;
   /** Rang de l'étape la plus avancée déjà franchie. */
   atteinte: number;
   annonceId?: string;
+  /** L'annonce est déjà en ligne : on corrige, on ne crée pas. */
+  enEdition?: boolean;
 }) {
   const t = await getTranslations("espaces.loueur.publication");
 
@@ -38,7 +41,13 @@ export async function FilEtapes({
         {ETAPES.map((etape) => {
           const rang = rangDe(etape);
           const active = etape === courante;
-          const accessible = annonceId !== undefined && rang <= atteinte && !active;
+          // La catégorie ne se change pas après publication : elle commande
+          // la page locale, les filtres de recherche et jusqu'aux champs
+          // demandés. En changer reviendrait à publier un autre bien sous la
+          // même adresse — mieux vaut retirer l'annonce et en déposer une.
+          const figee = enEdition && etape === "categorie";
+          const accessible =
+            annonceId !== undefined && rang <= atteinte && !active && !figee;
 
           const apparence = cn(
             "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors",

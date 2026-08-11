@@ -87,17 +87,25 @@ export default async function PagePublier({ params, searchParams }: Props) {
     aCategorie: categorieChoisie !== "",
   });
 
+  // Corriger une annonce en ligne emprunte les mêmes écrans que la créer :
+  // ce qui change, ce sont les mots et la destination du dernier bouton.
+  const enEdition = brouillon !== null && brouillon.statut !== "brouillon";
+
   const precedente = etapePrecedente(etape);
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
-      <EnTeteEspace titre={t("titre")} sousTitre={t("chapo")} />
+      <EnTeteEspace
+        titre={enEdition ? t("edition.titre") : t("titre")}
+        sousTitre={enEdition ? t("edition.chapo") : t("chapo")}
+      />
 
       <div className="mt-8">
         <FilEtapes
           courante={etape}
           atteinte={brouillon?.etapeAtteinte ?? 1}
           annonceId={brouillon?.id}
+          enEdition={enEdition}
         />
       </div>
 
@@ -130,11 +138,16 @@ export default async function PagePublier({ params, searchParams }: Props) {
               locale={locale}
               categorie={categorieChoisie}
               brouillon={brouillon}
+              enEdition={enEdition}
             />
           ) : null}
 
           {etape === "caracteristiques" && brouillon ? (
-            <EtapeCaracteristiques locale={locale} brouillon={brouillon} />
+            <EtapeCaracteristiques
+              locale={locale}
+              brouillon={brouillon}
+              enEdition={enEdition}
+            />
           ) : null}
 
           {etape === "photos" && brouillon ? (
@@ -142,11 +155,19 @@ export default async function PagePublier({ params, searchParams }: Props) {
           ) : null}
 
           {etape === "retrait" && brouillon ? (
-            <EtapeRetrait locale={locale} brouillon={brouillon} />
+            <EtapeRetrait
+              locale={locale}
+              brouillon={brouillon}
+              enEdition={enEdition}
+            />
           ) : null}
 
           {etape === "tarifs" && brouillon ? (
-            <EtapeTarifs locale={locale} brouillon={brouillon} />
+            <EtapeTarifs
+              locale={locale}
+              brouillon={brouillon}
+              enEdition={enEdition}
+            />
           ) : null}
 
           {precedente ? (
@@ -260,10 +281,12 @@ async function EtapeMateriel({
   locale,
   categorie,
   brouillon,
+  enEdition,
 }: {
   locale: string;
   categorie: string;
   brouillon: Brouillon | null;
+  enEdition: boolean;
 }) {
   const t = await getTranslations("espaces.loueur.publication");
 
@@ -352,7 +375,7 @@ async function EtapeMateriel({
           variante="secondaire"
           taille="grand"
         >
-          {t("enregistrerBrouillon")}
+          {t(enEdition ? "edition.terminer" : "enregistrerBrouillon")}
         </Bouton>
       </div>
     </form>
@@ -366,9 +389,11 @@ async function EtapeMateriel({
 async function EtapeCaracteristiques({
   locale,
   brouillon,
+  enEdition,
 }: {
   locale: string;
   brouillon: Brouillon;
+  enEdition: boolean;
 }) {
   const t = await getTranslations("espaces.loueur.publication");
   const valeurs = brouillon.valeurs;
@@ -515,7 +540,7 @@ async function EtapeCaracteristiques({
           variante="secondaire"
           taille="grand"
         >
-          {t("enregistrerBrouillon")}
+          {t(enEdition ? "edition.terminer" : "enregistrerBrouillon")}
         </Bouton>
       </div>
     </form>
@@ -686,9 +711,11 @@ function BoutonPhoto({
 async function EtapeRetrait({
   locale,
   brouillon,
+  enEdition,
 }: {
   locale: string;
   brouillon: Brouillon;
+  enEdition: boolean;
 }) {
   const t = await getTranslations("espaces.loueur.publication");
   const valeurs = brouillon.valeurs;
@@ -774,7 +801,7 @@ async function EtapeRetrait({
           variante="secondaire"
           taille="grand"
         >
-          {t("enregistrerBrouillon")}
+          {t(enEdition ? "edition.terminer" : "enregistrerBrouillon")}
         </Bouton>
       </div>
     </form>
@@ -788,9 +815,11 @@ async function EtapeRetrait({
 async function EtapeTarifs({
   locale,
   brouillon,
+  enEdition,
 }: {
   locale: string;
   brouillon: Brouillon;
+  enEdition: boolean;
 }) {
   const t = await getTranslations("espaces.loueur.publication");
   const valeurs = brouillon.valeurs;
@@ -902,18 +931,23 @@ async function EtapeTarifs({
       </label>
 
       <div className="mt-8 flex flex-wrap gap-3">
+        {/* Une annonce déjà en ligne n'a rien à publier : elle l'est. Le même
+            formulaire enregistre alors la correction et ramène devant la
+            fiche publique. */}
         <Bouton type="submit" name="publier" value="oui" taille="grand">
-          {t("publier")}
+          {t(enEdition ? "edition.enregistrer" : "publier")}
         </Bouton>
-        <Bouton
-          type="submit"
-          name="publier"
-          value="non"
-          variante="secondaire"
-          taille="grand"
-        >
-          {t("enregistrerBrouillon")}
-        </Bouton>
+        {enEdition ? null : (
+          <Bouton
+            type="submit"
+            name="publier"
+            value="non"
+            variante="secondaire"
+            taille="grand"
+          >
+            {t("enregistrerBrouillon")}
+          </Bouton>
+        )}
       </div>
     </form>
   );

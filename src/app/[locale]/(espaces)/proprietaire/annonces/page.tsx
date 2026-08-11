@@ -144,6 +144,19 @@ export default async function PageAnnonces({ params }: Props) {
                   ) : null}
                 </div>
 
+                {/* Corriger passe par les mêmes six écrans, à l'étape du
+                    matériel : la catégorie, elle, est figée une fois
+                    l'annonce en ligne. */}
+                <Link
+                  href={{
+                    pathname: "/proprietaire/annonces/publier",
+                    query: { annonce: annonce.id, etape: "2" },
+                  }}
+                  className="shrink-0 rounded-champ border border-bordure px-3 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
+                >
+                  {t("annonces.modifier")}
+                </Link>
+
                 <Link
                   href={{
                     pathname: "/remorque/[ville]/[slug]",

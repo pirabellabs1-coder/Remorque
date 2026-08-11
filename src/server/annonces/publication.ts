@@ -218,6 +218,48 @@ export async function chargerBrouillon(
 }
 
 /**
+ * Statut et adresse publique d'une annonce du propriétaire, ou `null`.
+ *
+ * Les six écrans servent aussi bien à créer qu'à corriger : ce qui change
+ * entre les deux, c'est ce qu'il faut faire *après* avoir enregistré. Une
+ * annonce déjà en ligne doit voir sa correction reprise par le catalogue
+ * public, et l'on ramène son auteur devant le résultat plutôt que vers
+ * l'étape suivante d'un parcours qu'il a terminé depuis longtemps.
+ *
+ * Une lecture par enregistrement, sur deux colonnes indexées : c'est moins
+ * cher que de faire confiance à un champ caché du formulaire, qui viendrait
+ * du navigateur.
+ */
+export async function apercuAnnonce(
+  annonceId: string,
+  proprietaireId: string,
+): Promise<{
+  statut: string;
+  villeSlug: string;
+  slug: string;
+  pays: string;
+} | null> {
+  const [ligne] = await db
+    .select({
+      statut: tableAnnonce.statut,
+      villeSlug: tableAnnonce.villeSlug,
+      slug: tableAnnonce.slug,
+      pays: tablePays.code,
+    })
+    .from(tableAnnonce)
+    .innerJoin(tablePays, eq(tablePays.id, tableAnnonce.paysId))
+    .where(
+      and(
+        eq(tableAnnonce.id, annonceId),
+        eq(tableAnnonce.proprietaireId, proprietaireId),
+      ),
+    )
+    .limit(1);
+
+  return ligne ?? null;
+}
+
+/**
  * Crée le brouillon à la fin de la deuxième étape.
  *
  * Pourquoi pas dès la première, au choix de la catégorie ? Parce que la ligne

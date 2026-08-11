@@ -16,6 +16,7 @@ import {
   retirerPhoto,
 } from "./photos";
 import {
+  apercuAnnonce,
   creerBrouillon,
   enregistrerCaracteristiques,
   enregistrerMateriel,
@@ -81,6 +82,47 @@ function adresseListe(locale: string): never {
 /** L'usager a-t-il demandé à s'arrêter là plutôt qu'à continuer ? */
 const finirPlusTard = (donnees: FormData) => donnees.get("finir") === "oui";
 
+/**
+ * Fin d'une correction sur une annonce déjà en ligne.
+ *
+ * Le catalogue public sert des pages pré-générées : sans invalidation, la
+ * correction serait bien en base et invisible partout — accueil, recherche,
+ * page de la ville, fiche. On ramène ensuite l'auteur devant sa fiche
+ * publique, sur le marché de son pays, plutôt que vers l'étape suivante d'un
+ * parcours qu'il a terminé depuis longtemps.
+ */
+function sortieEdition(
+  locale: string,
+  annonce: { villeSlug: string; slug: string; pays: string },
+): never {
+  revalidatePath("/", "layout");
+
+  const marche = marchePourPays(annonce.pays);
+  if (!marche) adresseListe(locale);
+
+  redirect({
+    href: {
+      pathname: "/remorque/[ville]/[slug]",
+      params: { ville: annonce.villeSlug, slug: annonce.slug },
+    },
+    locale: marche,
+  });
+  throw new Error("inatteignable");
+}
+
+/**
+ * L'annonce est-elle déjà en ligne ?
+ *
+ * Lu en base et non dans un champ caché du formulaire : ce dernier vient du
+ * navigateur, et c'est cette valeur qui décide d'invalider ou non le
+ * catalogue public.
+ */
+async function annonceEnLigne(annonceId: string, proprietaireId: string) {
+  if (!annonceId) return null;
+  const apercu = await apercuAnnonce(annonceId, proprietaireId);
+  return apercu?.statut === "publiee" ? apercu : null;
+}
+
 /** Le compte connecté, ou retour à l'accueil de l'espace. */
 async function exigerCompte(locale: string): Promise<string> {
   const compte = await compteConnecte();
@@ -133,6 +175,7 @@ export async function enregistrerEtapeMateriel(
 
   const annonceId = String(donnees.get("annonce") ?? "");
   const categorie = String(donnees.get("categorie") ?? "");
+  const enLigne = await annonceEnLigne(annonceId, proprietaireId);
 
   const analyse = schemaMateriel.safeParse({
     titre: donnees.get("titre"),
@@ -173,7 +216,13 @@ export async function enregistrerEtapeMateriel(
 
   if (!enregistre) adresseEtape(locale, { etape: "1", erreur: "introuvable" });
 
-  if (finirPlusTard(donnees)) adresseListe(locale);
+  if (enLigne) {
+    revalidatePath("/", "layout");
+    if (finirPlusTard(donnees)) sortieEdition(locale, enLigne);
+  } else if (finirPlusTard(donnees)) {
+    adresseListe(locale);
+  }
+
   adresseEtape(locale, { etape: "3", annonce: annonceId });
 }
 
@@ -208,6 +257,7 @@ export async function enregistrerEtapeCaracteristiques(
   const locale = String(donnees.get("locale") ?? "");
   const proprietaireId = await exigerCompte(locale);
   const annonceId = String(donnees.get("annonce") ?? "");
+  const enLigne = await annonceEnLigne(annonceId, proprietaireId);
 
   const analyse = schemaCaracteristiques.safeParse({
     ptacKg: nombre(donnees.get("ptacKg")),
@@ -244,7 +294,13 @@ export async function enregistrerEtapeCaracteristiques(
 
   if (!enregistre) adresseEtape(locale, { etape: "1", erreur: "introuvable" });
 
-  if (finirPlusTard(donnees)) adresseListe(locale);
+  if (enLigne) {
+    revalidatePath("/", "layout");
+    if (finirPlusTard(donnees)) sortieEdition(locale, enLigne);
+  } else if (finirPlusTard(donnees)) {
+    adresseListe(locale);
+  }
+
   adresseEtape(locale, { etape: "4", annonce: annonceId });
 }
 
@@ -299,6 +355,13 @@ export async function deposerPhoto(donnees: FormData): Promise<BilanPhoto> {
   // n'existe pas : la route réelle porte le segment de marché.
   refresh();
 
+  // La photo de couverture illustre l'annonce dans toute la recherche : sur
+  // une annonce déjà en ligne, la changer doit se voir ailleurs que sur cet
+  // écran.
+  if (await annonceEnLigne(annonceId, proprietaireId)) {
+    revalidatePath("/", "layout");
+  }
+
   return {
     deposee: bilan.deposees > 0,
     // Les refus se répètent quand plusieurs fichiers échouent pour la même
@@ -313,10 +376,12 @@ export async function supprimerPhoto(donnees: FormData): Promise<void> {
 
   await retirerPhoto(String(donnees.get("photo") ?? ""), proprietaireId);
 
-  adresseEtape(locale, {
-    etape: "4",
-    annonce: String(donnees.get("annonce") ?? ""),
-  });
+  const annonceId = String(donnees.get("annonce") ?? "");
+  if (await annonceEnLigne(annonceId, proprietaireId)) {
+    revalidatePath("/", "layout");
+  }
+
+  adresseEtape(locale, { etape: "4", annonce: annonceId });
 }
 
 export async function deplacerPhotoAction(donnees: FormData): Promise<void> {
@@ -326,10 +391,12 @@ export async function deplacerPhotoAction(donnees: FormData): Promise<void> {
   const sens = donnees.get("sens") === "avant" ? "avant" : "apres";
   await deplacerPhoto(String(donnees.get("photo") ?? ""), proprietaireId, sens);
 
-  adresseEtape(locale, {
-    etape: "4",
-    annonce: String(donnees.get("annonce") ?? ""),
-  });
+  const annonceId = String(donnees.get("annonce") ?? "");
+  if (await annonceEnLigne(annonceId, proprietaireId)) {
+    revalidatePath("/", "layout");
+  }
+
+  adresseEtape(locale, { etape: "4", annonce: annonceId });
 }
 
 /** Passe de l'étape des photos à la suivante, une fois le minimum atteint. */
@@ -360,6 +427,7 @@ export async function enregistrerEtapeRetrait(
   const locale = String(donnees.get("locale") ?? "");
   const proprietaireId = await exigerCompte(locale);
   const annonceId = String(donnees.get("annonce") ?? "");
+  const enLigne = await annonceEnLigne(annonceId, proprietaireId);
 
   const analyse = schemaRetrait.safeParse({
     adresseLigne1: donnees.get("adresseLigne1"),
@@ -383,7 +451,13 @@ export async function enregistrerEtapeRetrait(
 
   if (!enregistre) adresseEtape(locale, { etape: "1", erreur: "introuvable" });
 
-  if (finirPlusTard(donnees)) adresseListe(locale);
+  if (enLigne) {
+    revalidatePath("/", "layout");
+    if (finirPlusTard(donnees)) sortieEdition(locale, enLigne);
+  } else if (finirPlusTard(donnees)) {
+    adresseListe(locale);
+  }
+
   adresseEtape(locale, { etape: "6", annonce: annonceId });
 }
 
@@ -409,6 +483,7 @@ export async function enregistrerEtapeTarifs(donnees: FormData): Promise<void> {
   const locale = String(donnees.get("locale") ?? "");
   const proprietaireId = await exigerCompte(locale);
   const annonceId = String(donnees.get("annonce") ?? "");
+  const enLigne = await annonceEnLigne(annonceId, proprietaireId);
 
   const analyse = schemaTarifs.safeParse({
     prixJourEuros: nombre(donnees.get("prixJourEuros")),
@@ -441,6 +516,11 @@ export async function enregistrerEtapeTarifs(donnees: FormData): Promise<void> {
   });
 
   if (!enregistre) adresseEtape(locale, { etape: "1", erreur: "introuvable" });
+
+  // Sur une annonce déjà en ligne, il n'y a rien à publier : elle l'est. Le
+  // dernier écran enregistre la correction et ramène devant la fiche
+  // publique, une fois le catalogue invalidé.
+  if (enLigne) sortieEdition(locale, enLigne);
 
   // Le bouton « Publier » et le bouton « Enregistrer » postent le même
   // formulaire : le second permet de s'arrêter là et de revenir plus tard.
