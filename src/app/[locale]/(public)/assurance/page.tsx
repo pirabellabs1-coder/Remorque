@@ -1,12 +1,11 @@
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Etapes } from "@/components/marketing/etapes";
 import { Faq } from "@/components/ui/faq";
 import { Bouton } from "@/components/ui/bouton";
 import { Carte, DonneesStructurees } from "@/components/ui/carte";
 import { PageEditoriale } from "@/components/ui/mise-en-page";
-import { GARANTIES, PARTENAIRE_CONFIRME } from "@/config/assurance";
-import { MARKETS, type Market } from "@/config/markets";
+import type { Market } from "@/config/markets";
 import { Link } from "@/i18n/navigation";
 import { metadonneesPage } from "@/lib/metadonnees";
 
@@ -29,15 +28,6 @@ export default async function PageAssurance({ params }: Props) {
   setRequestLocale(locale);
 
   const t = await getTranslations("assurance");
-  const format = await getFormatter();
-  const devise = MARKETS[locale as Market].currency;
-
-  const montant = (centimes: number) =>
-    format.number(centimes / 100, {
-      style: "currency",
-      currency: devise,
-      maximumFractionDigits: 0,
-    });
 
   const etapesSinistre = [1, 2, 3, 4].map((numero) => ({
     titre: t(`sinistre.etapes.e${numero}.titre`),
@@ -89,42 +79,28 @@ export default async function PageAssurance({ params }: Props) {
           </div>
         </section>
 
-        {/* --- Garanties chiffrées, seulement si le contrat est signé ------ */}
-        {PARTENAIRE_CONFIRME && GARANTIES ? (
-          <section className="mt-16">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              {t("garanties.titre")}
-            </h2>
-            <p className="mt-3 text-texte-attenue">
-              {t("garanties.partenaire", { partenaire: GARANTIES.partenaire })}
-            </p>
-            <dl className="mt-6 space-y-3">
-              <div className="flex justify-between border-t border-bordure pt-3">
-                <dt className="text-texte-attenue">{t("garanties.plafond")}</dt>
-                <dd className="tabular-nums">
-                  {montant(GARANTIES.plafondParSinistre)}
-                </dd>
-              </div>
-              <div className="flex justify-between border-t border-bordure pt-3">
-                <dt className="text-texte-attenue">
-                  {t("garanties.franchise")}
-                </dt>
-                <dd className="tabular-nums">
-                  {montant(GARANTIES.franchiseStandard)}
-                </dd>
-              </div>
-            </dl>
-          </section>
-        ) : (
-          <section className="mt-16">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              {t("garanties.titre")}
-            </h2>
-            <p className="mt-3 max-w-2xl text-texte-attenue">
-              {t("garanties.ouTrouver")}
-            </p>
-          </section>
-        )}
+        {/* --- Trois vérifications avant de réserver ---------------------- */}
+        <section className="mt-16">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {t("garanties.titre")}
+          </h2>
+          <ul className="mt-6 space-y-3">
+            {(["partenaire", "plafond", "franchise"] as const).map((cle) => (
+              <li
+                key={cle}
+                className="flex gap-3 border-t border-bordure pt-3 text-[0.9375rem]"
+              >
+                <span aria-hidden className="text-accent">
+                  •
+                </span>
+                {t(`garanties.${cle}`)}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 max-w-2xl text-texte-attenue">
+            {t("garanties.ouTrouver")}
+          </p>
+        </section>
 
         {/* --- Caution et franchise ---------------------------------------- */}
         <section className="mt-16">

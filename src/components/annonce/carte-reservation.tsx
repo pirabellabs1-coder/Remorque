@@ -4,7 +4,6 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useId, useMemo, useState } from "react";
 
 import { Bouton } from "@/components/ui/bouton";
-import { PARTENAIRE_CONFIRME } from "@/config/assurance";
 import { calculerDevis, type BaremePays } from "@/domain/tarification/devis";
 import { PRIX_AFFICHE } from "@/lib/cn";
 import { Link } from "@/i18n/navigation";
@@ -46,8 +45,8 @@ function joursEntre(debut: string, fin: string): number {
  * affichée ici et le récapitulatif final est la première cause de réclamation
  * sur ce type de service.
  *
- * La prime d'assurance n'est pas chiffrée tant que le partenaire n'est pas
- * signé — voir `src/config/assurance.ts`.
+ * La plateforme n'assure pas le matériel : le décompte le dit, et la fiche
+ * l'explique — voir `src/config/assurance.ts`.
  */
 export function CarteReservation({
   annonce,
@@ -234,12 +233,12 @@ export function CarteReservation({
             <dt className="text-texte-attenue">{t("fraisService")}</dt>
             <dd className="tabular-nums">{montant(devis.fraisService)}</dd>
           </div>
-          {!PARTENAIRE_CONFIRME ? (
-            <div className="flex justify-between">
-              <dt className="text-texte-attenue">{t("assurance")}</dt>
-              <dd className="text-texte-attenue">{t("assuranceComprise")}</dd>
-            </div>
-          ) : null}
+          {/* Qui assure le matériel : la plateforme ne s'en charge pas, et
+              le décompte doit le dire là où on lit le prix. */}
+          <div className="flex justify-between">
+            <dt className="text-texte-attenue">{t("assurance")}</dt>
+            <dd className="text-texte-attenue">{t("assuranceComprise")}</dd>
+          </div>
           <div className="flex justify-between border-t border-bordure pt-2 font-semibold">
             <dt>{t("total")}</dt>
             <dd className="tabular-nums">{montant(devis.totalLocataire)}</dd>

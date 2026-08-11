@@ -1,46 +1,37 @@
 /**
- * Paramètres du dispositif d'assurance.
+ * Assurance : ce que la plateforme fait, et ce qu'elle ne fait pas.
  *
- * Le partenaire courtier ou assureur est la décision n° 01 du cadrage, et le
- * chemin critique absolu du projet : deux à quatre mois de négociation. Tant
- * qu'il n'est pas signé, aucun montant de garantie, de plafond ni de franchise
- * ne peut être annoncé publiquement — l'afficher « à titre indicatif » sur une
- * page commerciale reviendrait à s'engager sur des conditions que l'assureur
- * n'a pas validées.
+ * **Elle n'assure rien.** Le matériel est assuré par son propriétaire, à qui
+ * la loi en fait obligation. La plateforme n'est ni assureur ni courtier, ne
+ * souscrit aucun contrat pour le compte des parties, et n'indemnise personne.
  *
- * Ce fichier isole donc l'intégralité de ce qui dépend du partenaire. La page
- * `/assurance` décrit le mécanisme — qui, lui, est arrêté par l'architecture —
- * et n'affiche les chiffres qu'une fois `PARTENAIRE_CONFIRME` passé à `true`.
+ * Le site affirmait l'inverse d'un bout à l'autre — « assurance comprise »
+ * jusque dans le contrat de location remis aux deux parties. Une affirmation
+ * fausse sur une page commerciale est un risque ; la même dans un contrat en
+ * est un autre, autrement sérieux.
  *
- * À l'ouverture d'un second pays, ces valeurs deviendront des colonnes de la
- * table `pays` : « un contrat et des garanties différents selon le pays,
- * gérés en configuration » (M09).
+ * Ce que la plateforme apporte réellement, et qui remplace la promesse :
+ *
+ *  1. **L'état des lieux photographique horodaté**, au départ et au retour,
+ *     conservé et opposable aux deux parties. C'est la pièce qui tranche.
+ *  2. **La caution**, enregistrée sans être débitée, encadrée par le plancher
+ *     et le plafond du pays.
+ *  3. **Le paiement conservé** jusqu'à la remise, et l'identité vérifiée.
+ *
+ * Au-delà de la caution, un dommage se règle entre l'assureur du locataire et
+ * celui du propriétaire. La plateforme fournit les pièces, elle n'arbitre pas
+ * les polices.
+ *
+ * Ce fichier subsiste pour porter cette règle en un seul endroit, et pour que
+ * le jour où un partenariat serait signé, la décision se prenne ici plutôt
+ * qu'au fil de quarante chaînes de caractères.
  */
 
 /**
- * Passer à `true` une fois le contrat signé, puis renseigner les valeurs
- * ci-dessous. Les blocs chiffrés de la page apparaîtront automatiquement.
+ * La plateforme couvre-t-elle les locations ?
+ *
+ * Non, et rien dans l'interface ne doit le laisser croire. Passer cette valeur
+ * à `true` sans contrat signé reviendrait à promettre une garantie
+ * inexistante.
  */
-export const PARTENAIRE_CONFIRME = false;
-
-export type GarantiesAssurance = {
-  /** Nom commercial du partenaire, affiché publiquement. */
-  partenaire: string;
-  /** Plafond d'indemnisation par sinistre, en centimes. */
-  plafondParSinistre: number;
-  /** Franchise standard restant à la charge du locataire, en centimes. */
-  franchiseStandard: number;
-  /** Délai maximal de déclaration d'un sinistre, en jours ouvrés. */
-  delaiDeclarationJours: number;
-};
-
-/** Renseigné à la signature du contrat. */
-export const GARANTIES: GarantiesAssurance | null = null;
-
-/**
- * Délai de déclaration retenu par défaut dans les parcours produit tant que le
- * contrat n'est pas signé. C'est une contrainte de conception — l'écran de
- * déclaration doit exister et imposer une échéance — et non un engagement
- * contractuel affiché au public.
- */
-export const DELAI_DECLARATION_PAR_DEFAUT_JOURS = 5;
+export const PLATEFORME_ASSURE = false;

@@ -2,7 +2,7 @@
   "accueil": {
     "nomSite": "FlexiTrailer",
     "metaTitre": "Location de remorques entre particuliers et professionnels",
-    "metaDescription": "Louez une remorque près de chez vous : benne, plateau, porte-voiture, bagagère. Assurance comprise, paiement sécurisé, caution non prélevée.",
+    "metaDescription": "Louez une remorque près de chez vous : benne, plateau, porte-voiture, bagagère. Paiement sécurisé, caution non débitée, état des lieux photographique.",
     "titre": "Louez ou mettez en location votre remorque, en toute simplicité",
     "sousTitre": "La place de marché des remorques entre particuliers et professionnels : réservation et paiement sécurisés en ligne.",
     "hero": {
@@ -13,7 +13,7 @@
       "actionProprietaire": "Mettre la mienne en location"
     },
     "reassurance": {
-      "assurance": "Assurance comprise à chaque location",
+      "assurance": "État des lieux photographique à chaque location",
       "paiement": "Paiement en ligne sécurisé",
       "proximite": "Retrait près de chez vous"
     },
@@ -30,9 +30,9 @@
       "surtitre": "Vos garanties",
       "illustration": "Deux personnes réalisant l'état des lieux d'une remorque, l'une la photographiant avec son téléphone",
       "titre": "Ce qui sécurise votre location",
-      "action": "Tout savoir sur l'assurance",
+      "action": "Ce qui protège votre location",
       "assurance": {
-        "titre": "Une assurance à chaque location",
+        "titre": "Chaque location est tracée",
         "texte": "Chaque réservation confirmée couvre le matériel pendant toute la location."
       },
       "caution": {
@@ -99,7 +99,7 @@
       "rechercher": "Rechercher"
     },
     "metaTitre": "Rechercher une remorque à louer",
-    "metaDescription": "Trouvez une remorque disponible près de chez vous, aux dates qui vous arrangent. Assurance comprise, paiement sécurisé.",
+    "metaDescription": "Trouvez une remorque disponible près de chez vous, aux dates qui vous arrangent. Paiement sécurisé, caution non débitée.",
     "titre": "Remorques à louer",
     "titreVille": "Remorques à louer à {ville}",
     "titreCategorie": "{categorie} à louer",
@@ -156,7 +156,7 @@
     "chapo": "Deux parcours, quatre étapes chacun. Choisissez le vôtre.",
     "locataire": {
       "titre": "Je veux louer une remorque",
-      "texte": "Trouvez le matériel adapté près de chez vous, réservez en ligne, récupérez-le et rendez-le. L'assurance est comprise, la caution n'est pas débitée.",
+      "texte": "Trouvez le matériel adapté près de chez vous, réservez en ligne, récupérez-le et rendez-le. La caution n'est pas débitée, et l'état des lieux protège les deux parties.",
       "action": "Voir le parcours locataire"
     },
     "proprietaire": {
@@ -167,8 +167,8 @@
     "choisir": "Les deux parcours",
     "garanties": "Ce qui vaut dans les deux sens",
     "garantiesChapo": "Que vous louiez ou que vous mettiez en location, ces règles ne changent pas.",
-    "g1Titre": "Assurance comprise",
-    "g1Texte": "Chaque location est couverte pendant toute sa durée, sans démarche ni supplément à cocher.",
+    "g1Titre": "État des lieux horodaté",
+    "g1Texte": "Photographies au départ et au retour, conservées par la plateforme. C'est la pièce qui tranche en cas de dommage contesté.",
     "g2Titre": "Caution jamais débitée sans motif",
     "g2Texte": "C'est une empreinte bancaire : le montant est gelé sur la carte, puis libéré après la restitution.",
     "g3Titre": "État des lieux photographié",
@@ -182,7 +182,7 @@
   },
   "parcoursLocataire": {
     "metaTitre": "Louer une remorque en 4 étapes",
-    "metaDescription": "Recherche, réservation, retrait, restitution : le parcours complet d'une location de remorque, avec l'assurance comprise et la caution non débitée.",
+    "metaDescription": "Recherche, réservation, retrait, restitution : le parcours complet d'une location de remorque, caution non débitée et état des lieux à chaque étape.",
     "surtitre": "Parcours locataire",
     "titre": "Louer une remorque en quatre étapes",
     "chapo": "De la recherche à la restitution, tout se passe sur la plateforme. Vous savez à l'avance ce que vous payez, ce que vous signez et ce qui se passe en cas de problème.",
@@ -206,11 +206,11 @@
     },
     "protection": {
       "titre": "Ce qui vous protège",
-      "assurance": "Une assurance couvre le matériel pendant toute la durée de la location. L'attestation est téléchargeable avant le départ.",
+      "assurance": "Chaque propriétaire assure le matériel qu'il met en location, comme la loi l'y oblige. Vérifiez auprès de votre propre assureur ce que couvre votre contrat lorsque vous tractez.",
       "caution": "La caution est une empreinte bancaire : l'argent n'est pas prélevé, il reste sur votre compte. Un débit n'a lieu qu'en cas de dommage constaté et justifié.",
       "etatDesLieux": "Les états des lieux de départ et de retour sont horodatés, photographiés et signés par les deux parties. Ils font foi.",
       "litige": "En cas de désaccord, vous pouvez ouvrir un litige dans les quarante-huit heures suivant la restitution. Le transfert des fonds est alors gelé jusqu'à la décision.",
-      "assuranceTitre": "Assurance comprise",
+      "assuranceTitre": "Le matériel est assuré par son propriétaire",
       "cautionTitre": "Caution non débitée",
       "etatDesLieuxTitre": "État des lieux contradictoire",
       "litigeTitre": "Litige et gel des fonds",
@@ -246,11 +246,11 @@
     },
     "garanties": {
       "titre": "Ce qui vous protège",
-      "assurance": "Chaque location confirmée déclenche une couverture d'assurance sur votre matériel.",
+      "assurance": "Vous restez l'assuré de votre matériel. La plateforme ne s'y substitue pas : elle vous apporte la caution, l'état des lieux horodaté et l'identité vérifiée du locataire.",
       "paiement": "Le locataire paie avant le retrait. Vous n'avez jamais à réclamer un règlement.",
       "selection": "Identité et permis de chaque locataire sont vérifiés avant qu'il puisse réserver.",
       "calendrier": "Vous bloquez vos dates quand vous voulez, et un délai de préparation s'intercale automatiquement entre deux locations.",
-      "assuranceTitre": "Matériel assuré",
+      "assuranceTitre": "Votre assurance, vos règles",
       "paiementTitre": "Paiement garanti",
       "selectionTitre": "Locataires vérifiés",
       "calendrierTitre": "Calendrier maîtrisé"
@@ -279,7 +279,7 @@
     "ligne": {
       "loyer": "Loyer — {jours} jours à {prix}",
       "fraisService": "Frais de service ({taux})",
-      "assurance": "Protection et assurance",
+      "assurance": "Protection de la location",
       "total": "Total payé par le locataire"
     },
     "destinataire": {
@@ -289,7 +289,7 @@
     },
     "proprietaire": {
       "titre": "Côté propriétaire",
-      "texte": "Une commission de {taux} est retenue sur le loyer au moment du virement. Les frais de service payés par le locataire et la prime d'assurance ne vous sont jamais facturés.",
+      "texte": "Une commission de {taux} est retenue sur le loyer au moment du virement. Les frais de service payés par le locataire ne vous sont jamais facturés.",
       "commission": "Commission propriétaire",
       "reverse": "Versé sur votre compte bancaire"
     },
@@ -302,44 +302,56 @@
     "mentionBareme": "Barème applicable en France. Les taux peuvent différer selon le pays et la catégorie de matériel ; le détail exact est toujours affiché sur le récapitulatif de votre réservation."
   },
   "assurance": {
-    "metaTitre": "L'assurance de votre location",
-    "metaDescription": "Comment le matériel est couvert pendant la location, ce que change la caution, et comment déclarer un sinistre étape par étape.",
+    "metaTitre": "Assurance et protection de votre location",
+    "metaDescription": "Qui assure la remorque, ce que couvre votre propre contrat, à quoi sert la caution et comment l'état des lieux tranche en cas de dommage.",
     "surtitre": "Protection",
-    "titre": "Chaque location est assurée",
-    "chapo": "Louer du matériel à un inconnu suppose de savoir précisément qui répond en cas de dommage, et selon quelle procédure. Voici le dispositif, sans zone d'ombre.",
+    "titre": "Qui assure quoi, et ce que la plateforme garantit",
+    "chapo": "Disons-le nettement : la plateforme ne vend pas d'assurance et n'en souscrit aucune pour vous. Le matériel est assuré par son propriétaire. Ce que nous apportons, c'est la preuve, la caution et le paiement — trois choses qui règlent l'immense majorité des différends.",
     "mecanisme": {
-      "titre": "Comment la couverture s'applique",
+      "titre": "Qui assure quoi",
       "declenchement": {
-        "titre": "Elle démarre à la confirmation",
-        "texte": "Il n'y a rien à souscrire séparément : toute réservation confirmée déclenche la couverture du matériel pour la durée convenue. Le coût est intégré au récapitulatif affiché avant paiement."
+        "titre": "Le propriétaire assure son matériel",
+        "texte": "Une remorque mise en location est assurée par celui à qui elle appartient, comme la loi l'y oblige au-delà d'un certain poids. C'est sa responsabilité, et elle ne se délègue pas à un intermédiaire."
       },
       "attestation": {
-        "titre": "Une attestation avant le départ",
-        "texte": "Le locataire comme le propriétaire téléchargent l'attestation depuis leur espace, avant le retrait. Elle mentionne le matériel, les dates et les garanties applicables."
+        "titre": "Vérifiez votre propre contrat",
+        "texte": "Votre assurance automobile peut étendre sa garantie à une remorque tractée, selon son poids et selon votre contrat. Un appel à votre assureur avant de réserver vaut mieux qu'une découverte au bord de la route."
       },
       "periode": {
-        "titre": "Elle s'arrête à la restitution",
-        "texte": "La couverture court de l'état des lieux de départ à celui de retour. En cas de prolongation acceptée sur la plateforme, elle est étendue automatiquement — un retard non déclaré ne l'est pas."
+        "titre": "Ce que la plateforme conserve",
+        "texte": "L'état des lieux photographique du départ et du retour, horodaté et inaltérable, la caution et le paiement. En cas de dommage, ce sont ces pièces qui établissent ce qui s'est passé et quand."
       }
     },
     "garanties": {
-      "titre": "Garanties, plafonds et franchise",
-      "partenaire": "Contrat souscrit auprès de {partenaire}.",
-      "plafond": "Plafond d'indemnisation par sinistre",
-      "franchise": "Franchise standard",
-      "ouTrouver": "Les garanties applicables, leur plafond et le montant de la franchise sont indiqués sur chaque annonce avant la réservation, repris dans le récapitulatif de paiement, et détaillés dans l'attestation remise avant le départ. Ils peuvent varier selon la catégorie de matériel et le pays de la location."
+      "titre": "Avant de réserver",
+      "partenaire": "Demandez au propriétaire l'attestation d'assurance du matériel.",
+      "plafond": "Vérifiez auprès de votre assureur ce que couvre votre contrat en traction.",
+      "franchise": "Contrôlez le poids total autorisé au regard de votre permis et de votre véhicule.",
+      "ouTrouver": "Ces trois vérifications prennent dix minutes et évitent la quasi-totalité des mauvaises surprises."
     },
     "caution": {
-      "titre": "Caution et assurance ne sont pas la même chose",
-      "chapo": "C'est la confusion la plus fréquente, et elle inquiète inutilement les locataires. Les deux dispositifs se complètent mais ne jouent pas au même moment.",
-      "empreinte": "La caution est une empreinte bancaire : votre moyen de paiement est enregistré, mais aucun montant n'est prélevé. L'argent reste disponible sur votre compte pendant toute la location.",
-      "difference": "L'assurance couvre le matériel. La caution garantit ce qui reste à votre charge — franchise, dommage exclu de la couverture, accessoire manquant, restitution en retard ou non nettoyée.",
-      "liberation": "Sans incident, la caution est libérée automatiquement peu après la restitution. Le délai exact est indiqué sur la réservation et suit la configuration du pays.",
-      "contestation": "Un débit ne peut jamais être décidé par le propriétaire seul. Il est instruit par la plateforme, doit être justifié par les photos d'état des lieux, vous est notifié avec son motif, et reste contestable."
+      "titre": "La caution",
+      "chapo": "C'est le mécanisme central de la plateforme, et le seul qui engage de l'argent. Elle est enregistrée sans être débitée.",
+      "empreinte": {
+        "titre": "Enregistrée, jamais prélevée d'avance",
+        "texte": "Une empreinte bancaire est prise à la réservation. Aucune somme ne quitte votre compte tant que rien n'est reproché."
+      },
+      "difference": {
+        "titre": "Ce qu'elle couvre",
+        "texte": "Le dommage constaté entre l'état des lieux de départ et celui de retour, l'accessoire manquant, la restitution en retard ou non nettoyée. Son montant est fixé par le propriétaire, entre le plancher et le plafond du pays."
+      },
+      "liberation": {
+        "titre": "Libérée après la restitution",
+        "texte": "L'empreinte est levée dans le délai fixé par le pays, dès lors que l'état des lieux de retour ne relève rien. Un litige ouvert suspend cette libération."
+      },
+      "contestation": {
+        "titre": "Contestable",
+        "texte": "Le locataire peut contester une retenue. La plateforme tranche sur pièces — les photographies horodatées des deux états des lieux, et elles seules."
+      }
     },
     "sinistre": {
-      "titre": "Déclarer un sinistre",
-      "chapo": "La procédure est la même pour le locataire et pour le propriétaire, et tout se fait depuis votre espace. Plus la déclaration est rapide, plus le dossier est solide.",
+      "titre": "En cas de dommage",
+      "chapo": "La plateforme n'indemnise pas : elle établit les faits, retient la caution s'il y a lieu, et met les deux parties en rapport. Au-delà de la caution, l'affaire relève des assureurs concernés.",
       "etapes": {
         "e1": {
           "titre": "Signalez sans attendre",
@@ -360,23 +372,23 @@
       }
     },
     "preuve": {
-      "titre": "Pourquoi les états des lieux comptent autant",
-      "chapo": "Un dossier d'assurance se gagne ou se perd sur la preuve. C'est la raison pour laquelle la plateforme impose des photos sous des angles précis, horodatées et signées par les deux parties, au départ comme au retour.",
-      "consequence": "Prenez ces quelques minutes au sérieux : un état des lieux de départ bâclé rend un dommage impossible à imputer, et c'est alors le propriétaire qui en supporte le coût. À l'inverse, un état des lieux complet protège le locataire contre une réclamation infondée."
+      "titre": "L'état des lieux fait foi",
+      "chapo": "Photographies horodatées au départ et au retour, conservées par la plateforme et opposables aux deux parties. C'est la seule pièce qui dise l'état réel du matériel à un instant donné.",
+      "consequence": "Sans état des lieux de départ, un dommage relevé au retour ne peut être imputé à personne : la caution est alors libérée."
     },
     "faq": {
       "titre": "Questions fréquentes",
-      "q1": "Dois-je prévenir mon assureur automobile ?",
-      "r1": "Vérifiez votre contrat : la responsabilité civile du véhicule tracteur s'étend généralement à la remorque attelée, mais les conditions varient d'un assureur à l'autre, notamment au-delà d'un certain poids. La couverture de la plateforme porte sur le matériel loué, pas sur votre véhicule.",
-      "q2": "Que se passe-t-il si je rends la remorque en retard ?",
-      "r2": "Prolongez depuis votre espace avant l'échéance : la couverture est alors étendue et le propriétaire est prévenu. Un retard non déclaré sort du cadre convenu, peut entraîner une pénalité et fragilise votre position en cas de sinistre.",
-      "q3": "Et si le dommage est causé par un tiers ?",
-      "r3": "Établissez un constat sur place, comme pour un accident de la route, et joignez-le à votre déclaration. C'est la pièce qui permet d'engager le recours contre le responsable.",
-      "q4": "Qui paie la franchise ?",
-      "r4": "Elle reste à la charge du locataire et peut être prélevée sur la caution, sur justification. Une option de réduction de franchise sera proposée à la réservation dans une version ultérieure de la plateforme."
+      "q1": "La plateforme assure-t-elle la remorque ?",
+      "r1": "Non. Le matériel est assuré par son propriétaire, à qui la loi en fait obligation. La plateforme n'est pas assureur et ne souscrit aucun contrat pour votre compte.",
+      "q2": "Que se passe-t-il si j'abîme la remorque ?",
+      "r2": "La caution est retenue à hauteur du dommage établi par la comparaison des deux états des lieux. Au-delà de son montant, l'affaire se règle entre votre assureur et celui du propriétaire — la plateforme fournit les pièces.",
+      "q3": "Mon assurance automobile couvre-t-elle la remorque que je tracte ?",
+      "r3": "Cela dépend de son poids et de votre contrat. Beaucoup de contrats étendent la garantie aux remorques légères, d'autres non. Posez la question à votre assureur avant de réserver : c'est le seul à pouvoir répondre pour vous.",
+      "q4": "Puis-je louer sans que le propriétaire soit assuré ?",
+      "r4": "Ce n'est pas conseillé, et c'est parfois illégal. Demandez l'attestation avant le départ : un propriétaire sérieux la fournit sans difficulté."
     },
-    "action": "Chercher une remorque",
-    "actionAide": "Contacter l'assistance"
+    "action": "Voir les remorques disponibles",
+    "actionAide": "La caution et l'état des lieux s'appliquent à chaque location."
   },
   "pro": {
     "metaTitre": "Offre loueurs professionnels",
@@ -614,7 +626,7 @@
   },
   "annonce": {
     "metaTitre": "{titre} à louer à {ville}",
-    "metaDescription": "{titre} disponible à la location à {ville}. {kg} kg de charge utile, assurance comprise, caution non débitée.",
+    "metaDescription": "{titre} disponible à la location à {ville}. {kg} kg de charge utile, caution non débitée, état des lieux photographique.",
     "instantanee": "Réservation instantanée",
     "favoriAjouter": "Ajouter aux favoris",
     "favoriRetirer": "Retirer des favoris",
@@ -652,8 +664,8 @@
       "choisirDates": "Choisissez vos dates pour voir le total.",
       "loyer": "{prix} × {jours, plural, one {# jour} other {# jours}}",
       "fraisService": "Frais de service",
-      "assurance": "Assurance",
-      "assuranceComprise": "Comprise",
+      "assurance": "Assurance du matériel",
+      "assuranceComprise": "Par le propriétaire",
       "total": "Total",
       "reserver": "Réserver",
       "demander": "Envoyer une demande",

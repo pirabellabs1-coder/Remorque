@@ -31,7 +31,7 @@
       "conditions": "Conditions",
       "conditionsTexte": "Le locataire s’engage à restituer le matériel à la date convenue, dans l’état constaté au départ. L’état des lieux contradictoire, signé des deux parties au départ et au retour, fait foi entre elles. En l’absence d’état des lieux de départ, le matériel est présumé avoir été remis en bon état.",
       "cautionTexte": "La caution fait l’objet d’une empreinte bancaire : le montant est immobilisé sur le moyen de paiement du locataire, jamais débité, et libéré après la restitution dans le délai prévu par le pays de la location. Un litige ou un sinistre ouvert suspend cette libération.",
-      "assuranceTexte": "La location est couverte par l’assurance souscrite par la plateforme pour la durée indiquée ci-dessus. Le contournement de la plateforme — paiement direct, échange de coordonnées hors messagerie — prive les deux parties de cette couverture et de la garantie de caution.",
+      "assuranceTexte": "Le matériel loué est assuré par son propriétaire, à qui il appartient d'en justifier sur demande. La plateforme n'est pas assureur et ne souscrit aucune couverture pour le compte des parties : elle fournit l'état des lieux photographique horodaté, gère la caution et conserve le paiement jusqu'à la remise. Le contournement de la plateforme — paiement direct, échange de coordonnées hors messagerie — prive les deux parties de ces garanties.",
       "signatures": "Signatures",
       "signaturesTexte": "Le présent contrat est accepté par voie électronique lors de la confirmation de la réservation. La confirmation vaut signature des deux parties.",
       "confirmeLe": "Confirmé le {date}",
