@@ -78,6 +78,7 @@ export default async function PageAccueil({ params }: Props) {
       ...PRIX_AFFICHE,
       currency: annonce.devise,
     }),
+    photo: annonce.photo,
     longitude: annonce.situation.longitude,
     latitude: annonce.situation.latitude,
     href: getPathname({

@@ -136,6 +136,14 @@
 }
 
 @layer base {
+  /* La barre de défilement occupe sa place même sur les pages courtes.
+     Sans cela, passer d'une page qui défile à une page qui ne défile pas
+     élargit la fenêtre de quelques pixels, et tout le contenu centré saute
+     latéralement — un décalage discret mais visible à chaque navigation. */
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     background-color: var(--fond);
     color: var(--texte);

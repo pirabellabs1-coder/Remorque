@@ -184,7 +184,12 @@ export function EnTetePublic() {
           >
             {tNav("connexion")}
           </Bouton>
-          <Bouton as={Link} href="/inscription" taille="petit">
+          <Bouton
+            as={Link}
+            href="/inscription"
+            taille="petit"
+            className="hidden sm:inline-flex"
+          >
             {tNav("inscription")}
           </Bouton>
 
@@ -282,6 +287,32 @@ export function EnTetePublic() {
               libelle: t(`aideLiens.${lien.cle}`),
             }))}
           />
+
+          {/* Connexion et inscription en pied de tiroir. Elles occupaient la
+              barre du haut, sur une ligne déjà serrée entre le logo et la
+              bascule — d'où un en-tête qui débordait selon la largeur. Ici,
+              elles sont à portée de pouce et ne poussent plus rien. */}
+          <div className="mt-6 grid gap-3 border-t border-bordure pt-6">
+            <Bouton
+              as={Link}
+              href="/inscription"
+              taille="grand"
+              pleineLargeur
+              onClick={() => setTiroirOuvert(false)}
+            >
+              {tNav("inscription")}
+            </Bouton>
+            <Bouton
+              as={Link}
+              href="/connexion"
+              variante="secondaire"
+              taille="grand"
+              pleineLargeur
+              onClick={() => setTiroirOuvert(false)}
+            >
+              {tNav("connexion")}
+            </Bouton>
+          </div>
         </div>
       ) : null}
     </header>

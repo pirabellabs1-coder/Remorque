@@ -11,6 +11,8 @@ export type PointAnnonce = {
   ville: string;
   /** Prix par jour, déjà mis en forme dans la devise du pays. */
   prix: string;
+  /** Photo de couverture : c'est elle qui fait le marqueur. */
+  photo: string;
   longitude: number;
   latitude: number;
   /** Adresse publique complète, calculée côté serveur. */
@@ -60,16 +62,31 @@ export default function CarteAnnoncesToile({
 
     carte.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
+    // La photo plutôt que le prix. Sur une carte, un chiffre ne dit pas de
+    // quoi il s'agit — « 35 € » peut être une benne comme un van à chevaux —
+    // alors qu'une vignette se reconnaît sans être lue, et se distingue de ses
+    // voisines d'un seul regard. Le prix reste dans l'infobulle et dans le
+    // libellé accessible, où il ne prend la place de rien.
     const marqueurs = points.map((point) => {
-      const pastille = document.createElement("a");
-      pastille.href = point.href;
-      pastille.textContent = point.prix;
-      pastille.title = `${point.titre} — ${point.ville}`;
-      pastille.setAttribute("aria-label", `${point.titre}, ${point.ville}, ${point.prix}`);
-      pastille.className =
-        "block cursor-pointer rounded-full border border-bordure bg-fond-eleve px-2.5 py-1 text-xs font-semibold text-texte shadow-md transition-colors hover:border-accent hover:bg-accent hover:text-accent-contraste";
+      const vignette = document.createElement("a");
+      vignette.href = point.href;
+      vignette.title = `${point.titre} — ${point.ville} · ${point.prix}`;
+      vignette.setAttribute(
+        "aria-label",
+        `${point.titre}, ${point.ville}, ${point.prix}`,
+      );
+      vignette.className =
+        "block size-12 cursor-pointer overflow-hidden rounded-full border-2 border-white bg-fond-eleve shadow-lg transition-transform hover:scale-110 hover:border-accent";
 
-      return new maplibregl.Marker({ element: pastille })
+      const image = document.createElement("img");
+      image.src = point.photo;
+      image.alt = "";
+      image.loading = "lazy";
+      image.decoding = "async";
+      image.className = "size-full object-cover";
+      vignette.append(image);
+
+      return new maplibregl.Marker({ element: vignette })
         .setLngLat([point.longitude, point.latitude])
         .addTo(carte);
     });
