@@ -1,4 +1,4 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
@@ -16,11 +16,15 @@ import {
 import { CATEGORIES } from "@/config/categories";
 import { clientEnv } from "@/config/env-client";
 import { getMarket, type Market } from "@/config/markets";
+import { CarteAnnonces } from "@/components/carte/carte-annonces";
 import { villesDuPays, type CodePays } from "@/config/villes";
-import { Link } from "@/i18n/navigation";
-import { cn } from "@/lib/cn";
+import { getPathname, Link } from "@/i18n/navigation";
+import { cn, PRIX_AFFICHE } from "@/lib/cn";
 import { metadonneesPage } from "@/lib/metadonnees";
-import { annoncesEnVitrine } from "@/server/annonces/catalogue";
+import {
+  annoncesACartographier,
+  annoncesEnVitrine,
+} from "@/server/annonces/catalogue";
 
 /**
  * Villes montrées par pays sur l'accueil. Les autres restent atteignables par
@@ -55,11 +59,35 @@ export default async function PageAccueil({ params }: Props) {
 
   const t = await getTranslations("accueil");
   const tParcours = await getTranslations("parcoursLocataire");
+  const tCarte = await getTranslations("accueil.carte");
+  const format = await getFormatter();
   const base = clientEnv.NEXT_PUBLIC_SITE_URL;
 
   // Deux rangées de quatre : une seule rangée donnait un aperçu trop
   // maigre pour juger de l'offre.
   const vitrine = await annoncesEnVitrine(8);
+
+  // Chaque pastille est un lien : son adresse est construite ici, côté
+  // serveur, plutôt que reconstituée dans le navigateur — le routage localisé
+  // n'a pas à être réimplémenté dans un composant de carte.
+  const pointsCarte = (await annoncesACartographier()).map((annonce) => ({
+    id: annonce.id,
+    titre: annonce.titre,
+    ville: annonce.ville,
+    prix: format.number(annonce.prixJour / 100, {
+      ...PRIX_AFFICHE,
+      currency: annonce.devise,
+    }),
+    longitude: annonce.situation.longitude,
+    latitude: annonce.situation.latitude,
+    href: getPathname({
+      locale: locale as Market,
+      href: {
+        pathname: "/remorque/[ville]/[slug]",
+        params: { ville: annonce.villeSlug, slug: annonce.slug },
+      },
+    }),
+  }));
 
   const etapes = [1, 2, 3, 4].map((numero) => ({
     titre: tParcours(`etapes.e${numero}.titre`),
@@ -236,6 +264,20 @@ export default async function PageAccueil({ params }: Props) {
           Une grille de tuiles par pays, et non une liste à puces : à cette
           densité, l'œil balaie une grille bien plus vite qu'une colonne, et
           chaque cellule encadrée se lit comme une destination. */}
+      <section className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
+        <div className="max-w-2xl">
+          <TitreSection>{tCarte("titre")}</TitreSection>
+          <p className="mt-5 text-texte-attenue">{tCarte("chapo")}</p>
+        </div>
+
+        <div className="mt-10">
+          <CarteAnnonces
+            points={pointsCarte}
+            styleUrl={clientEnv.NEXT_PUBLIC_MAP_STYLE_URL}
+          />
+        </div>
+      </section>
+
       <section className="bg-fond-doux">
         <div
           className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}

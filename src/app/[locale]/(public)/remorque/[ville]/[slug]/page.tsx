@@ -25,7 +25,7 @@ import { getPathname, Link } from "@/i18n/navigation";
 import { avisDeLannonce } from "@/server/annonces/avis";
 import { codeQrSvg } from "@/server/annonces/code-qr";
 import {
-  annoncesDeLaVille,
+  rechercherAnnonces,
   listerAdressesAnnonces,
   trouverAnnonce,
 } from "@/server/annonces/catalogue";
@@ -136,7 +136,21 @@ export default async function PageAnnonce({ params }: Props) {
 
   // Annonces voisines, la fiche courante exclue. Trois suffisent : au-delà, ce
   // n'est plus une suggestion mais une seconde page de résultats.
-  const voisines = (await annoncesDeLaVille(annonce.villeSlug))
+  //
+  // La recherche porte sur un rayon autour du bien, et non sur sa seule
+  // commune. Chercher dans la commune paraissait plus simple et ne montrait
+  // rien : une ville qui ne compte qu'une annonce — le cas de presque toutes
+  // aujourd'hui — n'a par définition aucune voisine, et la section
+  // disparaissait au lieu de proposer la remorque de la ville d'à côté, à
+  // vingt minutes de route.
+  const voisines = (
+    await rechercherAnnonces({
+      longitude: annonce.situation.longitude,
+      latitude: annonce.situation.latitude,
+      rayonKm: 60,
+      tri: "distance",
+    })
+  ).annonces
     .filter((autre) => autre.id !== annonce.id)
     .slice(0, 3);
 

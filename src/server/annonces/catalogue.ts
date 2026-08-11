@@ -503,6 +503,21 @@ export async function rechercherAnnonces(
   return { annonces, total: annonces.length };
 }
 
+/**
+ * Les annonces du marché courant, pour la carte d'ensemble.
+ *
+ * Sans tri : une carte n'a pas de premier ni de dernier. La borne existe pour
+ * qu'une place de marché à dix mille annonces n'envoie pas dix mille pastilles
+ * au navigateur — le jour où elle sera atteinte, il faudra regrouper les
+ * pastilles proches plutôt que relever la borne.
+ */
+export async function annoncesACartographier(
+  limite = 200,
+): Promise<AnnonceResume[]> {
+  const lignes = await chercher({ limite });
+  return lignes.map((ligne) => versResume(ligne, altDe(ligne.categorie)));
+}
+
 /** Quelques annonces pour la page d'accueil, les mieux notées d'abord. */
 export async function annoncesEnVitrine(
   nombre: number,
