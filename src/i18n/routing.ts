@@ -29,6 +29,7 @@ export const pathnames = {
   "/categories": "/categories",
   "/categories/[categorie]": "/categories/[categorie]",
   "/remorque/[ville]/[slug]": "/remorque/[ville]/[slug]",
+  "/reserver/[ville]/[slug]": "/reserver/[ville]/[slug]",
   "/location-remorque/[ville]": "/location-remorque/[ville]",
   "/location-remorque/[ville]/[type]": "/location-remorque/[ville]/[type]",
   "/mettre-en-location": "/mettre-en-location",

@@ -52,6 +52,22 @@ export const utilisateur = pgTable(
     nom: text("nom"),
     photoUrl: text("photo_url"),
 
+    /**
+     * Adresse du titulaire du compte.
+     *
+     * Demandée à la première demande de location, pas à l'inscription : rien
+     * ne la justifie tant qu'on se contente de regarder le catalogue, et un
+     * formulaire d'inscription long fait fuir. Elle sert au contrat de
+     * location, à la facture et à l'assurance — trois pièces qui nomment un
+     * preneur et le situent.
+     *
+     * Le pays n'est pas répété ici : il est déjà porté par `paysId`.
+     */
+    adresseLigne1: text("adresse_ligne1"),
+    adresseLigne2: text("adresse_ligne2"),
+    codePostal: text("code_postal"),
+    ville: text("ville"),
+
     typeCompte: typeCompte("type_compte").notNull().default("particulier"),
     paysId: reference("pays_id").references(() => pays.id),
     langue: text("langue").notNull().default("fr"),

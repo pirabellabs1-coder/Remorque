@@ -23,7 +23,6 @@ import { BAREME_FR } from "@/domain/compatibilite/permis";
 import { getPathname, Link } from "@/i18n/navigation";
 import { avisDeLannonce } from "@/server/annonces/avis";
 import { codeQrSvg } from "@/server/annonces/code-qr";
-import { compteConnecte } from "@/server/authentification/session";
 import {
   annoncesDeLaVille,
   listerAdressesAnnonces,
@@ -113,11 +112,6 @@ export default async function PageAnnonce({ params }: Props) {
   const categorie = CATEGORIES.find(
     (entree) => entree.slug === annonce.categorie,
   )!;
-
-  // La carte de réservation propose un lien vers la connexion plutôt qu'un
-  // refus à qui n'est pas connecté : découvrir qu'il fallait un compte au
-  // moment de cliquer est le meilleur moyen de perdre la réservation.
-  const compte = await compteConnecte();
 
   const notes = await avisDeLannonce(annonce.id, 4);
 
@@ -453,12 +447,13 @@ export default async function PageAnnonce({ params }: Props) {
 
         {/* Le barème descend depuis le serveur : il viendra de la table `pays`
             dès qu'elle sera branchée, sans toucher au composant. */}
-        <div className="space-y-4">
-          <CarteReservation
-            annonce={annonce}
-            bareme={BAREME_PAR_DEFAUT}
-            connecte={compte !== null}
-          />
+        {/* Les deux cartes voyagent ensemble et s'épinglent ensemble. La
+            carte de réservation portait le `sticky` à elle seule : elle
+            restait accrochée pendant que la carte de référence défilait
+            dessous, et les deux se chevauchaient. C'est le bloc entier qui
+            doit tenir, pas l'une de ses cartes. */}
+        <div className="space-y-4 lg:sticky lg:top-24">
+          <CarteReservation annonce={annonce} bareme={BAREME_PAR_DEFAUT} />
 
           {/* Deux façons de désigner ce bien hors de l'écran : une référence
               qu'on dicte au téléphone et qu'on recopie sur un constat, un code
