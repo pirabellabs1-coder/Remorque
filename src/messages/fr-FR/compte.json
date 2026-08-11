@@ -45,18 +45,14 @@
       "dejaInscrit": "Vous avez déjà un compte ? <lien>Se connecter</lien>",
       "role": {
         "question": "Que venez-vous faire ?",
-        "aide": "Ce choix règle votre espace d’accueil. Vous pourrez toujours activer l’autre plus tard, sans créer de second compte.",
+        "aide": "Ce choix règle votre espace d’accueil. Vous pourrez activer l’autre plus tard depuis vos paramètres, sans créer de second compte.",
         "locataire": {
           "titre": "Louer une remorque",
           "texte": "Trouver du matériel près de chez vous, réserver et payer en ligne."
         },
         "proprietaire": {
-          "titre": "Mettre la mienne en location",
-          "texte": "Publier une annonce, fixer vos prix et recevoir vos versements."
-        },
-        "lesDeux": {
-          "titre": "Les deux",
-          "texte": "Vous louez du matériel et vous mettez le vôtre à disposition."
+          "titre": "Mettre du matériel en location",
+          "texte": "Particuliers et professionnels : publiez vos annonces, fixez vos prix et recevez vos versements."
         },
         "obligatoire": "Choisissez ce que vous venez faire."
       },

@@ -25,7 +25,6 @@ import { cn } from "@/lib/cn";
 const ILLUSTRATIONS: Record<Role, string> = {
   locataire: "/images/remorque-benne.webp",
   proprietaire: "/images/proprietaires.webp",
-  lesDeux: "/images/etat-des-lieux.webp",
 };
 
 export function PanneauRole({ role }: { role: Role | null }) {
@@ -34,17 +33,17 @@ export function PanneauRole({ role }: { role: Role | null }) {
   // Sans choix encore fait, on montre le panneau du locataire : c'est le cas
   // le plus fréquent, et un panneau vide serait une colonne perdue.
   const actif: Role = role ?? "locataire";
-  const aGauche = actif === "proprietaire";
 
   return (
     <aside
       className={cn(
         "relative hidden overflow-hidden bg-encre text-encre-texte lg:block",
-        // `order` plutôt que deux blocs distincts : un seul élément qui se
-        // déplace conserve son état, ses images déjà chargées et le focus.
-        // Deux blocs alternés recréeraient tout à chaque changement.
-        aGauche ? "lg:order-first" : "lg:order-last",
-        "transition-[order] duration-300",
+        // Toujours à gauche. L'illustration changeait de côté selon le rôle
+        // choisi : l'intention était de marquer le choix, l'effet était que
+        // le formulaire sautait d'un bord à l'autre de l'écran pendant qu'on
+        // le remplissait. Une mise en page ne doit pas bouger sous les doigts
+        // de qui la remplit.
+        "lg:order-first",
       )}
     >
       {/*

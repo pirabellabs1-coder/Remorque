@@ -17,8 +17,6 @@ const ICONES: Record<Role, React.ReactNode> = {
   proprietaire: (
     <path d="M15 7a4 4 0 1 1-3.9 5H8v3H5v-3H3v-3h8.1A4 4 0 0 1 15 7Zm1 3.5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Z" />
   ),
-  // Deux flèches en boucle : l'aller et le retour.
-  lesDeux: <path d="M4 8h12l-3-3m3 3-3 3M20 16H8l3-3m-3 3 3 3" />,
 };
 
 /**

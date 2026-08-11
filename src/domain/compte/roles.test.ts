@@ -19,10 +19,6 @@ describe("traduction du rôle en profils", () => {
       profilLocataire: false,
       profilProprietaire: true,
     });
-    expect(profilsDuRole("lesDeux")).toEqual({
-      profilLocataire: true,
-      profilProprietaire: true,
-    });
   });
 
   it("n'engendre jamais un compte sans aucun profil", () => {
@@ -34,10 +30,24 @@ describe("traduction du rôle en profils", () => {
     }
   });
 
-  it("couvre exactement les trois rôles proposés", () => {
-    // Si un quatrième rôle apparaît dans l'interface sans être traité ici, ce
+  it("couvre exactement les deux rôles proposés", () => {
+    // Si un troisième rôle apparaît dans l'interface sans être traité ici, ce
     // test tombe — plutôt qu'un compte créé avec des profils muets.
-    expect([...ROLES]).toEqual(["locataire", "proprietaire", "lesDeux"]);
+    expect([...ROLES]).toEqual(["locataire", "proprietaire"]);
+  });
+
+  it("n'active qu'un seul profil à l'inscription", () => {
+    // Le choix d'entrée n'est pas un choix définitif : les deux booléens
+    // demeurent en base, et le second profil s'active depuis les paramètres.
+    // Mais on n'en ouvre qu'un, pour ne pas déposer quelqu'un dans un espace
+    // qu'il n'a pas demandé.
+    for (const role of ROLES) {
+      const profils = profilsDuRole(role);
+      expect(
+        Number(profils.profilLocataire) + Number(profils.profilProprietaire),
+        role,
+      ).toBe(1);
+    }
   });
 });
 
