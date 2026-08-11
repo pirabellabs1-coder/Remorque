@@ -58,7 +58,11 @@ export async function CoquilleAuthentification({
       </div>
 
       {/* --- Réassurance --- */}
-      <aside className="relative hidden overflow-hidden bg-encre text-encre-texte lg:block">
+      {/* L'illustration passe à gauche : elle suivait le formulaire dans
+          l'ordre du document, donc se posait à droite de la grille. Les deux
+          écrans d'authentification se ressemblent désormais, et l'œil retrouve
+          le formulaire au même endroit en passant de l'un à l'autre. */}
+      <aside className="relative hidden overflow-hidden bg-encre text-encre-texte lg:order-first lg:block">
         <div className="absolute inset-0">
           <Illustration
             src={illustration}
