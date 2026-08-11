@@ -106,7 +106,11 @@ export const avisEnVitrine = cache(async function avisEnVitrine(
       .from(tableAvis)
       .innerJoin(utilisateur, eq(utilisateur.id, tableAvis.auteurId))
       .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
-      .where(and(publies, sql`length(${tableAvis.commentaire}) > 80`))
+      // Un commentaire d'au moins cinquante caractères : en dessous, c'est
+      // « Parfait, merci », qui ne convainc personne. Le seuil est bas à
+      // dessein — trop haut, il ne retient rien et la section disparaît,
+      // ce qui est pire que trois avis brefs mais sincères.
+      .where(and(publies, sql`length(${tableAvis.commentaire}) >= 50`))
       .orderBy(desc(tableAvis.note), desc(sql`length(${tableAvis.commentaire})`))
       .limit(limite),
   ]);
