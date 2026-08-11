@@ -1,7 +1,7 @@
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
-import { Etoiles } from "@/components/espace/statut";
+import { SectionAvis } from "@/components/annonce/section-avis";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
 import { DonneesStructurees } from "@/components/ui/carte";
@@ -379,43 +379,13 @@ export default async function PageAccueil({ params }: Props) {
           inconnue, bien davantage que ce que nous écrivons nous-mêmes. */}
       {vitrineAvis.avis.length > 0 ? (
         <section className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="max-w-2xl">
-              <TitreSection>{tAvis("titre")}</TitreSection>
-              <p className="mt-5 text-texte-attenue">{tAvis("chapo")}</p>
-            </div>
-
-            {/* Moyenne et décompte portent sur tous les avis du marché, jamais
-                sur les trois montrés — une moyenne calculée sur des avis
-                choisis serait une flatterie, et une fausse. */}
-            {vitrineAvis.moyenne !== null ? (
-              <p className="text-[0.9375rem] text-texte-attenue">
-                {tAvis("synthese", {
-                  moyenne: format.number(vitrineAvis.moyenne, {
-                    maximumFractionDigits: 1,
-                  }),
-                  nombre: vitrineAvis.nombre,
-                })}
-              </p>
-            ) : null}
-          </div>
-
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {vitrineAvis.avis.map((avis) => (
-              <li
-                key={avis.id}
-                className="flex flex-col rounded-carte border border-bordure bg-fond-eleve p-6 shadow-(--ombre-carte)"
-              >
-                <Etoiles note={avis.note} />
-                <blockquote className="mt-4 flex-1 text-[0.9375rem] leading-relaxed">
-                  {avis.texte}
-                </blockquote>
-                <p className="mt-4 text-sm font-medium text-texte-attenue">
-                  {avis.auteur}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <SectionAvis
+            avis={vitrineAvis.avis}
+            nombre={vitrineAvis.nombre}
+            moyenne={vitrineAvis.moyenne}
+            titre={tAvis("titre")}
+            chapo={tAvis("chapo")}
+          />
         </section>
       ) : null}
 

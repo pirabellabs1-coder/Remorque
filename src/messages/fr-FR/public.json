@@ -888,6 +888,10 @@
       "apartir": "À partir de",
       "caution": "Caution",
       "cautionValeur": "Non débitée"
+    },
+    "avis": {
+      "titre": "Ce qu'en disent les locataires à {ville}",
+      "chapo": "Ces avis portent sur des remorques louées à {ville}. Un avis ne peut être déposé qu'après une restitution."
     }
   },
   "legal": {

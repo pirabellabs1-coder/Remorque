@@ -64,7 +64,7 @@ const nomAffiche = sql<string>`
  * quatre affichés serait fausse et flatteuse.
  */
 /**
- * Les avis les plus parlants du marché courant, pour l'accueil.
+ * Les avis les plus parlants, pour l'accueil et les pages de ville.
  *
  * Sélectionnés sur la longueur du commentaire et non sur la note : « Parfait »
  * ne convainc personne, tandis qu'un locataire qui raconte son déménagement
@@ -77,11 +77,16 @@ const nomAffiche = sql<string>`
  */
 export const avisEnVitrine = cache(async function avisEnVitrine(
   limite = 3,
+  villeSlug?: string,
 ): Promise<{ avis: AvisPublic[]; nombre: number; moyenne: number | null }> {
   const publies = and(
     isNotNull(tableAvis.publieLe),
     eq(tableAvis.masque, false),
     await annonceDuMarche(),
+    // Restreint à une ville pour les pages locales : un avis lu sur la page de
+    // Lyon doit parler d'une remorque lyonnaise, sans quoi la preuve n'en est
+    // plus une — elle devient un argument général posé là.
+    villeSlug ? eq(annonce.villeSlug, villeSlug) : undefined,
   );
 
   const [agregats, lignes] = await Promise.all([

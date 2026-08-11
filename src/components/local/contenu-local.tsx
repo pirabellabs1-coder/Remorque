@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
+import { SectionAvis } from "@/components/annonce/section-avis";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
 import { Faq } from "@/components/ui/faq";
@@ -14,6 +15,7 @@ import { MARKETS, type Market } from "@/config/markets";
 import { villesVoisines, type Ville } from "@/config/villes";
 import { Link, getPathname } from "@/i18n/navigation";
 import { cn, PRIX_AFFICHE } from "@/lib/cn";
+import { avisEnVitrine } from "@/server/annonces/avis";
 import {
   annoncesDeLaVille,
   prixMinimumDansLaVille,
@@ -53,6 +55,7 @@ export async function ContenuLocal({
   const annonces = await annoncesDeLaVille(ville.slug, categorie?.slug);
   const prixMinimum = await prixMinimumDansLaVille(ville.slug, categorie?.slug);
   const voisines = villesVoisines(ville);
+  const avis = await avisEnVitrine(3, ville.slug);
 
   const titre = categorie
     ? t("titreCategorie", {
@@ -312,6 +315,26 @@ export async function ContenuLocal({
       </section>
 
       {/* ================= Questions fréquentes ================= */}
+      {/* ---------- Ce qu'en disent les locataires ----------
+          Les avis portent sur les remorques de cette ville, pas sur la
+          plateforme en général : un avis lu sur la page de Lyon doit
+          parler d'une remorque lyonnaise, sans quoi la preuve n'en est
+          plus une. La section se tait tant qu'aucune location n'a été
+          notée ici. */}
+      {avis.avis.length > 0 ? (
+        <section
+          className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", ESPACEMENT.standard)}
+        >
+          <SectionAvis
+            avis={avis.avis}
+            nombre={avis.nombre}
+            moyenne={avis.moyenne}
+            titre={t("avis.titre", { ville: ville.nom })}
+            chapo={t("avis.chapo", { ville: ville.nom })}
+          />
+        </section>
+      ) : null}
+
       <section className="bg-fond-doux">
         <div
           className={cn("mx-auto w-full max-w-3xl px-4 sm:px-6", ESPACEMENT.standard)}
