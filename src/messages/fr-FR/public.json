@@ -152,7 +152,11 @@
       "liste": "Liste",
       "carte": "Carte"
     },
-    "accroche": "{nombre, plural, one {# remorque disponible, prête à réserver} other {# remorques disponibles, prêtes à réserver}} — caution non débitée, état des lieux à chaque location."
+    "accroche": "{nombre, plural, one {# remorque disponible, prête à réserver} other {# remorques disponibles, prêtes à réserver}} — caution non débitée, état des lieux à chaque location.",
+    "toutVoir": {
+      "texte": "{nombre, plural, one {# remorque correspond} other {# remorques correspondent}} à vos critères. Le catalogue en compte davantage.",
+      "action": "Voir toutes les annonces"
+    }
   },
   "commentCaMarche": {
     "metaTitre": "Comment ça marche",
@@ -1485,5 +1489,34 @@
     "titre": "Nous revenons très vite",
     "texte": "Le site est en maintenance pour une courte durée. Les réservations en cours ne sont pas affectées et les espaces connectés restent accessibles.",
     "espace": "Accéder à mon espace"
+  },
+  "pageCategorie": {
+    "metaTitre": "Location de {categorie} entre particuliers et professionnels",
+    "metaDescription": "Louez une {categorie} près de chez vous : {usages}. Réservation en ligne, caution non débitée, état des lieux photographique.",
+    "filAriane": "Fil d’Ariane",
+    "accueil": "Accueil",
+    "titre": "Location de {categorie}",
+    "accroche": "Le matériel qu’il vous faut pour : {usages}.",
+    "resume": "{nombre, plural, one {# {categorie} disponible} other {# {categorie} disponibles}} à la location, à partir de {prix} par jour.",
+    "resumeVide": "Aucune {categorie} n’est encore proposée. Le catalogue se construit type par type.",
+    "chiffres": {
+      "disponibles": "Disponibles à la location",
+      "apartir": "À partir de"
+    },
+    "action": "Voir les annonces disponibles",
+    "annonces": "{categorie} à louer",
+    "toutVoir": "Voir les {nombre} annonces",
+    "usages": {
+      "titre": "À quoi sert une {categorie}",
+      "texte": "On la loue le plus souvent pour : {usages}. Vérifiez la charge utile — ce que vous pouvez réellement charger, remorque déduite — plutôt que le poids total autorisé, qui comprend la remorque elle-même."
+    },
+    "villes": "Louer une {categorie} près de chez vous",
+    "autres": "Les autres types de matériel",
+    "vide": {
+      "titre": "Aucune {categorie} pour le moment",
+      "texte": "Le catalogue se construit type par type. Si vous en possédez une, c’est le bon moment pour la proposer : les premières annonces d’une catégorie sont aussi les plus demandées.",
+      "actionProprietaire": "Proposer mon matériel",
+      "actionRecherche": "Voir tout le catalogue"
+    }
   }
 }

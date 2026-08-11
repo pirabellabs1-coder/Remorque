@@ -141,6 +141,15 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     }),
   }));
 
+  const filtresActifs = [
+    categorie,
+    prixMax,
+    chargeMin,
+    freineeSeulement || undefined,
+    instantaneeSeulement || undefined,
+    ville || undefined,
+  ].filter(Boolean).length;
+
   const titre = categorie
     ? ville
       ? t("titreCategorieVille", { categorie: categorie.nom, ville: villeAffichee })
@@ -284,13 +293,30 @@ export default async function PageRecherche({ params, searchParams }: Props) {
         <div className="mt-8">
         <VoletCarte points={pointsCarte} styleUrl={clientEnv.NEXT_PUBLIC_MAP_STYLE_URL}>
         {annonces.length > 0 ? (
-          <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-2">
-            {annonces.map((annonce) => (
-              <li key={annonce.id}>
-                <CarteAnnonce annonce={annonce} />
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-2">
+              {annonces.map((annonce) => (
+                <li key={annonce.id}>
+                  <CarteAnnonce annonce={annonce} />
+                </li>
+              ))}
+            </ul>
+
+            {/* Sortie du filtrage. Une liste courte laisse croire que le
+                catalogue est vide, alors que ce sont les critères qui le
+                réduisent : il faut pouvoir en sortir d'un geste, sans aller
+                remettre cinq listes sur « Peu importe ». */}
+            {filtresActifs > 0 ? (
+              <div className="mt-10 border-t border-bordure pt-8 text-center">
+                <p className="text-[0.9375rem] text-texte-attenue">
+                  {t("toutVoir.texte", { nombre: total })}
+                </p>
+                <Bouton as={Link} href="/recherche" className="mt-4">
+                  {t("toutVoir.action")}
+                </Bouton>
+              </div>
+            ) : null}
+          </>
         ) : (
           <section className="mt-8 rounded-carte border border-bordure bg-fond-doux p-8 sm:p-12">
             <h2 className="text-lg font-semibold">{t("vide.titre")}</h2>
