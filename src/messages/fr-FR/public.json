@@ -1518,5 +1518,56 @@
       "actionProprietaire": "Proposer mon matériel",
       "actionRecherche": "Voir tout le catalogue"
     }
+  },
+  "pageCategories": {
+    "metaTitre": "Tous les types de remorques à louer",
+    "metaDescription": "Benne, plateau, porte-voiture, bagagère, van à chevaux, porte-bateau, frigorifique : trouvez le type de remorque adapté à ce que vous transportez.",
+    "filAriane": "Fil d’Ariane",
+    "accueil": "Accueil",
+    "courant": "Types de matériel",
+    "titre": "Quel type de remorque vous faut-il ?",
+    "chapo": "Le bon matériel dépend de ce que vous transportez, pas de sa taille. Chaque type a ses usages, sa charge utile et son permis — voici de quoi choisir sans vous tromper.",
+    "disponibles": "{nombre, plural, one {# disponible} other {# disponibles}}",
+    "apartir": "à partir de {prix}",
+    "aucune": "Aucune annonce pour le moment",
+    "parVille": "Chercher par ville"
+  },
+  "planDuSite": {
+    "metaTitre": "Plan du site",
+    "metaDescription": "Toutes les pages du site en un coup d’œil : villes desservies, types de remorques, guides pratiques et informations légales.",
+    "titre": "Plan du site",
+    "chapo": "Toutes les pages en un coup d’œil, y compris chaque ville desservie et chaque type de matériel.",
+    "louer": "Louer",
+    "mettreEnLocation": "Mettre en location",
+    "comprendre": "Comprendre",
+    "plateforme": "La plateforme",
+    "legal": "Informations légales",
+    "parType": "Par type de matériel",
+    "parVille": "Par ville",
+    "parVilleAide": "{nombre} villes desservies dans votre pays.",
+    "liens": {
+      "recherche": "Rechercher une remorque",
+      "categories": "Tous les types de matériel",
+      "commentLouer": "Comment louer",
+      "tarifs": "Tarifs et frais",
+      "mettreEnLocation": "Mettre ma remorque en location",
+      "commentMettre": "Comment mettre en location",
+      "pro": "Loueurs professionnels",
+      "commentCaMarche": "Comment ça marche",
+      "assurance": "Qui assure la remorque",
+      "permis": "Quel permis pour quelle remorque",
+      "charge": "Calculateur de charge",
+      "aide": "Centre d’aide",
+      "aPropos": "À propos",
+      "contact": "Nous contacter",
+      "connexion": "Se connecter",
+      "inscription": "Créer un compte",
+      "cgu": "Conditions générales d’utilisation",
+      "cgv": "Conditions générales de vente",
+      "confidentialite": "Politique de confidentialité",
+      "cookies": "Cookies et traceurs",
+      "mentionsLegales": "Mentions légales",
+      "mediation": "Médiation de la consommation"
+    }
   }
 }

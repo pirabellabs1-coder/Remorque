@@ -573,6 +573,39 @@ export async function compterAnnoncesParVille(): Promise<Map<string, number>> {
   return compterParVille();
 }
 
+/**
+ * Nombre d'annonces et prix plancher, par catégorie.
+ *
+ * Un seul parcours du catalogue plutôt qu'une requête par catégorie : dix
+ * allers-retours pour une page d'index seraient dix de trop, et le défaut ne
+ * se verrait pas sur un jeu d'essai — il apparaîtrait le jour où la base
+ * grossit, c'est-à-dire trop tard.
+ *
+ * Les catégories vides n'y figurent pas : l'appelant les affiche à partir du
+ * catalogue de configuration, et lit ici zéro par absence.
+ */
+export async function compterAnnoncesParCategorie(): Promise<
+  Map<string, { nombre: number; prixMinimum: number }>
+> {
+  const lignes = await chercher({});
+  const par = new Map<string, { nombre: number; prixMinimum: number }>();
+
+  for (const ligne of lignes) {
+    const courant = par.get(ligne.categorie);
+    const prix = ligne.prixJour ?? 0;
+
+    if (!courant) {
+      par.set(ligne.categorie, { nombre: 1, prixMinimum: prix });
+      continue;
+    }
+
+    courant.nombre += 1;
+    if (prix > 0 && prix < courant.prixMinimum) courant.prixMinimum = prix;
+  }
+
+  return par;
+}
+
 /** Prix journalier le plus bas d'une ville, en centimes. */
 export async function prixMinimumDansLaVille(
   villeSlug: string,

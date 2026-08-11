@@ -99,6 +99,12 @@ export function PiedPagePublic() {
             <li>
               <Link href="/cookies">{t("piedPage.cookies")}</Link>
             </li>
+            {/* Le plan du site met chaque ville et chaque type à un clic de
+                n'importe quelle page — ce que `sitemap.xml` ne fait que pour
+                les moteurs. */}
+            <li>
+              <Link href="/plan-du-site">{t("piedPage.planDuSite")}</Link>
+            </li>
             <li>
               <Link href="/mentions-legales">{t("piedPage.mentionsLegales")}</Link>
             </li>
