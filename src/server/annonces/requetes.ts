@@ -215,7 +215,15 @@ function ordonner(
     case "note":
       return sql`${notes.moyenne} desc nulls last`;
     case "distance":
-      return sql`${distance} asc`;
+      // Sans point de référence — ni ville cherchée, ni position autorisée —
+      // la distance vaut la constante zéro, et PostgreSQL lit ce zéro comme un
+      // **numéro de colonne** : « ORDER BY position 0 is not in select list ».
+      // La recherche répondait donc par une erreur 500 au simple clic sur
+      // « Distance ». Faute de référence, on trie par prix, comme le fait déjà
+      // la pertinence dans la même situation.
+      return avecVille
+        ? sql`${distance} asc`
+        : sql`${tarifBase.prixJour} asc nulls last`;
     default:
       // « Pertinence » privilégie la proximité, qui est le critère réel d'une
       // place de marché locale. Sans ville cherchée, la distance vaut zéro

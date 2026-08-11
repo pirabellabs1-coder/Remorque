@@ -80,14 +80,6 @@
           "a1": "Vous fixez vos prix, vos dates et vos règles d’utilisation.",
           "a2": "Le matériel est couvert pendant toute la location, dommages compris.",
           "a3": "Le versement part automatiquement après la restitution, sans relance."
-        },
-        "lesDeux": {
-          "surtitre": "Les deux côtés",
-          "titre": "Un seul compte pour louer et pour mettre en location.",
-          "illustration": "Deux personnes réalisant l’état des lieux d’une remorque, l’une la photographiant avec son téléphone",
-          "a1": "Une bascule dans le menu suffit à passer d’un espace à l’autre.",
-          "a2": "Vos avis, votre identité vérifiée et vos documents sont partagés.",
-          "a3": "Ce que vous gagnez en louant peut financer ce que vous louez."
         }
       }
     }
