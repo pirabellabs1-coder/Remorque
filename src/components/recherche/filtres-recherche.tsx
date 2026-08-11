@@ -1,33 +1,32 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { CATEGORIES } from "@/config/categories";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 
 /**
- * Filtres de recherche, en colonne.
+ * Filtres de recherche, en colonne à gauche.
  *
- * Une seule liste déroulante existait — la catégorie — alors que les libellés
- * du prix, du PTAC, du freinage et de la réservation instantanée étaient
- * traduits depuis le début, sans interface derrière. D'où l'impression, juste,
- * que « les filtres ne fonctionnent pas » : il n'y en avait qu'un.
+ * Tout est en liste déroulante, y compris les deux critères qui ne prennent
+ * que deux valeurs. Une case à cocher aurait été plus courte, mais la colonne
+ * y perdait : sept commandes de trois formes différentes se lisent moins vite
+ * qu'une pile de listes identiques, où l'œil descend sans se réajuster. Et
+ * « Peu importe » dit explicitement qu'on n'a pas filtré, là où une case
+ * décochée laisse hésiter.
  *
  * **Des paliers plutôt que des curseurs.** Un curseur à deux poignées se
  * manipule mal au doigt, et personne ne cherche « entre 37 et 62 € » : on
- * cherche « pas plus de 50 ». Un palier se choisit d'un geste et se lit d'un
- * regard.
+ * cherche « pas plus de 50 ».
  *
  * **La charge utile plutôt que le PTAC.** C'est la question réelle du
  * locataire — « puis-je y mettre une tonne ? » — là où le PTAC comprend le
  * poids de la remorque elle-même et trompe son monde.
  *
- * Chaque filtre est un lien : l'état vit dans l'adresse, se partage, se met en
- * favori et revient intact par le bouton « précédent ». Sur mobile, la colonne
- * se replie derrière un bouton — elle occuperait sinon tout le premier écran,
- * avant le moindre résultat.
+ * L'état vit dans l'adresse : chaque choix pousse une nouvelle adresse, qui se
+ * partage, se met en favori et revient intacte par le bouton « précédent ».
  */
 export function FiltresRecherche({
   parametres,
@@ -35,9 +34,8 @@ export function FiltresRecherche({
   paliersPrix,
   paliersCharge,
   monnaie,
-  nombreFiltresActifs,
 }: {
-  /** Critères courants, hors ceux que chaque lien modifie. */
+  /** Critères courants, que chaque changement conserve. */
   parametres: Record<string, string>;
   actifs: {
     categorie: string;
@@ -48,33 +46,36 @@ export function FiltresRecherche({
   };
   paliersPrix: readonly number[];
   paliersCharge: readonly number[];
-  /** Symbole ou code de la devise du marché. */
   monnaie: string;
-  nombreFiltresActifs: number;
 }) {
   const t = useTranslations("recherche.filtres");
   const routeur = useRouter();
+  const identifiant = useId();
   const [ouvert, setOuvert] = useState(false);
 
-  /** Reconstruit l'adresse en changeant une seule clé. */
-  const avec = (cle: string, valeur?: string) => {
-    const requete = { ...parametres };
-    if (valeur === undefined) delete requete[cle];
-    else requete[cle] = valeur;
-    return { pathname: "/recherche" as const, query: requete };
-  };
+  const nombreActifs = [
+    actifs.categorie,
+    actifs.prixMax,
+    actifs.chargeMin,
+    actifs.freinee || undefined,
+    actifs.instantanee || undefined,
+  ].filter(Boolean).length;
 
-  const pastille = (actif: boolean) =>
-    cn(
-      "inline-flex items-center rounded-full border px-3 py-1.5 text-sm transition-colors",
-      actif
-        ? "border-accent bg-accent text-accent-contraste"
-        : "border-bordure hover:border-accent",
-    );
+  /** Change une clé et pousse la nouvelle adresse. */
+  function changer(cle: string, valeur: string) {
+    const requete = { ...parametres };
+    if (valeur) requete[cle] = valeur;
+    else delete requete[cle];
+
+    routeur.push({ pathname: "/recherche", query: requete });
+  }
+
+  const listeClasse =
+    "mt-2 h-11 w-full rounded-champ border border-bordure bg-fond-eleve px-3 text-[0.9375rem] transition-colors hover:border-accent focus:border-accent";
 
   return (
     <aside className="lg:sticky lg:top-40">
-      {/* Sur mobile, la colonne se replie : douze filtres avant le premier
+      {/* Sur mobile la colonne se replie : cinq listes avant le premier
           résultat feraient croire à un formulaire, pas à un catalogue. */}
       <button
         type="button"
@@ -84,9 +85,9 @@ export function FiltresRecherche({
       >
         <span>
           {t("titre")}
-          {nombreFiltresActifs > 0 ? (
+          {nombreActifs > 0 ? (
             <span className="ml-2 rounded-full bg-accent px-2 py-0.5 text-xs text-accent-contraste">
-              {nombreFiltresActifs}
+              {nombreActifs}
             </span>
           ) : null}
         </span>
@@ -95,13 +96,13 @@ export function FiltresRecherche({
 
       <div
         className={cn(
-          "space-y-7 rounded-carte border border-bordure bg-fond-eleve p-5",
+          "space-y-5 rounded-carte border border-bordure bg-fond-eleve p-5",
           ouvert ? "block" : "hidden lg:block",
         )}
       >
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-[0.9375rem] font-semibold">{t("titre")}</h2>
-          {nombreFiltresActifs > 0 ? (
+          {nombreActifs > 0 ? (
             <button
               type="button"
               onClick={() => routeur.push({ pathname: "/recherche", query: {} })}
@@ -112,131 +113,147 @@ export function FiltresRecherche({
           ) : null}
         </div>
 
-        {/* ---------- Catégorie ---------- */}
         <div>
-          <p className="text-[0.6875rem] font-semibold tracking-[0.14em] text-texte-attenue uppercase">
+          <label htmlFor={`${identifiant}-categorie`} className="text-sm font-medium">
             {t("categorie")}
-          </p>
-          <ul className="mt-3 flex flex-wrap gap-2">
-            <li>
-              <Link
-                href={avec("categorie")}
-                className={pastille(!actifs.categorie)}
-              >
-                {t("tout")}
-              </Link>
-            </li>
+          </label>
+          <select
+            id={`${identifiant}-categorie`}
+            value={actifs.categorie}
+            onChange={(evenement) => changer("categorie", evenement.target.value)}
+            className={listeClasse}
+          >
+            <option value="">{t("tout")}</option>
             {CATEGORIES.map((entree) => (
-              <li key={entree.slug}>
-                <Link
-                  href={avec("categorie", entree.slug)}
-                  className={pastille(actifs.categorie === entree.slug)}
-                >
-                  {entree.nom}
-                </Link>
-              </li>
+              <option key={entree.slug} value={entree.slug}>
+                {entree.nom}
+              </option>
             ))}
-          </ul>
+          </select>
         </div>
 
-        {/* ---------- Prix ---------- */}
         <div>
-          <p className="text-[0.6875rem] font-semibold tracking-[0.14em] text-texte-attenue uppercase">
+          <label htmlFor={`${identifiant}-prix`} className="text-sm font-medium">
             {t("prix")}
-          </p>
-          <ul className="mt-3 flex flex-wrap gap-2">
+          </label>
+          <select
+            id={`${identifiant}-prix`}
+            value={actifs.prixMax ? String(actifs.prixMax) : ""}
+            onChange={(evenement) => changer("prixMax", evenement.target.value)}
+            className={listeClasse}
+          >
+            <option value="">{t("peuImporte")}</option>
             {paliersPrix.map((palier) => (
-              <li key={palier}>
-                <Link
-                  href={
-                    actifs.prixMax === palier
-                      ? avec("prixMax")
-                      : avec("prixMax", String(palier))
-                  }
-                  className={pastille(actifs.prixMax === palier)}
-                >
-                  {t("jusqua", { montant: `${palier / 100} ${monnaie}` })}
-                </Link>
-              </li>
+              <option key={palier} value={palier}>
+                {t("jusqua", { montant: `${palier / 100} ${monnaie}` })}
+              </option>
             ))}
-          </ul>
+          </select>
         </div>
 
-        {/* ---------- Charge utile ---------- */}
         <div>
-          <p className="text-[0.6875rem] font-semibold tracking-[0.14em] text-texte-attenue uppercase">
+          <label htmlFor={`${identifiant}-charge`} className="text-sm font-medium">
             {t("charge")}
-          </p>
-          <p className="mt-1 text-sm text-texte-attenue">{t("chargeAide")}</p>
-          <ul className="mt-3 flex flex-wrap gap-2">
+          </label>
+          <select
+            id={`${identifiant}-charge`}
+            value={actifs.chargeMin ? String(actifs.chargeMin) : ""}
+            onChange={(evenement) => changer("chargeMin", evenement.target.value)}
+            className={listeClasse}
+          >
+            <option value="">{t("peuImporte")}</option>
             {paliersCharge.map((palier) => (
-              <li key={palier}>
-                <Link
-                  href={
-                    actifs.chargeMin === palier
-                      ? avec("chargeMin")
-                      : avec("chargeMin", String(palier))
-                  }
-                  className={pastille(actifs.chargeMin === palier)}
-                >
-                  {t("apartir", { kg: palier })}
-                </Link>
-              </li>
+              <option key={palier} value={palier}>
+                {t("apartir", { kg: palier })}
+              </option>
             ))}
-          </ul>
+          </select>
+          <p className="mt-2 text-sm text-texte-attenue">{t("chargeAide")}</p>
         </div>
 
-        {/* ---------- Interrupteurs ---------- */}
-        <div className="space-y-3 border-t border-bordure pt-5">
-          <Link
-            href={actifs.freinee ? avec("freinee") : avec("freinee", "oui")}
-            className="flex items-start gap-3 text-[0.9375rem]"
+        <div>
+          <label htmlFor={`${identifiant}-freinee`} className="text-sm font-medium">
+            {t("freinee")}
+          </label>
+          <select
+            id={`${identifiant}-freinee`}
+            value={actifs.freinee ? "oui" : ""}
+            onChange={(evenement) => changer("freinee", evenement.target.value)}
+            className={listeClasse}
           >
-            <span
-              aria-hidden
-              className={cn(
-                "mt-0.5 grid size-5 shrink-0 place-items-center rounded border text-xs",
-                actifs.freinee
-                  ? "border-accent bg-accent text-accent-contraste"
-                  : "border-bordure",
-              )}
-            >
-              {actifs.freinee ? "✓" : ""}
-            </span>
-            <span>
-              {t("freinee")}
-              <span className="mt-0.5 block text-sm text-texte-attenue">
-                {t("freineeAide")}
-              </span>
-            </span>
-          </Link>
+            <option value="">{t("peuImporte")}</option>
+            <option value="oui">{t("freineeSeulement")}</option>
+          </select>
+          <p className="mt-2 text-sm text-texte-attenue">{t("freineeAide")}</p>
+        </div>
 
-          <Link
-            href={
-              actifs.instantanee ? avec("instantanee") : avec("instantanee", "oui")
-            }
-            className="flex items-start gap-3 text-[0.9375rem]"
+        <div>
+          <label
+            htmlFor={`${identifiant}-instantanee`}
+            className="text-sm font-medium"
           >
-            <span
-              aria-hidden
-              className={cn(
-                "mt-0.5 grid size-5 shrink-0 place-items-center rounded border text-xs",
-                actifs.instantanee
-                  ? "border-accent bg-accent text-accent-contraste"
-                  : "border-bordure",
-              )}
-            >
-              {actifs.instantanee ? "✓" : ""}
-            </span>
-            <span>
-              {t("reservationInstantanee")}
-              <span className="mt-0.5 block text-sm text-texte-attenue">
-                {t("instantaneeAide")}
-              </span>
-            </span>
-          </Link>
+            {t("reservationInstantanee")}
+          </label>
+          <select
+            id={`${identifiant}-instantanee`}
+            value={actifs.instantanee ? "oui" : ""}
+            onChange={(evenement) => changer("instantanee", evenement.target.value)}
+            className={listeClasse}
+          >
+            <option value="">{t("peuImporte")}</option>
+            <option value="oui">{t("instantaneeSeulement")}</option>
+          </select>
+          <p className="mt-2 text-sm text-texte-attenue">{t("instantaneeAide")}</p>
         </div>
       </div>
     </aside>
+  );
+}
+
+/**
+ * Ordre des résultats.
+ *
+ * En liste déroulante et non en onglets : quatre onglets alignés à droite du
+ * titre flottaient dans le vide dès que la colonne de filtres a pris sa place
+ * à gauche, et se comparaient mal à ce qu'ils commandaient. Une liste posée
+ * contre le nombre de résultats dit ce qu'elle trie.
+ */
+export function TriResultats({
+  parametres,
+  valeur,
+  tris,
+}: {
+  parametres: Record<string, string>;
+  valeur: string;
+  tris: readonly string[];
+}) {
+  const t = useTranslations("recherche.tri");
+  const routeur = useRouter();
+  const identifiant = useId();
+
+  return (
+    <div className="flex items-center gap-2">
+      <label htmlFor={identifiant} className="shrink-0 text-sm text-texte-attenue">
+        {t("label")}
+      </label>
+      <select
+        id={identifiant}
+        value={valeur}
+        onChange={(evenement) => {
+          const requete = { ...parametres };
+          if (evenement.target.value === "pertinence") delete requete.tri;
+          else requete.tri = evenement.target.value;
+
+          routeur.push({ pathname: "/recherche", query: requete });
+        }}
+        className="h-10 rounded-champ border border-bordure bg-fond-eleve px-3 text-sm font-medium transition-colors hover:border-accent focus:border-accent"
+      >
+        {tris.map((entree) => (
+          <option key={entree} value={entree}>
+            {t(entree as never)}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }

@@ -2,7 +2,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BoutonAutourDeMoi } from "@/components/annonce/bouton-autour-de-moi";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
-import { FiltresRecherche } from "@/components/recherche/filtres-recherche";
+import {
+  FiltresRecherche,
+  TriResultats,
+} from "@/components/recherche/filtres-recherche";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
 import { CATEGORIES } from "@/config/categories";
@@ -183,10 +186,6 @@ export default async function PageRecherche({ params, searchParams }: Props) {
           paliersPrix={PALIERS_PRIX}
           paliersCharge={PALIERS_CHARGE}
           monnaie="€"
-          nombreFiltresActifs={
-            [categorie, prixMax, chargeMin, freineeSeulement || undefined,
-             instantaneeSeulement || undefined].filter(Boolean).length
-          }
         />
 
         <div>
@@ -201,28 +200,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
           </div>
 
           {total > 0 ? (
-            <nav aria-label={t("tri.label")} className="flex flex-wrap gap-1">
-              {TRIS.map((valeur) => (
-                <Link
-                  key={valeur}
-                  href={{
-                    pathname: "/recherche",
-                    query: avec({
-                      tri: valeur === "pertinence" ? undefined : valeur,
-                    }),
-                  }}
-                  aria-current={valeur === tri ? "page" : undefined}
-                  className={cn(
-                    "rounded-champ px-3 py-1.5 text-sm transition-colors",
-                    valeur === tri
-                      ? "bg-fond-doux font-medium text-accent"
-                      : "text-texte-attenue hover:text-texte",
-                  )}
-                >
-                  {t(`tri.${valeur}`)}
-                </Link>
-              ))}
-            </nav>
+            <TriResultats parametres={avec({})} valeur={tri} tris={TRIS} />
           ) : null}
         </div>
 

@@ -131,7 +131,10 @@
       "charge": "Charge utile",
       "chargeAide": "Ce que vous pouvez réellement charger, remorque déduite.",
       "freineeAide": "Obligatoire au-delà de 750 kg de PTAC.",
-      "instantaneeAide": "Réservable sans attendre l’accord du propriétaire."
+      "instantaneeAide": "Réservable sans attendre l’accord du propriétaire.",
+      "peuImporte": "Peu importe",
+      "freineeSeulement": "Freinée uniquement",
+      "instantaneeSeulement": "Instantanée uniquement"
     },
     "tri": {
       "label": "Trier",
