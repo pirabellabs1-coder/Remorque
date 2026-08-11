@@ -239,6 +239,14 @@ export const chercher = cache(async function chercher(options: {
   latitude?: number;
   /** Rayon de recherche autour de cette position, en kilomètres. */
   rayonKm?: number;
+  /** Prix par jour maximum, en centimes. */
+  prixMax?: number;
+  /** Charge utile minimale exigée, en kilogrammes. */
+  chargeMin?: number;
+  /** N'afficher que les remorques freinées. */
+  freineeSeulement?: boolean;
+  /** N'afficher que les annonces réservables sans accord préalable. */
+  instantaneeSeulement?: boolean;
 }): Promise<LigneResume[]> {
   const {
     villeSlug,
@@ -248,6 +256,10 @@ export const chercher = cache(async function chercher(options: {
     longitude,
     latitude,
     rayonKm,
+    prixMax,
+    chargeMin,
+    freineeSeulement,
+    instantaneeSeulement,
   } = options;
 
   // Le point de référence est la position du visiteur quand il l'a donnée,
@@ -271,6 +283,24 @@ export const chercher = cache(async function chercher(options: {
   const conditions = [eq(annonce.statut, "publiee"), await annonceDuMarche()];
   if (villeSlug) conditions.push(eq(annonce.villeSlug, villeSlug));
   if (categorieSlug) conditions.push(eq(categorie.slug, categorieSlug));
+
+  // Le prix se filtre sur le tarif de base, joint plus bas : la condition
+  // porte donc sur la sous-requête et non sur `annonce`.
+  if (prixMax !== undefined) {
+    conditions.push(sql`${tarifBase.prixJour} <= ${prixMax}`);
+  }
+
+  // La charge utile plutôt que le PTAC : c'est ce que le locataire cherche
+  // réellement — « puis-je y mettre une tonne ? » — là où le PTAC inclut le
+  // poids de la remorque elle-même et induit en erreur.
+  if (chargeMin !== undefined) {
+    conditions.push(sql`${annonce.chargeUtileKg} >= ${chargeMin}`);
+  }
+
+  if (freineeSeulement) conditions.push(eq(annonce.freinee, true));
+  if (instantaneeSeulement) {
+    conditions.push(eq(annonce.reservationInstantanee, true));
+  }
 
   // Rayon autour de la position réelle. `ST_DWithin` sur la projection
   // `::geography` est ce qui emploie l'index géographique — un filtre écrit

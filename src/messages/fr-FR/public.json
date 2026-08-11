@@ -124,7 +124,14 @@
       "equipements": "Équipements",
       "compatibleVehicule": "Compatible avec mon véhicule",
       "reservationInstantanee": "Réservation instantanée",
-      "tout": "Tout"
+      "tout": "Tout",
+      "effacer": "Tout effacer",
+      "jusqua": "Jusqu’à {montant}",
+      "apartir": "{kg} kg et plus",
+      "charge": "Charge utile",
+      "chargeAide": "Ce que vous pouvez réellement charger, remorque déduite.",
+      "freineeAide": "Obligatoire au-delà de 750 kg de PTAC.",
+      "instantaneeAide": "Réservable sans attendre l’accord du propriétaire."
     },
     "tri": {
       "label": "Trier",

@@ -421,7 +421,23 @@ export type CriteresRecherche = {
   longitude?: number;
   latitude?: number;
   rayonKm?: number;
+  /** Prix par jour maximum, en centimes. */
+  prixMax?: number;
+  /** Charge utile minimale exigée, en kilogrammes. */
+  chargeMin?: number;
+  freineeSeulement?: boolean;
+  instantaneeSeulement?: boolean;
 };
+
+/**
+ * Paliers proposés pour le prix et la charge.
+ *
+ * Des paliers plutôt qu'un curseur : sur un téléphone, un curseur à deux
+ * poignées se manipule mal, et personne ne cherche « entre 37 et 62 € ». On
+ * cherche « pas plus de 50 ».
+ */
+export const PALIERS_PRIX = [3000, 5000, 8000, 12000] as const;
+export const PALIERS_CHARGE = [500, 750, 1000, 2000] as const;
 
 /** Rayons proposés, en kilomètres. Au-delà, on ne va plus chercher une remorque. */
 export const RAYONS = [10, 25, 50, 100] as const;
@@ -497,6 +513,10 @@ export async function rechercherAnnonces(
     longitude,
     latitude,
     rayonKm,
+    prixMax: criteres.prixMax,
+    chargeMin: criteres.chargeMin,
+    freineeSeulement: criteres.freineeSeulement,
+    instantaneeSeulement: criteres.instantaneeSeulement,
   });
 
   const annonces = lignes.map((ligne) => versResume(ligne, altDe(ligne.categorie)));

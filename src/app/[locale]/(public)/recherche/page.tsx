@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { BoutonAutourDeMoi } from "@/components/annonce/bouton-autour-de-moi";
 import { CarteAnnonce } from "@/components/annonce/carte-annonce";
-import { FiltreCategorie } from "@/components/recherche/filtre-categorie";
+import { FiltresRecherche } from "@/components/recherche/filtres-recherche";
 import { FormulaireRecherche } from "@/components/recherche/formulaire-recherche";
 import { Bouton } from "@/components/ui/bouton";
 import { CATEGORIES } from "@/config/categories";
@@ -11,6 +11,8 @@ import { Link } from "@/i18n/navigation";
 import { metadonneesPage } from "@/lib/metadonnees";
 import { cn } from "@/lib/cn";
 import {
+  PALIERS_CHARGE,
+  PALIERS_PRIX,
   RAYON_PAR_DEFAUT,
   RAYONS,
   TRIS,
@@ -61,10 +63,30 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     ? rayonDemande
     : RAYON_PAR_DEFAUT;
 
+  // Les filtres arrivent par l'adresse : on ne retient que des valeurs
+  // proposées, jamais ce que le navigateur a bien voulu écrire. Un palier
+  // inventé est ignoré plutôt que refusé — la recherche doit répondre.
+  const prixDemande = Number(lire(parametres.prixMax));
+  const prixMax = (PALIERS_PRIX as readonly number[]).includes(prixDemande)
+    ? prixDemande
+    : undefined;
+
+  const chargeDemandee = Number(lire(parametres.chargeMin));
+  const chargeMin = (PALIERS_CHARGE as readonly number[]).includes(chargeDemandee)
+    ? chargeDemandee
+    : undefined;
+
+  const freineeSeulement = lire(parametres.freinee) === "oui";
+  const instantaneeSeulement = lire(parametres.instantanee) === "oui";
+
   const categorie = CATEGORIES.find((entree) => entree.slug === slugCategorie);
   const { annonces, total } = await rechercherAnnonces({
     ville,
     categorie: categorie?.slug,
+    prixMax,
+    chargeMin,
+    freineeSeulement,
+    instantaneeSeulement,
     // Une position réelle ordonne par distance : c'est ce qu'on demande en
     // cliquant « autour de moi ».
     tri: position && triDemande === undefined ? "distance" : tri,
@@ -87,6 +109,10 @@ export default async function PageRecherche({ params, searchParams }: Props) {
     if (ville) requete.ville = ville;
     if (slugCategorie) requete.categorie = slugCategorie;
     if (tri !== "pertinence") requete.tri = tri;
+    if (prixMax) requete.prixMax = String(prixMax);
+    if (chargeMin) requete.chargeMin = String(chargeMin);
+    if (freineeSeulement) requete.freinee = "oui";
+    if (instantaneeSeulement) requete.instantanee = "oui";
     // La position suit les changements de filtre : la perdre en cliquant sur
     // une catégorie obligerait à la redemander, et donc à réautoriser.
     if (position) {
@@ -144,15 +170,27 @@ export default async function PageRecherche({ params, searchParams }: Props) {
       </div>
 
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
-        {/* Filtre par catégorie. Onze pastilles en rangée débordaient de
-            l'écran et cachaient les deux tiers du choix derrière une barre de
-            défilement ; une liste déroulante montre tout d'un coup. */}
-        <FiltreCategorie
-          valeur={categorie?.slug ?? ""}
-          parametres={avec({ categorie: undefined })}
+        <div className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
+        <FiltresRecherche
+          parametres={avec({})}
+          actifs={{
+            categorie: categorie?.slug ?? "",
+            prixMax,
+            chargeMin,
+            freinee: freineeSeulement,
+            instantanee: instantaneeSeulement,
+          }}
+          paliersPrix={PALIERS_PRIX}
+          paliersCharge={PALIERS_CHARGE}
+          monnaie="€"
+          nombreFiltresActifs={
+            [categorie, prixMax, chargeMin, freineeSeulement || undefined,
+             instantaneeSeulement || undefined].filter(Boolean).length
+          }
         />
 
-        <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
+        <div>
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               {titre}
@@ -216,6 +254,8 @@ export default async function PageRecherche({ params, searchParams }: Props) {
             </div>
           </section>
         )}
+        </div>
+        </div>
       </div>
     </main>
   );
