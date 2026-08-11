@@ -175,14 +175,34 @@ export default async function PageRecherche({ params, searchParams }: Props) {
 
   return (
     <main>
-      {/* Barre de recherche persistante : on affine sans revenir en arrière. */}
-      <div className="sticky top-16 z-30 border-b border-bordure bg-fond-eleve/95 backdrop-blur">
-        <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6">
+      {/* ---------- Hero ----------
+          Une bande à part, et non une barre collante pleine largeur : le champ
+          y était étiré sur toute la fenêtre, ce qui n'aide personne à saisir
+          un nom de ville, et occupait le premier écran sans rien annoncer. Le
+          titre situe, la carte de recherche reste à la mesure de ce qu'on y
+          tape. */}
+      <section className="border-b border-bordure bg-fond-doux">
+        <div className="mx-auto w-full max-w-[100rem] px-4 py-10 sm:px-6 sm:py-14">
+          <h1 className="max-w-3xl text-2xl font-semibold tracking-tight text-balance sm:text-4xl">
+            {titre}
+          </h1>
+          <span
+            aria-hidden
+            className="mt-4 block h-1 w-12 rounded-full bg-accent"
+          />
+          <p className="mt-4 max-w-2xl text-[1.0625rem] text-texte-attenue">
+            {total > 0
+              ? t("accroche", { nombre: total })
+              : t("resultats", { nombre: total })}
+          </p>
+
           {/* Le champ rappelle la recherche en cours : le visiteur affine, il
               ne repart pas de zéro. */}
-          <FormulaireRecherche variante="nu" valeurInitiale={ville ?? ""} />
+          <div className="mt-8 max-w-2xl">
+            <FormulaireRecherche variante="carte" valeurInitiale={ville ?? ""} />
+          </div>
 
-          <div className="mt-3 flex flex-wrap items-center gap-3">
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <BoutonAutourDeMoi rayonKm={RAYON_PAR_DEFAUT} />
 
             {/* Le rayon ne s'affiche qu'une fois la position connue : proposer
@@ -201,7 +221,7 @@ export default async function PageRecherche({ params, searchParams }: Props) {
                         "inline-flex rounded-full border px-3 py-1 text-sm transition-colors",
                         valeur === rayonKm
                           ? "border-accent bg-accent text-accent-contraste"
-                          : "border-bordure hover:border-accent",
+                          : "border-bordure bg-fond-eleve hover:border-accent",
                       )}
                     >
                       {t("rayon", { km: valeur })}
@@ -212,54 +232,35 @@ export default async function PageRecherche({ params, searchParams }: Props) {
             ) : null}
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="mx-auto w-full max-w-[100rem] px-4 py-8 sm:px-6">
-        {/* ---------- Bandeau de résultats ----------
-            Pas de photographie ici, contrairement aux pages de ville : celles-ci
-            accueillent quelqu'un qui arrive d'un moteur, celle-ci sert quelqu'un
-            qui cherche déjà. Une image pousserait les résultats sous la ligne de
-            flottaison pour ne rien lui apprendre. Le même langage — trait
-            d'accent, accroche — dans une version compacte. */}
-        <div className="border-b border-bordure pb-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                {titre}
-              </h1>
-              <span
-                aria-hidden
-                className="mt-3 block h-1 w-12 rounded-full bg-accent"
-              />
-              <p className="mt-3 text-[1.0625rem] text-texte-attenue">
-                {total > 0
-                  ? t("accroche", { nombre: total })
-                  : t("resultats", { nombre: total })}
-              </p>
-            </div>
-
-            {total > 0 ? (
-              <TriResultats parametres={avec({})} valeur={tri} tris={TRIS} />
-            ) : null}
-          </div>
+        {/* ---------- Filtres et tri, en barre ---------- */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <p className="text-sm text-texte-attenue">
+            {t("resultats", { nombre: total })}
+          </p>
+          {total > 0 ? (
+            <TriResultats parametres={avec({})} valeur={tri} tris={TRIS} />
+          ) : null}
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
-        <FiltresRecherche
-          parametres={avec({})}
-          actifs={{
-            categorie: categorie?.slug ?? "",
-            prixMax,
-            chargeMin,
-            freinee: freineeSeulement,
-            instantanee: instantaneeSeulement,
-          }}
-          paliersPrix={PALIERS_PRIX}
-          paliersCharge={PALIERS_CHARGE}
-          monnaie="€"
-        />
+        <div className="mt-4">
+          <FiltresRecherche
+            parametres={avec({})}
+            actifs={{
+              categorie: categorie?.slug ?? "",
+              prixMax,
+              chargeMin,
+              freinee: freineeSeulement,
+              instantanee: instantaneeSeulement,
+            }}
+            paliersPrix={PALIERS_PRIX}
+            paliersCharge={PALIERS_CHARGE}
+            monnaie="€"
+          />
+        </div>
 
-        <div>
         <div className="mt-8">
         <VoletCarte points={pointsCarte} styleUrl={clientEnv.NEXT_PUBLIC_MAP_STYLE_URL}>
         {annonces.length > 0 ? (
@@ -291,8 +292,6 @@ export default async function PageRecherche({ params, searchParams }: Props) {
           </section>
         )}
         </VoletCarte>
-        </div>
-        </div>
         </div>
       </div>
     </main>
