@@ -15,7 +15,7 @@ export default function PageIntrouvable() {
 
   return (
     <>
-      <EnTetePublic />
+      <EnTetePublic compte={null} />
       <main className="mx-auto w-full max-w-3xl px-4 py-24 sm:px-6">
         <p className="text-sm font-medium uppercase tracking-widest text-accent">
           404

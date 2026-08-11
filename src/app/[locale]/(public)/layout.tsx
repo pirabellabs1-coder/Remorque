@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 
 import { BandeauMarche } from "@/components/navigation/bandeau-marche";
 import { EnTetePublic } from "@/components/navigation/en-tete-public";
+import { espaceDaccueil } from "@/domain/compte/roles";
+import { compteConnecte } from "@/server/authentification/session";
 import { PiedPagePublic } from "@/components/navigation/pied-page-public";
 import { getMarket, type Market } from "@/config/markets";
 import { nomDuPays } from "@/config/villes";
@@ -64,6 +66,20 @@ export default async function LayoutPublic({
   // signale sans rien décider à sa place — voir `marches/suggestion.ts`.
   const suggere = await marcheSuggere(locale as Market);
 
+  // L'en-tête proposait « Connexion » et « Créer un compte » à quelqu'un déjà
+  // connecté. La session se lit ici, dans un composant serveur : l'en-tête est
+  // rendu côté client et n'a pas accès aux cookies.
+  const moi = await compteConnecte();
+  const compte = moi
+    ? {
+        prenom: moi.prenom ?? moi.email,
+        espace: espaceDaccueil({
+          profilLocataire: moi.profilLocataire,
+          profilProprietaire: moi.profilProprietaire,
+        }),
+      }
+    : null;
+
   return (
     <NextIntlClientProvider messages={messages}>
       {suggere ? (
@@ -75,7 +91,7 @@ export default async function LayoutPublic({
           prefixeSuggere={getMarket(suggere).pathPrefix ?? ""}
         />
       ) : null}
-      <EnTetePublic />
+      <EnTetePublic compte={compte} />
       {children}
       <PiedPagePublic />
     </NextIntlClientProvider>

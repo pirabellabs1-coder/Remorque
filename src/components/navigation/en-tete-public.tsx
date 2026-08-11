@@ -32,7 +32,12 @@ type Panneau = "louer" | "proprietaire" | "aide";
  * clic : un menu qui ne s'ouvre qu'au survol est inutilisable au clavier et au
  * doigt. Échappement referme et rend le focus au déclencheur.
  */
-export function EnTetePublic() {
+export function EnTetePublic({
+  compte,
+}: {
+  /** Le compte connecté, ou `null`. Lu par le gabarit, qui a les cookies. */
+  compte: { prenom: string; espace: "/compte" | "/proprietaire" } | null;
+}) {
   const t = useTranslations("menu");
   const tNav = useTranslations("navigation");
   const identifiant = useId();
@@ -185,17 +190,27 @@ export function EnTetePublic() {
               Le seuil suit celui de la bascule ci-dessous : à toute largeur,
               l'un des deux est visible, jamais les deux, jamais aucun. */}
           <div className="hidden items-center gap-2 md:flex">
-            <Bouton
-              as={Link}
-              href="/connexion"
-              variante="secondaire"
-              taille="petit"
-            >
-              {tNav("connexion")}
-            </Bouton>
-            <Bouton as={Link} href="/inscription" taille="petit">
-              {tNav("inscription")}
-            </Bouton>
+            {compte ? (
+              // Déjà connecté : on ne propose pas de le devenir. Son prénom et
+              // le chemin de son espace suffisent — c'est ce qu'il cherche.
+              <Bouton as={Link} href={compte.espace} taille="petit">
+                {tNav("monEspace", { prenom: compte.prenom })}
+              </Bouton>
+            ) : (
+              <>
+                <Bouton
+                  as={Link}
+                  href="/connexion"
+                  variante="secondaire"
+                  taille="petit"
+                >
+                  {tNav("connexion")}
+                </Bouton>
+                <Bouton as={Link} href="/inscription" taille="petit">
+                  {tNav("inscription")}
+                </Bouton>
+              </>
+            )}
           </div>
 
           {/* --- Bascule du tiroir mobile --- */}
@@ -298,25 +313,39 @@ export function EnTetePublic() {
               bascule — d'où un en-tête qui débordait selon la largeur. Ici,
               elles sont à portée de pouce et ne poussent plus rien. */}
           <div className="mt-6 grid gap-3 border-t border-bordure pt-6">
-            <Bouton
-              as={Link}
-              href="/inscription"
-              taille="grand"
-              pleineLargeur
-              onClick={() => setTiroirOuvert(false)}
-            >
-              {tNav("inscription")}
-            </Bouton>
-            <Bouton
-              as={Link}
-              href="/connexion"
-              variante="secondaire"
-              taille="grand"
-              pleineLargeur
-              onClick={() => setTiroirOuvert(false)}
-            >
-              {tNav("connexion")}
-            </Bouton>
+            {compte ? (
+              <Bouton
+                as={Link}
+                href={compte.espace}
+                taille="grand"
+                pleineLargeur
+                onClick={() => setTiroirOuvert(false)}
+              >
+                {tNav("monEspace", { prenom: compte.prenom })}
+              </Bouton>
+            ) : (
+              <>
+                <Bouton
+                  as={Link}
+                  href="/inscription"
+                  taille="grand"
+                  pleineLargeur
+                  onClick={() => setTiroirOuvert(false)}
+                >
+                  {tNav("inscription")}
+                </Bouton>
+                <Bouton
+                  as={Link}
+                  href="/connexion"
+                  variante="secondaire"
+                  taille="grand"
+                  pleineLargeur
+                  onClick={() => setTiroirOuvert(false)}
+                >
+                  {tNav("connexion")}
+                </Bouton>
+              </>
+            )}
           </div>
         </div>
       ) : null}

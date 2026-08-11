@@ -38,6 +38,7 @@ export function Galerie({
   const t = useTranslations("annonce.galerie");
   const rail = useRef<HTMLUListElement>(null);
   const [courante, setCourante] = useState(0);
+  const [pause, setPause] = useState(false);
 
   // Position lue au défilement plutôt que pilotée : le rail est la source de
   // vérité, qu'on l'ait fait bouger au doigt, à la molette ou par un bouton.
@@ -55,6 +56,35 @@ export function Galerie({
     element.addEventListener("scroll", surDefilement, { passive: true });
     return () => element.removeEventListener("scroll", surDefilement);
   }, []);
+
+  // Défilement automatique, suspendu dès qu'on touche la galerie et à
+  // l'arrêt hors de l'écran. Trois précautions, et elles ne sont pas de
+  // confort : un carrousel qui avance pendant qu'on regarde une photo la
+  // dérobe, et un carrousel qui tourne dans une page qu'on ne voit pas
+  // consomme de la batterie pour rien.
+  useEffect(() => {
+    const element = rail.current;
+    if (!element || photos.length <= 1 || pause) return;
+
+    // Le mouvement automatique est écarté pour qui a demandé à en être
+    // dispensé : c'est une préférence système, pas un détail d'accessibilité.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const minuteur = setInterval(() => {
+      if (document.hidden) return;
+
+      const largeur = element.clientWidth;
+      if (largeur === 0) return;
+
+      const suivante = Math.round(element.scrollLeft / largeur) + 1;
+      element.scrollTo({
+        left: suivante >= photos.length ? 0 : suivante * largeur,
+        behavior: "smooth",
+      });
+    }, 4500);
+
+    return () => clearInterval(minuteur);
+  }, [photos.length, pause]);
 
   function aller(rang: number) {
     const element = rail.current;
@@ -82,7 +112,14 @@ export function Galerie({
     "grid size-10 place-items-center rounded-full border border-white/30 bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/65 disabled:opacity-0";
 
   return (
-    <div className="group relative">
+    <div
+      className="group relative"
+      onPointerEnter={() => setPause(true)}
+      onPointerLeave={() => setPause(false)}
+      onFocusCapture={() => setPause(true)}
+      onBlurCapture={() => setPause(false)}
+      onTouchStart={() => setPause(true)}
+    >
       <ul
         ref={rail}
         className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain rounded-carte border border-bordure [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
