@@ -75,8 +75,17 @@ export default function CarteAnnoncesToile({
         "aria-label",
         `${point.titre}, ${point.ville}, ${point.prix}`,
       );
-      vignette.className =
-        "block size-12 cursor-pointer overflow-hidden rounded-full border-2 border-white bg-fond-eleve shadow-lg transition-transform hover:scale-110 hover:border-accent";
+      // **Aucune transformation sur l'élément du marqueur.** MapLibre le
+      // positionne au moyen d'un `transform: translate(...)` posé en ligne ;
+      // un `scale` de survol appliqué ici l'écrase et projette le marqueur à
+      // l'autre bout de la carte. Il fuyait donc le curseur, et devenait
+      // impossible à cliquer. L'effet vit sur un élément intérieur, que
+      // personne ne positionne.
+      vignette.className = "group block cursor-pointer";
+
+      const enveloppe = document.createElement("span");
+      enveloppe.className =
+        "block size-12 overflow-hidden rounded-full border-2 border-white bg-fond-eleve shadow-lg transition-transform duration-150 group-hover:scale-110 group-focus-visible:scale-110";
 
       const image = document.createElement("img");
       image.src = point.photo;
@@ -84,7 +93,9 @@ export default function CarteAnnoncesToile({
       image.loading = "lazy";
       image.decoding = "async";
       image.className = "size-full object-cover";
-      vignette.append(image);
+
+      enveloppe.append(image);
+      vignette.append(enveloppe);
 
       return new maplibregl.Marker({ element: vignette })
         .setLngLat([point.longitude, point.latitude])
