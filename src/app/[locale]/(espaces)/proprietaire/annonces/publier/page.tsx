@@ -130,7 +130,11 @@ export default async function PagePublier({ params, searchParams }: Props) {
       ) : null}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
-        <div>
+        {/* `key` porte l'étape : React remplace le nœud à chaque passage, ce
+            qui relance l'animation. Sans elle, il réutiliserait le même
+            élément, l'animation ne serait jouée qu'une fois et les cinq
+            écrans suivants apparaîtraient sèchement. */}
+        <div key={etape} className="animate-etape">
           {etape === "categorie" ? (
             <EtapeCategorie locale={locale} choisie={categorieChoisie} />
           ) : null}

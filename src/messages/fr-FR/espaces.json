@@ -330,7 +330,8 @@
         "brouillons": "Brouillons en cours",
         "reprendre": "Reprendre",
         "brouillonRang": "Étape {rang} sur {total}",
-        "modifier": "Modifier"
+        "modifier": "Modifier",
+        "brouillonSansTitre": "Annonce sans titre"
       },
       "publication": {
         "titre": "Mettre une remorque en location",

@@ -198,6 +198,29 @@
   }
 }
 
+/**
+ * Entrée d'une étape de l'assistant de publication.
+ *
+ * Les six écrans se suivent par rechargement : sans mouvement, passer de la
+ * quatrième à la cinquième ressemble à un clignotement, et l'on ne sait plus
+ * si l'on a avancé ou si la page s'est simplement rafraîchie. Le glissement
+ * latéral dit le sens de la marche, ce qu'un fondu seul ne dit pas.
+ *
+ * Il reste court et faible : deux centimètres de déplacement sur trois cent
+ * cinquante millisecondes. Une animation d'assistant se traverse des dizaines
+ * de fois par annonce — celle qu'on remarque est déjà trop longue.
+ */
+@keyframes etape-entree {
+  from {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @keyframes argument-entree {
   from {
     opacity: 0;
@@ -217,9 +240,14 @@
   animation: argument-entree 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.animate-etape {
+  animation: etape-entree 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-panneau,
-  .animate-argument {
+  .animate-argument,
+  .animate-etape {
     animation: none;
     opacity: 1;
   }
