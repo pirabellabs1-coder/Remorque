@@ -24,7 +24,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "db:situer": "tsx --env-file-if-exists=.env.local scripts/situer-annonces.ts",
-    "db:habiliter": "tsx --env-file-if-exists=.env.local scripts/habiliter-comptes.ts"
+    "db:habiliter": "tsx --env-file-if-exists=.env.local scripts/habiliter-comptes.ts",
+    "db:promouvoir": "tsx --env-file-if-exists=.env.local scripts/promouvoir-compte.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1106.0",
