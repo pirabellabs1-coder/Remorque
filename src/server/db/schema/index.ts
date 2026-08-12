@@ -18,3 +18,4 @@ export * from "./notification";
 export * from "./audit";
 export * from "./authentification";
 export * from "./fichier";
+export * from "./verification";

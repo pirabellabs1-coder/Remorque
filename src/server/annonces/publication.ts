@@ -12,7 +12,9 @@ import {
   pretePourPublication,
   rangDe,
 } from "@/domain/annonce/publication";
+import type { Manque } from "@/domain/verification/dossier";
 import { db } from "@/server/db";
+import { blocagePublication } from "@/server/verification/dossier";
 import {
   annonce as tableAnnonce,
   annoncePhoto,
@@ -566,6 +568,14 @@ export type ResultatPublication =
    */
   | { statut: "publiee"; villeSlug: string; slug: string; pays: string }
   | { statut: "incomplete"; etape: Etape }
+  /**
+   * Le dossier de vérification du propriétaire n'est pas complet.
+   *
+   * Distingué de « incomplète » : ce n'est pas l'annonce qui manque de
+   * quelque chose, c'est le compte. Renvoyer le propriétaire à l'étape des
+   * tarifs pour un défaut d'identité l'enverrait chercher au mauvais endroit.
+   */
+  | { statut: "verificationRequise"; manques: Manque[] }
   | { statut: "introuvable" };
 
 /**
@@ -590,6 +600,13 @@ export async function publierBrouillon(
       etape: premiereEtapeIncomplete(etat, brouillon.bornesCaution) as Etape,
     };
   }
+
+  // La porte, ici et pas dans l'action : `publierBrouillon` est le seul
+  // chemin vers `statut: "publiee"`, et une garde posée dans l'action
+  // laisserait passer tout appel qui viendrait un jour d'ailleurs — une
+  // reprise par lot, une tâche planifiée, un futur écran d'administration.
+  const manques = await blocagePublication(proprietaireId);
+  if (manques.length > 0) return { statut: "verificationRequise", manques };
 
   await db
     .update(tableAnnonce)

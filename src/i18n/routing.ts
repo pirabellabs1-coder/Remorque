@@ -75,6 +75,14 @@ export const pathnames = {
   "/compte/assistance": "/compte/assistance",
   "/compte/assistance/[demande]": "/compte/assistance/[demande]",
   "/compte/parametres": "/compte/parametres",
+  /**
+   * Vérification d'identité — un seul écran pour les deux profils.
+   *
+   * Rangé sous `/compte` et non sous `/proprietaire` : « un compte, deux
+   * profils », et la même carte d'identité ne se dépose pas deux fois. Les
+   * deux espaces y mènent.
+   */
+  "/compte/verification": "/compte/verification",
 
   /* --- Espace loueur ---------------------------------------------------- */
   "/proprietaire": "/proprietaire",
@@ -113,6 +121,7 @@ export const pathnames = {
   "/admin/statistiques": "/admin/statistiques",
   "/admin/parametres": "/admin/parametres",
   "/admin/journal-audit": "/admin/journal-audit",
+  "/admin/verifications": "/admin/verifications",
 } as const;
 
 export const routing = defineRouting({

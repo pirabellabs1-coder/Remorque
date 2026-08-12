@@ -50,6 +50,21 @@ const SLUGS_CATEGORIES = CATEGORIES.map((entree) => entree.slug) as [
 const SLUGS_VILLES = VILLES.map((ville) => ville.slug) as [string, ...string[]];
 
 /** L'adresse d'une étape de l'assistant, avec ses paramètres. */
+/**
+ * Mène à la page de vérification, en gardant trace de l'annonce en attente.
+ *
+ * Le paramètre sert à l'écran d'arrivée : il peut dire « votre annonce est
+ * prête et part dès votre dossier accepté », ce qui n'est pas la même chose
+ * qu'un formulaire administratif tombé du ciel.
+ */
+function adresseVerification(locale: string, annonceId: string): never {
+  redirect({
+    href: { pathname: "/compte/verification", query: { publier: annonceId } },
+    locale: locale as Market,
+  });
+  throw new Error("inatteignable");
+}
+
 function adresseEtape(
   locale: string,
   query: Record<string, string>,
@@ -551,6 +566,14 @@ export async function enregistrerEtapeTarifs(donnees: FormData): Promise<void> {
       annonce: annonceId,
       erreur: "incomplete",
     });
+  }
+
+  // Le dossier du compte, pas l'annonce. On mène là où l'on peut agir — la
+  // page de vérification — plutôt que de renvoyer à une étape du formulaire
+  // où il n'y a rien à corriger. Le brouillon est conservé et reprendra sa
+  // place dès le dossier accepté : rien de ce qui a été saisi n'est perdu.
+  if (resultat.statut === "verificationRequise") {
+    adresseVerification(locale, annonceId);
   }
 
   // L'annonce doit apparaître immédiatement partout où le catalogue est lu :

@@ -16,6 +16,7 @@ import {
   enfilerNotificationsReservation,
 } from "@/server/notifications/file";
 import { changerStatut } from "@/server/reservations/transitions";
+import { blocageReservation } from "@/server/verification/dossier";
 
 /**
  * Création d'une demande de réservation.
@@ -24,9 +25,11 @@ import { changerStatut } from "@/server/reservations/transitions";
  * réservations de la base avaient toutes été écrites par un script d'amorçage.
  * Aucune n'était née d'un clic.
  *
- * Trois vérifications précèdent l'écriture, dans cet ordre — de la moins
+ * Quatre vérifications précèdent l'écriture, dans cet ordre — de la moins
  * coûteuse à la plus coûteuse, pour ne pas interroger la base quand une date
- * suffit à refuser.
+ * suffit à refuser. La deuxième porte sur le locataire lui-même : nul ne loue
+ * une remorque de deux tonnes sans avoir dit qui il est ni montré qu'il a le
+ * droit de la tracter.
  */
 
 export type ResultatDemande =
@@ -55,7 +58,22 @@ export async function demanderReservation(entree: {
 
   const nombreJours = Math.ceil((fin.getTime() - debut.getTime()) / 86_400_000);
 
-  /* ---- 2. L'annonce ---- */
+  /* ---- 2. Le dossier du locataire ---- */
+  //
+  // Après les dates, qui ne coûtent rien, et avant l'annonce : c'est le
+  // premier contrôle qui touche la base, et il porte sur le demandeur plutôt
+  // que sur ce qu'il demande. Le passer plus tard ferait calculer un devis
+  // complet pour l'annuler ensuite.
+  //
+  // La garde est ici et non dans les actions : `demanderReservation` est le
+  // seul chemin vers une réservation, et deux gardes dans deux actions
+  // finiraient par diverger — c'est celle qu'on oublie qui laisse passer.
+  const manques = await blocageReservation(locataireId);
+  if (manques.length > 0) {
+    return { ok: false, cle: `verification.${manques[0]}` };
+  }
+
+  /* ---- 3. L'annonce ---- */
   const [ligne] = await db
     .select({
       id: annonce.id,
@@ -86,7 +104,7 @@ export async function demanderReservation(entree: {
   if (nombreJours < ligne.dureeMinimum) return { ok: false, cle: "dureeTropCourte" };
   if (nombreJours > ligne.dureeMaximum) return { ok: false, cle: "dureeTropLongue" };
 
-  /* ---- 3. La disponibilité ---- */
+  /* ---- 4. La disponibilité ---- */
   //
   // Deux périodes se chevauchent dès que l'une commence avant la fin de
   // l'autre et finit après son début. L'écrire ainsi plutôt qu'en énumérant

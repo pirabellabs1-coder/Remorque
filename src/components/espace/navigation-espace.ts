@@ -60,6 +60,7 @@ export const NAVIGATION_LOCATAIRE = [
     cle: "groupe.compte",
     entrees: [
       { cle: "profil", href: "/compte/profil", icone: "profil" },
+      { cle: "verification", href: "/compte/verification", icone: "bouclier" },
       { cle: "assistance", href: "/compte/assistance", icone: "aide" },
       { cle: "parametres", href: "/compte/parametres", icone: "reglages" },
     ],
@@ -93,6 +94,9 @@ export const NAVIGATION_LOUEUR = [
     cle: "groupe.compte",
     entrees: [
       { cle: "profil", href: "/proprietaire/profil", icone: "profil" },
+      // Même adresse que dans l'espace locataire : « un compte, deux profils »,
+      // et la même carte d'identité ne se dépose pas deux fois.
+      { cle: "verification", href: "/compte/verification", icone: "bouclier" },
       { cle: "assistance", href: "/proprietaire/assistance", icone: "aide" },
       { cle: "parametres", href: "/proprietaire/parametres", icone: "reglages" },
     ],
@@ -110,6 +114,7 @@ export const NAVIGATION_ADMIN = [
     cle: "groupe.exploitation",
     entrees: [
       { cle: "utilisateurs", href: "/admin/utilisateurs", icone: "utilisateurs" },
+      { cle: "verifications", href: "/admin/verifications", icone: "bouclier" },
       { cle: "annonces", href: "/admin/annonces", icone: "annonce" },
       { cle: "reservations", href: "/admin/reservations", icone: "reservation" },
       { cle: "support", href: "/admin/support", icone: "aide" },

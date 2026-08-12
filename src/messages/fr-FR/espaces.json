@@ -15,7 +15,8 @@
         "avis": "Avis",
         "profil": "Profil et véhicule",
         "assistance": "Assistance",
-        "parametres": "Paramètres"
+        "parametres": "Paramètres",
+        "verification": "Vérification"
       },
       "tableau": {
         "titre": "Tableau de bord",
@@ -270,7 +271,8 @@
         "avis": "Avis reçus",
         "profil": "Profil et paiements",
         "assistance": "Assistance",
-        "parametres": "Paramètres"
+        "parametres": "Paramètres",
+        "verification": "Vérification"
       },
       "tableau": {
         "titre": "Tableau de bord",
@@ -679,7 +681,8 @@
         "support": "Support",
         "statistiques": "Statistiques",
         "parametres": "Paramètres",
-        "journalAudit": "Journal d’audit"
+        "journalAudit": "Journal d’audit",
+        "verifications": "Vérifications"
       },
       "tableau": {
         "titre": "Vue d’ensemble",
@@ -1018,6 +1021,41 @@
           "titre": "Journal vide",
           "texte": "Aucune action administrative n’a encore été enregistrée."
         }
+      },
+      "verifications": {
+        "titre": "Vérifications d'identité",
+        "sousTitre": "Les dossiers déposés, du plus ancien au plus récent. Chaque décision est portée au journal d'audit avec son auteur et son motif.",
+        "enAttente": "{nombre, plural, =0 {Aucun dossier en attente} one {# dossier en attente} other {# dossiers en attente}}",
+        "vide": "Aucun dossier n'attend de contrôle.",
+        "videTexte": "Les nouveaux dépôts apparaissent ici, du plus ancien au plus récent.",
+        "sansNom": "Compte sans nom renseigné",
+        "depose": "Déposé {date}",
+        "type": {
+          "identite": "Pièce d'identité",
+          "permis": "Permis de conduire"
+        },
+        "face": {
+          "recto": "Ouvrir le recto",
+          "verso": "Ouvrir le verso"
+        },
+        "decision": {
+          "accepter": "Accepter",
+          "refuser": "Refuser",
+          "confirmerRefus": "Confirmer le refus",
+          "motif": "Motif du refus",
+          "motifExemple": "Photographie floue : le numéro n'est pas lisible.",
+          "motifVisible": "Ce texte est montré tel quel à l'intéressé. Écrivez ce qu'il doit reprendre.",
+          "expireLe": "Fin de validité relevée sur la pièce",
+          "categories": "Catégories détenues",
+          "erreur": {
+            "droitsInsuffisants": "Vous n'avez pas les droits pour cette décision.",
+            "requeteInvalide": "Dossier introuvable.",
+            "motifRequis": "Un refus doit porter son motif.",
+            "compteIntrouvable": "Ce compte n'existe plus.",
+            "dateInvalide": "Cette date n'est pas valide.",
+            "inattendue": "La décision n'a pas abouti. Réessayez."
+          }
+        }
       }
     },
     "replier": "Replier",
@@ -1301,6 +1339,62 @@
         "introuvable": "Cette demande n'existe plus.",
         "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
         "echec": "L'action n'a pas abouti. Réessayez."
+      }
+    },
+    "verification": {
+      "titre": "Vérification d'identité",
+      "sousTitre": "Louer ou mettre en location suppose que chacun sache à qui il a affaire. Vos pièces ne sont vues que par notre équipe de contrôle.",
+      "avancement": "{faits} sur {total}",
+      "annonceEnAttente": "Votre annonce est prête et attend votre dossier.",
+      "annonceEnAttenteTexte": "Rien de ce que vous avez saisi n'est perdu. Elle part en ligne dès que votre identité est confirmée.",
+      "courriel": {
+        "titre": "Adresse électronique"
+      },
+      "statut": {
+        "non_soumis": "À fournir",
+        "en_attente": "En cours d'examen",
+        "verifie": "Vérifiée",
+        "refuse": "Refusée"
+      },
+      "piece": {
+        "identite": {
+          "titre": "Pièce d'identité",
+          "pourquoi": "Carte nationale d'identité, passeport ou titre de séjour. Elle établit que le compte appartient à une personne réelle — c'est la première question posée le jour où un bien ne revient pas.",
+          "depot": "Photographiez votre pièce",
+          "consigne": "Les quatre coins visibles, sans reflet, et le texte lisible. Le verso porte les mentions que le recto ne montre pas."
+        },
+        "permis": {
+          "titre": "Permis de conduire",
+          "pourquoi": "Tracter une remorque suppose la catégorie correspondante. Sans cette pièce, la compatibilité affichée sur chaque annonce ne repose que sur une case que vous auriez cochée vous-même.",
+          "depot": "Photographiez votre permis",
+          "consigne": "Recto et verso. Le verso porte les catégories et leurs dates de validité, que nous relevons pour vous."
+        },
+        "acceptee": "Pièce acceptée."
+      },
+      "valideJusquau": "Valide jusqu'au {date}.",
+      "enExamen": "Vos pièces sont chez notre équipe. Le contrôle prend en général moins de vingt-quatre heures.",
+      "face": {
+        "recto": "Recto",
+        "verso": "Verso"
+      },
+      "choisir": "Appuyer pour photographier ou choisir un fichier",
+      "deuxFacesRequises": "Les deux faces sont nécessaires",
+      "envoyer": "Envoyer pour vérification",
+      "envoi": "Envoi en cours…",
+      "confidentialite": "Vos pièces sont conservées de manière chiffrée, ne sont jamais montrées aux autres membres, et ne servent qu'à établir votre identité.",
+      "erreur": {
+        "connexionRequise": "Votre session a expiré. Reconnectez-vous, puis recommencez.",
+        "typeInconnu": "Cette pièce n'est pas reconnue.",
+        "deuxFaces": "Les deux faces sont nécessaires.",
+        "taille": "Cette image dépasse 8 Mo. Photographiez-la à nouveau en qualité normale.",
+        "type": "Seules les photographies sont acceptées : JPEG, PNG ou WebP.",
+        "inattendue": "L'envoi n'a pas abouti. Réessayez dans un instant."
+      },
+      "bandeau": {
+        "titre": "Votre identité n'est pas encore vérifiée",
+        "locataire": "Vous pourrez réserver dès que votre dossier sera accepté.",
+        "proprietaire": "Vous pourrez publier dès que votre dossier sera accepté.",
+        "action": "Compléter mon dossier"
       }
     }
   }

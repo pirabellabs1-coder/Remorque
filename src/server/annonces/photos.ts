@@ -3,6 +3,7 @@ import "server-only";
 import { and, asc, eq, sql as raw } from "drizzle-orm";
 
 import { PHOTOS_MAXIMUM } from "@/domain/annonce/publication";
+import { typeReel } from "@/server/stockage/signature-image";
 import { db } from "@/server/db";
 import { annonce, annoncePhoto } from "@/server/db/schema";
 import {
@@ -48,38 +49,6 @@ export type PhotoAnnonce = {
   url: string;
   ordre: number;
 };
-
-/**
- * Reconnaît une image à ses premiers octets.
- *
- * Le type déclaré par le navigateur ne prouve rien : il est fixé par la page
- * qui envoie, donc par quiconque sait faire une requête. Sans cette
- * vérification, le compartiment public deviendrait un hébergeur de fichiers
- * arbitraires sous notre nom de domaine.
- */
-function typeReel(octets: Uint8Array): "jpeg" | "png" | "webp" | null {
-  if (octets.length < 12) return null;
-
-  if (octets[0] === 0xff && octets[1] === 0xd8 && octets[2] === 0xff) {
-    return "jpeg";
-  }
-
-  if (
-    octets[0] === 0x89 &&
-    octets[1] === 0x50 &&
-    octets[2] === 0x4e &&
-    octets[3] === 0x47
-  ) {
-    return "png";
-  }
-
-  const texte = (debut: number, fin: number) =>
-    String.fromCharCode(...octets.slice(debut, fin));
-
-  if (texte(0, 4) === "RIFF" && texte(8, 12) === "WEBP") return "webp";
-
-  return null;
-}
 
 /** Les photos d'une annonce, dans leur ordre d'affichage. */
 export async function photosDeLAnnonce(

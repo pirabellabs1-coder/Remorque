@@ -356,6 +356,14 @@ async function amorcer() {
     identiteStatut: (hasard() < 0.85 ? "verifie" : "en_attente") as
       | "verifie"
       | "en_attente",
+    // Le permis suit l'identité, et non un tirage indépendant : un dossier se
+    // dépose d'un bloc. Sans lui, aucun de ces comptes ne pourrait réserver —
+    // la démonstration montrerait un catalogue que personne ne peut louer.
+    permisStatut: (hasard() < 0.85 ? "verifie" : "en_attente") as
+      | "verifie"
+      | "en_attente",
+    permisCategories: ["B", "BE"],
+    permisExpireLe: decalerJours(maintenant, tirerEntier(hasard, 400, 3000)),
     creeLe: decalerJours(maintenant, -tirerEntier(hasard, 10, 800)),
   }));
 
@@ -1177,6 +1185,10 @@ async function amorcer() {
       profilLocataire: false,
       profilProprietaire: false,
       identiteStatut: "verifie",
+      identiteVerifieeLe: decalerJours(maintenant, -200),
+      permisStatut: "verifie",
+      permisCategories: ["B", "BE"],
+      permisExpireLe: decalerJours(maintenant, 2000),
       role: "super_administrateur",
     })
     .returning({ id: utilisateur.id });
