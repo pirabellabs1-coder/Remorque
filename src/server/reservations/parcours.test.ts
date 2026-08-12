@@ -50,8 +50,22 @@ async function contexte(instantanee = false) {
     .select({ id: annonce.id, proprietaireId: annonce.proprietaireId })
     .from(annonce)
     .where(
+      // Le propriétaire doit être vérifié, et c'est une précondition qui se
+      // dit. Le test « on ne loue pas chez soi » réserve au nom du
+      // propriétaire : si celui-là n'a pas de dossier, la porte de
+      // vérification refuse avant que la règle éprouvée n'ait son mot à dire,
+      // et le test échoue en accusant la mauvaise chose. La précondition
+      // existait déjà — elle tenait au hasard du tirage, jusqu'au jour où un
+      // compte réel a vu sa vérification remise à zéro.
       sql`${annonce.proprietaireId} <> ${locataire.id}
-          and ${annonce.reservationInstantanee} = ${instantanee}`,
+          and ${annonce.reservationInstantanee} = ${instantanee}
+          and exists (
+            select 1 from utilisateur u
+             where u.id = ${annonce.proprietaireId}
+               and u.identite_statut = 'verifie'
+               and u.permis_statut = 'verifie'
+               and u.email_verifie = true
+          )`,
     )
     .limit(1);
 

@@ -35,6 +35,7 @@ export type CompteConnecte = {
   profilLocataire: boolean;
   profilProprietaire: boolean;
   role: string | null;
+  permisCategories: string[];
 };
 
 let cache: CompteConnecte | null | undefined;
@@ -51,6 +52,7 @@ export async function compteConnecte(): Promise<CompteConnecte | null> {
       profilLocataire: utilisateur.profilLocataire,
       profilProprietaire: utilisateur.profilProprietaire,
       role: utilisateur.role,
+      permisCategories: utilisateur.permisCategories,
     })
     .from(utilisateur)
     .where(eq(utilisateur.email, COURRIEL_DEMO))

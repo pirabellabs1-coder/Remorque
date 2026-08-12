@@ -50,9 +50,18 @@ export default async function PageProfilLocataire({ params }: Props) {
   // quelqu'un d'autre invite à l'enregistrer tel quel.
   const vehiculeEnregistre = await lireVehicule();
 
-  // Jeu d'essai, en attendant la base. Les valeurs sont celles d'un véhicule
-  // familial courant, pour que la capacité calculée soit représentative.
-  const permis: CategoriePermis = "B";
+  // La catégorie relevée sur le permis vérifié, et non une valeur d'exemple.
+  // Elle était écrite en dur — « B » pour tout le monde — ce qui faisait
+  // afficher une capacité de traction fausse à quiconque détient BE : la page
+  // annonçait un plafond de 3,5 tonnes à qui a le droit d'en tracter sept.
+  // La plus haute catégorie détenue l'emporte, puisque c'est elle qui commande
+  // le plafond ; en l'absence de permis vérifié, on retombe sur B, la plus
+  // restrictive — se tromper vers le bas n'expose personne.
+  const detenues = (compte?.permisCategories ?? []) as CategoriePermis[];
+  const permis: CategoriePermis =
+    detenues.find((categorie) => categorie === "BE") ??
+    detenues.find((categorie) => categorie === "B96") ??
+    "B";
 
   const vehicule = vehiculeEnregistre ?? {
     marque: "",

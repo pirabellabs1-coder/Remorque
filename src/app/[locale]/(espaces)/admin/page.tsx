@@ -47,7 +47,10 @@ export default async function VueDensembleAdmin({ params }: Props) {
     {
       cle: "verifications",
       nombre: synthese.identitesAverifier,
-      href: "/admin/utilisateurs" as const,
+      // La file de contrôle, et non la liste des comptes : un compteur qui
+      // annonce trois dossiers en attente doit mener à l'écran où on les
+      // traite, pas à un annuaire où il faut les retrouver.
+      href: "/admin/verifications" as const,
     },
     { cle: "litiges", nombre: synthese.litigesOuverts, href: "/admin/litiges" as const },
     {

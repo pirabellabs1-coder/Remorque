@@ -85,6 +85,15 @@ export type CompteConnecte = {
   profilLocataire: boolean;
   profilProprietaire: boolean;
   role: string | null;
+  /**
+   * Catégories relevées sur le permis vérifié — B, B96, BE.
+   *
+   * Remontées avec la session parce que le calcul de compatibilité d'attelage
+   * s'en sert à chaque affichage de fiche, et qu'une seconde lecture par page
+   * pour trois lettres serait du gaspillage. Vide tant qu'aucun permis n'a été
+   * contrôlé : le domaine retombe alors sur la catégorie la plus restrictive.
+   */
+  permisCategories: string[];
 };
 
 /**
@@ -108,6 +117,7 @@ export const compteConnecte = cache(async (): Promise<CompteConnecte | null> => 
       profilLocataire: utilisateur.profilLocataire,
       profilProprietaire: utilisateur.profilProprietaire,
       role: utilisateur.role,
+      permisCategories: utilisateur.permisCategories,
     })
     .from(session)
     .innerJoin(utilisateur, eq(utilisateur.id, session.utilisateurId))
