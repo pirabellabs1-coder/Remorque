@@ -83,7 +83,7 @@ export const pathnames = {
    * profils », et la même carte d'identité ne se dépose pas deux fois. Les
    * deux espaces y mènent.
    */
-  "/compte/verification": "/compte/verification",
+  "/verification": "/verification",
 
   /* --- Espace loueur ---------------------------------------------------- */
   "/proprietaire": "/proprietaire",

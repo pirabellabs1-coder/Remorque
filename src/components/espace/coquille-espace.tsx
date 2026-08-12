@@ -197,14 +197,13 @@ export function CoquilleEspace({
               </p>
 
               <div className="ml-auto flex items-center gap-2">
-                {espace !== "admin" ? (
-                  <Link
-                    href={espace === "locataire" ? "/proprietaire" : "/compte"}
-                    className="rounded-champ border border-bordure px-3 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
-                  >
-                    {t(`${espace}.bascule`)}
-                  </Link>
-                ) : null}
+                {/* Aucune bascule d'un espace à l'autre.
+                    Elle promettait ce qu'elle ne pouvait pas tenir : un compte
+                    ne porte pas forcément les deux profils, et le bouton menait
+                    alors à une garde qui renvoyait d'où l'on venait — un aller
+                    et retour muet, que l'on prend pour une panne. Le second
+                    profil s'active depuis les paramètres ; tant qu'il ne l'est
+                    pas, l'autre espace n'existe pas pour ce compte. */}
                 <Link
                   href="/"
                   className="hidden rounded-champ px-3 py-2 text-sm text-texte-attenue transition-colors hover:text-texte sm:block"

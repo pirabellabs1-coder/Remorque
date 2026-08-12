@@ -50,7 +50,7 @@ export async function BandeauVerification({
         <p className="text-[0.9375rem] font-medium">{t("titre")}</p>
         <p className="mt-1 text-sm text-texte-attenue">{t(espace)}</p>
       </div>
-      <Bouton as={Link} href="/compte/verification" variante="secondaire">
+      <Bouton as={Link} href="/verification" variante="secondaire">
         {t("action")}
       </Bouton>
     </div>

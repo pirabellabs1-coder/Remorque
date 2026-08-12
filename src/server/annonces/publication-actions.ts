@@ -59,7 +59,7 @@ const SLUGS_VILLES = VILLES.map((ville) => ville.slug) as [string, ...string[]];
  */
 function adresseVerification(locale: string, annonceId: string): never {
   redirect({
-    href: { pathname: "/compte/verification", query: { publier: annonceId } },
+    href: { pathname: "/verification", query: { publier: annonceId } },
     locale: locale as Market,
   });
   throw new Error("inatteignable");

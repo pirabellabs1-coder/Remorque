@@ -5,7 +5,6 @@
     "fermerMenu": "Fermer le menu",
     "locataire": {
       "nom": "Mes locations",
-      "bascule": "Passer en propriétaire",
       "nav": {
         "tableauDeBord": "Tableau de bord",
         "reservations": "Mes réservations",
@@ -259,7 +258,6 @@
     },
     "loueur": {
       "nom": "Espace propriétaire",
-      "bascule": "Passer en locataire",
       "nav": {
         "tableauDeBord": "Tableau de bord",
         "annonces": "Mes annonces",
