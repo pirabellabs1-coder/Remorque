@@ -28,7 +28,8 @@
       "pasDeCompte": "Pas encore de compte ? <lien>Créer un compte</lien>",
       "echec": "Adresse ou mot de passe incorrect.",
       "connexion": "Connexion…",
-      "tropDeTentatives": "Trop de tentatives. Réessayez dans {minutes} minutes."
+      "tropDeTentatives": "Trop de tentatives. Réessayez dans {minutes} minutes.",
+      "motDePasseChange": "Votre mot de passe a été changé. Connectez-vous avec le nouveau."
     },
     "inscription": {
       "metaTitre": "Créer un compte",
@@ -82,6 +83,58 @@
           "a3": "Le versement part automatiquement après la restitution, sans relance."
         }
       }
+    },
+    "oubli": {
+      "metaTitre": "Mot de passe oublié",
+      "metaDescription": "Recevez un lien pour choisir un nouveau mot de passe.",
+      "titre": "Mot de passe oublié",
+      "sousTitre": "Indiquez l'adresse de votre compte : nous vous envoyons un lien pour en choisir un nouveau.",
+      "illustration": "Une remorque attelée, prête au départ",
+      "courriel": "Adresse électronique",
+      "envoyer": "Recevoir le lien",
+      "envoi": "Envoi en cours…",
+      "envoyeTitre": "Si un compte existe à cette adresse, le lien part maintenant.",
+      "envoyeTexte": "Vérifiez votre boîte de réception, et vos indésirables. Le lien reste valable une heure.",
+      "delai": "Rien reçu au bout de quelques minutes ? L'adresse saisie n'a peut-être pas de compte, ou le courriel a été filtré.",
+      "retour": "Revenir à la connexion",
+      "tropDeTentatives": "Trop de demandes. Réessayez dans {minutes} minutes.",
+      "basRetour": "Vous vous en souvenez ? <lien>Revenir à la connexion</lien>"
+    },
+    "nouveauMotDePasse": {
+      "titre": "Choisir un nouveau mot de passe",
+      "sousTitre": "Il remplacera l'ancien immédiatement. Toutes vos sessions ouvertes seront fermées.",
+      "illustration": "Une remorque attelée, prête au départ",
+      "motDePasse": "Nouveau mot de passe",
+      "consigne": "Au moins {minimum} caractères. Une phrase que vous retenez vaut mieux qu'un mot compliqué.",
+      "afficher": "Afficher le mot de passe",
+      "masquer": "Masquer le mot de passe",
+      "enregistrer": "Enregistrer et me reconnecter",
+      "enregistrement": "Enregistrement…",
+      "redemander": "Demander un nouveau lien",
+      "retour": "Revenir à la connexion",
+      "refus": {
+        "inconnu": {
+          "titre": "Ce lien n'est pas reconnu",
+          "texte": "Il a peut-être été coupé par votre messagerie. Demandez-en un nouveau, il vous parviendra en quelques instants."
+        },
+        "expire": {
+          "titre": "Ce lien a expiré",
+          "texte": "Les liens de réinitialisation ne valent qu'une heure, pour qu'un courriel retrouvé plus tard n'ouvre plus rien."
+        },
+        "dejaUtilise": {
+          "titre": "Ce lien a déjà servi",
+          "texte": "Votre mot de passe a donc déjà été changé. Si ce n'est pas vous qui l'avez fait, demandez un nouveau lien tout de suite."
+        }
+      },
+      "erreur": {
+        "motDePasseCourt": "Ce mot de passe est trop court.",
+        "inconnu": "Ce lien n'est plus reconnu. Demandez-en un nouveau.",
+        "expire": "Ce lien a expiré. Demandez-en un nouveau.",
+        "dejaUtilise": "Ce lien a déjà servi. Demandez-en un nouveau.",
+        "invalide": "La demande est incomplète.",
+        "inattendue": "L'enregistrement n'a pas abouti. Réessayez."
+      },
+      "basRetour": "Vous vous en souvenez ? <lien>Revenir à la connexion</lien>"
     }
   }
 }

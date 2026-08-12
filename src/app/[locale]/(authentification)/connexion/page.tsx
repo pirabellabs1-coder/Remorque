@@ -6,7 +6,10 @@ import type { Market } from "@/config/markets";
 import { Link } from "@/i18n/navigation";
 import { metadonneesPage } from "@/lib/metadonnees";
 
-type Props = { params: Promise<{ locale: string }> };
+type Props = {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ suite?: string; change?: string }>;
+};
 
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
@@ -24,10 +27,11 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function PageConnexion({ params }: Props) {
+export default async function PageConnexion({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const { change } = await searchParams;
   const t = await getTranslations("compte.connexion");
 
   return (
@@ -47,6 +51,15 @@ export default async function PageConnexion({ params }: Props) {
         ),
       })}
     >
+      {/* On revient ici après avoir changé son mot de passe : toutes les
+          sessions ont été fermées, y compris celle d'ici. Sans ce mot, l'écran
+          de connexion qui s'affiche donne l'impression que rien n'a marché. */}
+      {change === "oui" ? (
+        <div className="mb-6 rounded-carte border border-succes/30 bg-succes/5 px-4 py-3">
+          <p className="text-sm font-medium">{t("motDePasseChange")}</p>
+        </div>
+      ) : null}
+
       <FormulaireConnexion />
     </CoquilleAuthentification>
   );

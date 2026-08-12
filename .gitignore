@@ -46,3 +46,5 @@ next-env.d.ts
 
 # Copié à chaque compilation depuis node_modules — voir scripts/copier-worker-carto.mjs
 public/cartographie/
+
+.env*.local

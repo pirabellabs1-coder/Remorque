@@ -77,6 +77,14 @@ const schemaServeur = z.object({
    * `S3_ENDPOINT`. Sur Supabase, elle s'en déduit — voir `urlPublique`.
    */
   S3_URL_PUBLIQUE: z.string().url().optional(),
+  /**
+   * Jeton du magasin Vercel Blob.
+   *
+   * Posé automatiquement par Vercel quand un magasin est rattaché au projet :
+   * c'est la seule des trois voies de stockage qui ne demande rien à
+   * l'exploitant. Elle passe donc devant S3 quand les deux sont présentes.
+   */
+  BLOB_READ_WRITE_TOKEN: z.string().optional(),
 });
 
 type EnvServeur = z.infer<typeof schemaServeur>;

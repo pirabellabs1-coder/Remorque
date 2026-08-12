@@ -52,6 +52,7 @@ export const pathnames = {
   "/connexion": "/connexion",
   "/inscription": "/inscription",
   "/mot-de-passe-oublie": "/mot-de-passe-oublie",
+  "/nouveau-mot-de-passe": "/nouveau-mot-de-passe",
   "/cgu": "/cgu",
   "/cgv": "/cgv",
   "/confidentialite": "/confidentialite",

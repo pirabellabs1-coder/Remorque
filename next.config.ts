@@ -15,15 +15,43 @@ const hoteStockage = process.env.S3_ENDPOINT
   ? new URL(process.env.S3_ENDPOINT).hostname
   : null;
 
+/**
+ * Hôtes autorisés pour `next/image`.
+ *
+ * Vercel Blob sert chaque magasin sous un sous-domaine qui lui est propre —
+ * `<identifiant>.public.blob.vercel-storage.com`. On ne peut donc pas le
+ * nommer sans le connaître, et le connaître demanderait une variable de plus à
+ * tenir en cohérence avec le magasin réellement rattaché.
+ *
+ * Le caractère générique porte donc sur le sous-domaine, jamais sur le
+ * domaine : `*.public.blob.vercel-storage.com` n'ouvre que les magasins Blob,
+ * là où un `**` laisserait optimiser n'importe quelle image du web sous notre
+ * nom — et facturer l'optimisation à ce compte.
+ */
+const sourcesImages = [
+  ...(hoteStockage
+    ? ([
+        {
+          protocol: "https" as const,
+          hostname: hoteStockage,
+          pathname: "/storage/**",
+        },
+      ])
+    : []),
+  {
+    protocol: "https" as const,
+    hostname: "*.public.blob.vercel-storage.com",
+    pathname: "/**",
+  },
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Les photos d'annonces et d'états des lieux sont volumineuses : formats
   // modernes obligatoires (M15 — optimisation des performances).
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: hoteStockage
-      ? [{ protocol: "https", hostname: hoteStockage, pathname: "/storage/**" }]
-      : [],
+    remotePatterns: sourcesImages,
   },
   experimental: {
     serverActions: {

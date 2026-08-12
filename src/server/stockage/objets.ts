@@ -16,12 +16,19 @@ import { fichier } from "@/server/db/schema";
 /**
  * Dépôt d'objets — photos d'annonces, et demain pièces des états des lieux.
  *
- * Deux dos, une seule interface :
+ * Trois dos, une seule interface, dans cet ordre :
  *
- *  1. **Un service compatible S3** dès que `S3_ENDPOINT` et ses clés sont
- *     renseignés. C'est le mode de référence : il tient la charge, sert par un
- *     réseau de diffusion et n'alourdit pas les sauvegardes de la base.
- *  2. **La base elle-même**, sinon. Les octets vont dans la table `fichier` et
+ *  1. **Vercel Blob** dès que `BLOB_READ_WRITE_TOKEN` est présent. C'est la
+ *     voie de référence ici, et pour une raison prosaïque : le jeton est posé
+ *     par Vercel quand un magasin est rattaché au projet, sans qu'aucune clé
+ *     soit à obtenir, à recopier ni à faire tourner. Le site est déjà hébergé
+ *     là ; les octets voyagent sur le même réseau que les pages.
+ *  2. **Un service compatible S3** si ses quatre valeurs sont renseignées.
+ *     Elle reste, et passe après : quiconque a pris la peine de configurer S3
+ *     l'a fait pour une raison, mais le jeton Blob arrive tout seul et
+ *     l'emporterait par accident sur un choix délibéré — d'où l'ordre inverse
+ *     de ce que la commodité suggérerait.
+ *  3. **La base elle-même**, sinon. Les octets vont dans la table `fichier` et
  *     sont servis par `/api/fichiers/[id]` avec un cache immuable.
  *
  * Pourquoi une voie de repli plutôt qu'une porte fermée, comme pour Stripe et
@@ -35,6 +42,11 @@ import { fichier } from "@/server/db/schema";
  * adresses déjà enregistrées continuent de fonctionner, les nouvelles photos
  * partent chez l'hébergeur objet.
  */
+
+/** Un magasin Vercel Blob est-il rattaché au projet ? */
+export function blobConfigure(): boolean {
+  return Boolean(serverEnv.BLOB_READ_WRITE_TOKEN);
+}
 
 /** Le stockage objet est-il configuré ? Les quatre valeurs vont ensemble. */
 export function stockageObjetConfigure(): boolean {
@@ -100,6 +112,7 @@ export async function deposerObjet(
   typeMime: string,
 ): Promise<string> {
   if (stockageObjetConfigure()) {
+    // S3 d'abord : voir l'ordre de préséance en tête de fichier.
     await client().send(
       new PutObjectCommand({
         Bucket: serverEnv.S3_BUCKET,
@@ -114,6 +127,26 @@ export async function deposerObjet(
     );
 
     return urlPublique(chemin);
+  }
+
+  if (blobConfigure()) {
+    const { put } = await import("@vercel/blob");
+
+    // `put` n'accepte pas un `Uint8Array` nu : on l'enveloppe sans copier les
+    // octets, la vue portant sur la même mémoire.
+    const depose = await put(chemin, Buffer.from(corps.buffer, corps.byteOffset, corps.byteLength), {
+      access: "public",
+      contentType: typeMime,
+      // Le chemin porte déjà un identifiant tiré au hasard : laisser Vercel en
+      // ajouter un second rendrait l'adresse imprévisible, donc impossible à
+      // reconstruire pour supprimer l'objet plus tard.
+      addRandomSuffix: false,
+      // Immuable pour un an, comme les autres dos : une photo ne change jamais
+      // d'adresse, une modification produit une nouvelle adresse.
+      cacheControlMaxAge: 31_536_000,
+    });
+
+    return depose.url;
   }
 
   const [ligne] = await db
@@ -142,6 +175,16 @@ export async function retirerObjet(chemin: string): Promise<void> {
     return;
   }
 
+  if (chemin.startsWith("blob:")) {
+    try {
+      const { del } = await import("@vercel/blob");
+      await del(chemin.slice(5));
+    } catch {
+      // Sans conséquence pour l'usager : voir ci-dessus.
+    }
+    return;
+  }
+
   if (!stockageObjetConfigure()) return;
 
   try {
@@ -161,6 +204,8 @@ export async function retirerObjet(chemin: string): Promise<void> {
  * stockages n'écrivent pas la même forme d'adresse :
  *
  *  - `/api/fichiers/<uuid>` → `fichier:<uuid>`, une ligne de la table ;
+ *  - `https://….blob.vercel-storage.com/<chemin>` → `blob:<adresse entière>`,
+ *    car Vercel supprime par adresse et non par chemin ;
  *  - `https://…/object/public/<compartiment>/<chemin>` → le chemin de l'objet.
  *
  * Rend `null` pour une adresse qui ne vient d'aucun des deux : les annonces de
@@ -172,6 +217,10 @@ export function cheminDepuisUrl(url: string): string | null {
   if (url.startsWith(prefixeBase)) {
     return `fichier:${url.slice(prefixeBase.length)}`;
   }
+
+  // Reconnue à son domaine plutôt qu'au jeton : une photo déposée du temps où
+  // le magasin était configuré doit rester supprimable après son retrait.
+  if (url.includes(".blob.vercel-storage.com/")) return `blob:${url}`;
 
   if (!serverEnv.S3_ENDPOINT) return null;
 

@@ -123,6 +123,10 @@
         "sujet": "Votre demande {reference} est close",
         "corps": "Bonjour {prenom},\n\nVotre demande « {annonceTitre} » ({reference}) a été close.\n\nSi le sujet revient, ouvrez une nouvelle demande depuis votre compte : elle repartira avec tout l'historique de celle-ci."
       }
+    },
+    "reinitialisationMotDePasse": {
+      "sujet": "Réinitialiser votre mot de passe FlexiTrailer",
+      "corps": "Bonjour {prenom},\n\nVous avez demandé à changer le mot de passe de votre compte FlexiTrailer. Ouvrez ce lien pour en choisir un nouveau :\n\nhttps://remorque.vercel.app/nouveau-mot-de-passe?jeton={jeton}\n\nCe lien est valable une heure et ne fonctionne qu'une fois.\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message : votre mot de passe actuel reste valable, et personne d'autre ne peut le changer sans ce lien.\n\nL'équipe FlexiTrailer"
     }
   }
 }
