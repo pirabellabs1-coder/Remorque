@@ -18,6 +18,14 @@ type Props = { params: Promise<{ locale: string }> };
 export const metadata = { robots: { index: false, follow: false } };
 
 /**
+ * Rien à mettre en cache ici.
+ *
+ * Le profil se modifie ici et se lit ailleurs — vérification comprise.
+ * Une version figée ferait croire un dossier encore incomplet.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * Profil du locataire.
  *
  * Le véhicule n'est pas une coquetterie de formulaire : c'est l'entrée du

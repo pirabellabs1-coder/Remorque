@@ -13,6 +13,14 @@ type Props = { params: Promise<{ locale: string }> };
 
 export const metadata = { robots: { index: false, follow: false } };
 
+/**
+ * Rien à mettre en cache ici.
+ *
+ * Les réglages changent depuis cet écran même : les servir en cache
+ * montrerait à l'auteur d'une modification l'état d'avant la sienne.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function PageParametresAdmin({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);

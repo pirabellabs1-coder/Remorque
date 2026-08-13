@@ -10,6 +10,14 @@ type Props = { params: Promise<{ locale: string }> };
 
 export const metadata = { robots: { index: false, follow: false } };
 
+/**
+ * Rien à mettre en cache ici.
+ *
+ * Le profil se modifie ici et se lit ailleurs — vérification comprise.
+ * Une version figée ferait croire un dossier encore incomplet.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function PageProfilLoueur({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);

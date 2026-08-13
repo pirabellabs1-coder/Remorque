@@ -168,6 +168,77 @@ async function retraitsDeDemain(): Promise<Rappel[]> {
 }
 
 /**
+ * Restitutions du lendemain.
+ *
+ * Le rappel qui manquait, et c'est celui qui rapporte : la veille du retour est
+ * le seul moment où la question « et si je gardais la remorque un jour de
+ * plus ? » se pose vraiment. Posée l'avant-veille, elle est prématurée ; posée
+ * le jour même, il est trop tard pour que le propriétaire réponde et pour
+ * qu'un autre locataire soit prévenu.
+ *
+ * Adressé aux deux parties, mais pas pour la même raison. Le locataire doit
+ * savoir qu'il lui reste un jour — et qu'il peut demander à prolonger. Le
+ * propriétaire doit être là pour reprendre son bien : une restitution où
+ * personne n'attend, c'est un état des lieux de retour qui ne se fait pas, et
+ * une caution qu'on ne sait plus libérer.
+ */
+async function restitutionsDeDemain(): Promise<Rappel[]> {
+  const demain = new Date();
+  demain.setHours(0, 0, 0, 0);
+  demain.setDate(demain.getDate() + 1);
+
+  const surlendemain = new Date(demain.getTime() + 86_400_000);
+
+  const lignes = await db
+    .select({
+      numero: reservation.numero,
+      annonceTitre: annonce.titre,
+      locataireId: reservation.locataireId,
+      proprietaireId: reservation.proprietaireId,
+      locatairePrenom: sql<string>`(
+        select u.prenom from utilisateur u where u.id = ${reservation.locataireId}
+      )`,
+      proprietairePrenom: sql<string>`(
+        select u.prenom from utilisateur u where u.id = ${reservation.proprietaireId}
+      )`,
+    })
+    .from(reservation)
+    .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
+    .where(
+      and(
+        // En cours seulement : une location qui n'a jamais démarré n'a rien à
+        // restituer, et le rappel sonnerait faux.
+        eq(reservation.statut, "en_cours"),
+        gte(reservation.fin, demain),
+        lt(reservation.fin, surlendemain),
+      ),
+    );
+
+  return lignes.flatMap((ligne) => [
+    {
+      destinataireId: ligne.locataireId,
+      gabarit: "rappel.restitutionProche",
+      donnees: {
+        reference: ligne.numero,
+        annonceTitre: ligne.annonceTitre,
+        prenom: ligne.locatairePrenom ?? "",
+        interlocuteur: ligne.proprietairePrenom ?? "",
+      },
+    },
+    {
+      destinataireId: ligne.proprietaireId,
+      gabarit: "rappel.restitutionProche",
+      donnees: {
+        reference: ligne.numero,
+        annonceTitre: ligne.annonceTitre,
+        prenom: ligne.proprietairePrenom ?? "",
+        interlocuteur: ligne.locatairePrenom ?? "",
+      },
+    },
+  ]);
+}
+
+/**
  * Avis à écrire, trois jours après la clôture.
  *
  * Ni le lendemain — la location est encore fraîche, on ne sait pas quoi en
@@ -219,6 +290,7 @@ async function avisAreclamer(): Promise<Rappel[]> {
 export type BilanRappels = {
   demandesQuiExpirent: number;
   retraits: number;
+  restitutions: number;
   avis: number;
   fenetreAvisJours: number;
 };
@@ -227,6 +299,7 @@ export async function poserRappels(): Promise<BilanRappels> {
   return {
     demandesQuiExpirent: await enfiler(await demandesQuiExpirent()),
     retraits: await enfiler(await retraitsDeDemain()),
+    restitutions: await enfiler(await restitutionsDeDemain()),
     avis: await enfiler(await avisAreclamer()),
     fenetreAvisJours: FENETRE_AVIS_JOURS,
   };

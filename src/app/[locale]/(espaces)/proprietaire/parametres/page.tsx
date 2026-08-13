@@ -15,6 +15,14 @@ const NOTIFICATIONS = [
   "notifAvis",
 ] as const;
 
+/**
+ * Rien à mettre en cache ici.
+ *
+ * Les réglages changent depuis cet écran même : les servir en cache
+ * montrerait à l'auteur d'une modification l'état d'avant la sienne.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function PageParametresLoueur({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);

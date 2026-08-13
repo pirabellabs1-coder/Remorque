@@ -80,6 +80,10 @@
       "avisAecrire": {
         "sujet": "Votre avis sur {annonceTitre}",
         "corps": "Bonjour {prenom},\n\nVotre location « {annonceTitre} » ({reference}) est terminée. Votre avis aide les locataires suivants à choisir — et le propriétaire à s’améliorer. Vous avez quatorze jours pour le déposer."
+      },
+      "restitutionProche": {
+        "sujet": "Restitution demain — {annonceTitre} ({reference})",
+        "corps": "Bonjour {prenom},\n\nLa location {reference} — {annonceTitre} — se termine demain. Retrouvez {interlocuteur} pour l'état des lieux de retour : photographies, signature des deux côtés, et la caution est libérée dans la foulée.\n\nBesoin d'un jour de plus ? Demandez une prolongation depuis votre espace avant la restitution. Elle n'est possible que si personne n'a réservé la suite, et la réponse du propriétaire est immédiate.\n\nhttps://remorque.vercel.app/compte/reservations\n\nL'équipe FlexiTrailer"
       }
     },
     "messagerie": {

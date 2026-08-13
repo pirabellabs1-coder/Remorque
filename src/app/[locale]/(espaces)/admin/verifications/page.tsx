@@ -11,6 +11,14 @@ type Props = { params: Promise<{ locale: string }> };
 export const metadata = { robots: { index: false, follow: false } };
 
 /**
+ * Rien à mettre en cache ici.
+ *
+ * La file change à chaque dépôt : une page figée au déploiement
+ * annoncerait « aucun dossier en attente » à un contrôleur qui en a trois.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * File de contrôle des dossiers de vérification.
  *
  * **Groupée par compte, jamais par pièce.** On ne décide pas d'un recto : la
