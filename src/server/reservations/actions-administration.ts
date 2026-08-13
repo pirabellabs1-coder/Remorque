@@ -10,6 +10,7 @@ import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
 import { journalAudit, reservation } from "@/server/db/schema";
 
+import { confirmerReservation } from "./confirmation";
 import { changerStatut } from "./transitions";
 
 /**
@@ -68,13 +69,28 @@ export async function forcerTransition(donnees: FormData): Promise<Reponse> {
     return { ok: false, cle: "transitionImpossible" };
   }
 
-  const resultat = await changerStatut({
-    reservationId,
-    evenement,
-    acteur: "administrateur",
-    acteurId: moi.id,
-    motif,
-  });
+  // `confirmer` ne se réduit pas à un changement de statut.
+  //
+  // C'est cette transition qui attribue le code de retrait, émet le contrat,
+  // l'attestation d'assurance et la facture. Tout cela vit dans
+  // `confirmerReservation`, appelée jusqu'ici par le seul webhook Stripe.
+  // Passer par `changerStatut` produisait une confirmation creuse : la
+  // réservation affichait « confirmée » et le locataire n'avait rien à
+  // présenter au retrait. Pire que l'absence de bouton, puisque l'écran
+  // affirmait le contraire.
+  //
+  // Constaté en menant une réservation de bout en bout : statut `confirmee`,
+  // `code_retrait` nul.
+  const resultat =
+    evenement === "confirmer"
+      ? await confirmerReservation(reservationId, "administrateur", moi.id)
+      : await changerStatut({
+          reservationId,
+          evenement,
+          acteur: "administrateur",
+          acteurId: moi.id,
+          motif,
+        });
 
   if (!resultat.ok) return { ok: false, cle: "refusee" };
 
