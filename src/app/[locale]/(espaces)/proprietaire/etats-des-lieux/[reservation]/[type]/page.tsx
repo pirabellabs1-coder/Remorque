@@ -4,6 +4,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { POINTS_CONTROLE } from "@/domain/location/constat";
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { FormulaireConstat } from "@/components/espace/formulaire-constat";
+import { mediasDuConstat } from "@/server/locations/etats-des-lieux";
 import { Link } from "@/i18n/navigation";
 import {
   contexteConstat,
@@ -37,6 +38,11 @@ export default async function PageConstat({ params }: Props) {
 
   const constat = type === "depart" ? contexte.depart : contexte.retour;
   const { reservation } = contexte;
+
+  // Les pièces déjà déposées sur le brouillon de ce constat, s'il existe : on
+  // photographie souvent le matériel avant de revenir signer, et l'écran doit
+  // reprendre là où on l'a laissé.
+  const medias = await mediasDuConstat(reservationId, type);
 
   // Le retour ne se saisit qu'après le départ, et seulement sur une location
   // partie : mêmes règles que l'action serveur, dites avant la saisie plutôt
@@ -91,7 +97,11 @@ export default async function PageConstat({ params }: Props) {
           t={t}
         />
       ) : saisissable ? (
-        <FormulaireConstat reservationId={reservation.id} type={type} />
+        <FormulaireConstat
+          reservationId={reservation.id}
+          type={type}
+          medias={medias}
+        />
       ) : (
         <p className="mt-8 rounded-carte border border-bordure bg-fond-eleve p-5 text-[0.9375rem] text-texte-attenue">
           {type === "retour" && contexte.depart === null

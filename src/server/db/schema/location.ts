@@ -64,6 +64,20 @@ export const etatDesLieux = pgTable(
   ],
 );
 
+/**
+ * Nature de la pièce jointe à un constat.
+ *
+ * La table s'appelait `etat_des_lieux_photo` et ne portait que des images. La
+ * vidéo s'y ajoute plutôt que de créer une seconde table : c'est la même pièce
+ * probante, rattachée au même constat, montrée dans la même galerie et purgée
+ * par la même règle de conservation. Deux tables auraient doublé chaque
+ * requête pour distinguer ce qu'une colonne distingue.
+ *
+ * Le nom de la table ne change pas : le renommer coûterait une migration sur
+ * une table déjà en production, pour un synonyme.
+ */
+export const typeMediaConstat = pgEnum("type_media_constat", ["photo", "video"]);
+
 export const etatDesLieuxPhoto = pgTable(
   "etat_des_lieux_photo",
   {
@@ -73,6 +87,10 @@ export const etatDesLieuxPhoto = pgTable(
       .references(() => etatDesLieux.id, { onDelete: "cascade" }),
     /** Angle imposé : `avant`, `arriere`, `gauche`, `droite`, `plancher`… */
     angle: text("angle").notNull(),
+    /** Photo par défaut : c'est ce que portent les lignes déjà en base. */
+    media: typeMediaConstat("media").notNull().default("photo"),
+    /** Type réel, relevé sur les premiers octets et non déclaré. */
+    typeMime: text("type_mime"),
     url: text("url").notNull(),
     /** Horodatage de la prise de vue, distinct de la date d'envoi. */
     priseLe: timestamp("prise_le", { withTimezone: true, mode: "date" }),

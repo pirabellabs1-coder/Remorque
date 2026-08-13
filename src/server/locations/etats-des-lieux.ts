@@ -1,12 +1,18 @@
 import "server-only";
 
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { cache } from "react";
 
 import { porteReserve } from "@/domain/location/constat";
 import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
-import { annonce, etatDesLieux, reservation, utilisateur } from "@/server/db/schema";
+import {
+  annonce,
+  etatDesLieux,
+  etatDesLieuxPhoto,
+  reservation,
+  utilisateur,
+} from "@/server/db/schema";
 
 /**
  * États des lieux.
@@ -227,3 +233,41 @@ export const constatsAfaire = cache(async () => {
     })
     .filter((entree): entree is NonNullable<typeof entree> => entree !== null);
 });
+
+/**
+ * Les pièces déjà déposées sur un constat, brouillon compris.
+ *
+ * Rend une liste vide quand le constat n'existe pas encore : c'est le cas
+ * ordinaire à la première ouverture de l'écran, et non une erreur. La création
+ * de la ligne appartient au dépôt, pas à la lecture — une lecture qui écrit
+ * laisserait des constats vides derrière chaque page ouverte par curiosité.
+ */
+export async function mediasDuConstat(
+  reservationId: string,
+  type: "depart" | "retour",
+): Promise<
+  { id: string; url: string; media: "photo" | "video" }[]
+> {
+  const [constat] = await db
+    .select({ id: etatDesLieux.id })
+    .from(etatDesLieux)
+    .where(
+      and(
+        eq(etatDesLieux.reservationId, reservationId),
+        eq(etatDesLieux.type, type),
+      ),
+    )
+    .limit(1);
+
+  if (!constat) return [];
+
+  return db
+    .select({
+      id: etatDesLieuxPhoto.id,
+      url: etatDesLieuxPhoto.url,
+      media: etatDesLieuxPhoto.media,
+    })
+    .from(etatDesLieuxPhoto)
+    .where(eq(etatDesLieuxPhoto.etatDesLieuxId, constat.id))
+    .orderBy(etatDesLieuxPhoto.creeLe);
+}

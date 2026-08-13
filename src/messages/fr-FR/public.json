@@ -815,7 +815,17 @@
         "dureeTropCourte": "La durée est inférieure au minimum fixé par le propriétaire.",
         "dureeTropLongue": "La durée dépasse le maximum fixé par le propriétaire.",
         "indisponible": "Ces dates viennent d’être prises. Choisissez-en d’autres.",
-        "echec": "La demande n’a pas pu être envoyée. Réessayez dans un instant."
+        "echec": "La demande n’a pas pu être envoyée. Réessayez dans un instant.",
+        "verification": {
+          "emailNonVerifie": "Votre adresse électronique n'est pas encore confirmée.",
+          "identiteNonSoumise": "Vérifiez votre identité avant de réserver : quelques minutes suffisent.",
+          "identiteEnAttente": "Votre pièce d'identité est en cours de contrôle. Nous revenons vers vous sous 24 heures.",
+          "identiteRefusee": "Votre pièce d'identité a été refusée. Consultez le motif et déposez-en une autre.",
+          "permisNonSoumis": "Déposez votre permis de conduire : tracter une remorque suppose la catégorie correspondante.",
+          "permisEnAttente": "Votre permis est en cours de contrôle. Nous revenons vers vous sous 24 heures.",
+          "permisRefuse": "Votre permis a été refusé. Consultez le motif et déposez-en un autre.",
+          "permisExpire": "Votre permis a expiré. Déposez-en un à jour pour réserver."
+        }
       }
     },
     "situation": {

@@ -3,7 +3,13 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import {
+  DepotMediasConstat,
+  type MediaConstat,
+} from "@/components/espace/depot-medias-constat";
+import { PaveSignature } from "@/components/espace/pave-signature";
 import { POINTS_CONTROLE } from "@/domain/location/constat";
+import { PHOTOS_MINIMUM } from "@/domain/location/medias";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { enregistrerConstat } from "@/server/locations/actions";
@@ -23,17 +29,29 @@ import { enregistrerConstat } from "@/server/locations/actions";
 export function FormulaireConstat({
   reservationId,
   type,
+  medias,
 }: {
   reservationId: string;
   type: "depart" | "retour";
+  medias: MediaConstat[];
 }) {
   const t = useTranslations("espaces.loueur.etatsDesLieux.formulaire");
   const router = useRouter();
   const [reponses, setReponses] = useState<Record<string, "conforme" | "defaut">>({});
+  const [signatures, setSignatures] = useState({
+    locataire: false,
+    proprietaire: false,
+  });
   const [erreur, setErreur] = useState<string | null>(null);
   const [enCours, demarrer] = useTransition();
 
-  const complet = POINTS_CONTROLE.every((point) => reponses[point]);
+  // Trois conditions, et l'écran dit laquelle manque. Un bouton grisé sans
+  // explication fait chercher la faute là où elle n'est pas.
+  const pointsFaits = POINTS_CONTROLE.every((point) => reponses[point]);
+  const photosFaites =
+    medias.filter((media) => media.media === "photo").length >= PHOTOS_MINIMUM;
+  const signe = signatures.locataire && signatures.proprietaire;
+  const complet = pointsFaits && photosFaites && signe;
 
   function soumettre(evenement: React.FormEvent<HTMLFormElement>) {
     evenement.preventDefault();
@@ -56,6 +74,7 @@ export function FormulaireConstat({
         "statutIncompatible",
         "dejaRealise",
         "departManquant",
+        "photosInsuffisantes",
         "connexionRequise",
       ];
       setErreur(
@@ -122,6 +141,12 @@ export function FormulaireConstat({
         </ul>
       </fieldset>
 
+      <DepotMediasConstat
+        reservationId={reservationId}
+        type={type}
+        medias={medias}
+      />
+
       <fieldset className="rounded-carte border border-bordure bg-fond-eleve p-5 shadow-(--ombre-carte)">
         <legend className="px-2 text-[0.9375rem] font-semibold">
           {t("observations")}
@@ -165,25 +190,24 @@ export function FormulaireConstat({
 
         <p className="mt-2 text-sm text-texte-attenue">{t("signaturesAide")}</p>
 
-        <label className="mt-4 flex items-start gap-3 text-[0.9375rem]">
-          <input
-            type="checkbox"
-            name="signatureLocataire"
-            required
-            className="mt-1 size-5 accent-[var(--accent)]"
+        {/* Chacun signe à son tour, sur le même appareil. C'est l'ordre du
+            terrain : on se met d'accord, l'un signe, il passe le téléphone. */}
+        <div className="mt-4 grid gap-5 sm:grid-cols-2">
+          <PaveSignature
+            nom="signatureLocataire"
+            libelle={t("signatureLocataire")}
+            surSignature={(signe) =>
+              setSignatures((etat) => ({ ...etat, locataire: signe }))
+            }
           />
-          <span>{t("signatureLocataire")}</span>
-        </label>
-
-        <label className="mt-4 flex items-start gap-3 text-[0.9375rem]">
-          <input
-            type="checkbox"
-            name="signatureProprietaire"
-            required
-            className="mt-1 size-5 accent-[var(--accent)]"
+          <PaveSignature
+            nom="signatureProprietaire"
+            libelle={t("signatureProprietaire")}
+            surSignature={(signe) =>
+              setSignatures((etat) => ({ ...etat, proprietaire: signe }))
+            }
           />
-          <span>{t("signatureProprietaire")}</span>
-        </label>
+        </div>
       </fieldset>
 
       <div>
@@ -196,7 +220,13 @@ export function FormulaireConstat({
         </button>
 
         {!complet ? (
-          <p className="mt-2 text-sm text-texte-attenue">{t("incomplet")}</p>
+          <p className="mt-2 text-sm text-texte-attenue">
+            {!pointsFaits
+              ? t("incomplet")
+              : !photosFaites
+                ? t("photosManquantes", { minimum: PHOTOS_MINIMUM })
+                : t("signaturesManquantes")}
+          </p>
         ) : null}
 
         {erreur ? (

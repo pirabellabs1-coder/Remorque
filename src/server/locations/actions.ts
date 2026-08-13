@@ -5,9 +5,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { POINTS_CONTROLE } from "@/domain/location/constat";
+import { constatSuffisammentIllustre } from "@/domain/location/medias";
 import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
-import { etatDesLieux, reservation } from "@/server/db/schema";
+import { etatDesLieux, etatDesLieuxPhoto, reservation } from "@/server/db/schema";
+import { cheminObjet, deposerObjet } from "@/server/stockage/objets";
 import { changerStatut } from "@/server/reservations/transitions";
 
 /**
@@ -26,13 +28,38 @@ import { changerStatut } from "@/server/reservations/transitions";
 
 export type Reponse = { ok: true } | { ok: false; cle: string };
 
+/**
+ * Dépose un tracé de signature et rend son adresse.
+ *
+ * Le pavé rend une image encodée en base64 dans une adresse `data:`. On la
+ * reconvertit en octets ici plutôt que de stocker la chaîne : une signature
+ * pèse quelques dizaines de kilo-octets, et deux par constat, lues à chaque
+ * affichage, finiraient par peser plus que le constat lui-même.
+ */
+async function deposerSignature(
+  donneesImage: string,
+  reservationId: string,
+  partie: "locataire" | "proprietaire",
+): Promise<string> {
+  const base64 = donneesImage.slice("data:image/png;base64,".length);
+  const octets = Uint8Array.from(Buffer.from(base64, "base64"));
+
+  return deposerObjet(
+    cheminObjet(`signatures/${reservationId}/${partie}`, "png"),
+    octets,
+    "image/png",
+  );
+}
+
 const schema = z.object({
   reservationId: z.string().uuid(),
   type: z.enum(["depart", "retour"]),
   kilometrage: z.coerce.number().int().min(0).max(1_000_000).nullable(),
   commentaire: z.string().trim().max(2000),
-  signatureLocataire: z.literal(true),
-  signatureProprietaire: z.literal(true),
+  // Un tracé, non une case cochée. La case prouvait qu'un bouton avait été
+  // cliqué sur un appareil, pas qu'une personne avait signé.
+  signatureLocataire: z.string().startsWith("data:image/png;base64,"),
+  signatureProprietaire: z.string().startsWith("data:image/png;base64,"),
 });
 
 /** Statuts depuis lesquels chaque constat a un sens. */
@@ -52,8 +79,8 @@ export async function enregistrerConstat(donnees: FormData): Promise<Reponse> {
     type: donnees.get("type"),
     kilometrage: String(donnees.get("kilometrage") ?? "") || null,
     commentaire: donnees.get("commentaire") ?? "",
-    signatureLocataire: donnees.get("signatureLocataire") === "on",
-    signatureProprietaire: donnees.get("signatureProprietaire") === "on",
+    signatureLocataire: donnees.get("signatureLocataire") ?? "",
+    signatureProprietaire: donnees.get("signatureProprietaire") ?? "",
   });
 
   if (!analyse.success) return { ok: false, cle: "invalide" };
@@ -90,33 +117,80 @@ export async function enregistrerConstat(donnees: FormData): Promise<Reponse> {
   }
 
   const existants = await db
-    .select({ type: etatDesLieux.type })
+    .select({
+      id: etatDesLieux.id,
+      type: etatDesLieux.type,
+      finaliseLe: etatDesLieux.finaliseLe,
+    })
     .from(etatDesLieux)
     .where(eq(etatDesLieux.reservationId, reservationId));
 
-  // Un constat ne se refait pas : il est signé, il fait foi. Le corriger
-  // relèvera d'un avenant, pas d'un écrasement silencieux.
-  if (existants.some((constat) => constat.type === type)) {
-    return { ok: false, cle: "dejaRealise" };
-  }
+  const courant = existants.find((constat) => constat.type === type);
+
+  // **La finalisation fait foi, non l'existence de la ligne.** Depuis que les
+  // photos peuvent être déposées avant la signature, un constat existe en
+  // brouillon dès la première prise de vue. Refuser sur la seule présence
+  // d'une ligne rendrait impossible de signer ce qu'on vient d'illustrer.
+  //
+  // Un constat *signé*, lui, ne se refait pas : il fait foi, et le corriger
+  // relèverait d'un avenant, pas d'un écrasement silencieux.
+  if (courant?.finaliseLe) return { ok: false, cle: "dejaRealise" };
 
   // Le départ d'abord : un retour sans point de comparaison ne prouve rien.
-  if (type === "retour" && !existants.some((constat) => constat.type === "depart")) {
+  const depart = existants.find((constat) => constat.type === "depart");
+  if (type === "retour" && !depart?.finaliseLe) {
     return { ok: false, cle: "departManquant" };
+  }
+
+  // Sans photographies, le constat ne prouve rien : « le plancher était fendu
+  // au départ » contre « il ne l'était pas » se tranche par une image, ou ne
+  // se tranche pas. L'écran affiche le compte en permanence, pour que le refus
+  // ne soit jamais une surprise au moment de signer.
+  const pieces = courant
+    ? await db
+        .select({ type: etatDesLieuxPhoto.media })
+        .from(etatDesLieuxPhoto)
+        .where(eq(etatDesLieuxPhoto.etatDesLieuxId, courant.id))
+    : [];
+
+  if (!constatSuffisammentIllustre(pieces)) {
+    return { ok: false, cle: "photosInsuffisantes" };
   }
 
   const maintenant = new Date();
 
-  await db.insert(etatDesLieux).values({
-    reservationId,
-    type,
+  // Les tracés partent au stockage plutôt qu'en base : ce sont des images, et
+  // une chaîne de données de plusieurs dizaines de kilo-octets par signature
+  // alourdirait chaque lecture du constat pour deux images qu'on ne regarde
+  // qu'en cas de litige.
+  const [urlLocataire, urlProprietaire] = await Promise.all([
+    deposerSignature(analyse.data.signatureLocataire, reservationId, "locataire"),
+    deposerSignature(
+      analyse.data.signatureProprietaire,
+      reservationId,
+      "proprietaire",
+    ),
+  ]);
+
+  const valeurs = {
     controles,
     kilometrage: analyse.data.kilometrage,
     commentaire: analyse.data.commentaire || null,
+    signatureLocataireUrl: urlLocataire,
     signatureLocataireLe: maintenant,
+    signatureProprietaireUrl: urlProprietaire,
     signatureProprietaireLe: maintenant,
     finaliseLe: maintenant,
-  });
+  };
+
+  if (courant) {
+    await db
+      .update(etatDesLieux)
+      .set(valeurs)
+      .where(eq(etatDesLieux.id, courant.id));
+  } else {
+    await db.insert(etatDesLieux).values({ reservationId, type, ...valeurs });
+  }
 
   // La transition s'enchaîne quand le constat est l'événement qui la fonde.
   // Si la machine la refuse, le constat reste acquis : la pièce signée existe,

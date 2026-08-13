@@ -14,6 +14,7 @@ import {
 } from "@/domain/verification/dossier";
 import { db } from "@/server/db";
 import { pieceVerification, utilisateur } from "@/server/db/schema";
+import { serverEnv } from "@/config/env-serveur";
 import { lireParametres } from "@/server/administration/parametres";
 
 /**
@@ -88,6 +89,30 @@ export async function dossierDe(
 }
 
 /**
+ * Une exigence qu'on ne peut pas satisfaire n'est pas une porte, c'est un mur.
+ *
+ * La confirmation de l'adresse électronique figure à juste titre dans les
+ * conditions du domaine. Mais aucun parcours ne permet aujourd'hui de la
+ * satisfaire : il n'existe ni page de confirmation, ni lien envoyé — et il ne
+ * peut pas en exister tant qu'aucun expéditeur n'est configuré. Exiger la
+ * confirmation dans ces conditions revient à interdire la plateforme à tout
+ * compte nouvellement créé, définitivement et sans recours.
+ *
+ * L'exigence est donc suspendue tant que la plateforme est incapable
+ * d'envoyer quoi que ce soit, et se rétablit d'elle-même le jour où la clé
+ * d'expédition arrive. Ce n'est pas un assouplissement : c'est refuser de
+ * réclamer une preuve qu'on ne donne pas les moyens d'apporter.
+ */
+function courrielExigible(): boolean {
+  return Boolean(serverEnv.RESEND_API_KEY && serverEnv.COURRIEL_EXPEDITEUR);
+}
+
+function sansExigenceImpossible(manques: Manque[]): Manque[] {
+  if (courrielExigible()) return manques;
+  return manques.filter((manque) => manque !== "emailNonVerifie");
+}
+
+/**
  * Le compte peut-il publier ?
  *
  * Rend la liste des manques plutôt qu'un booléen : la porte du serveur doit
@@ -99,7 +124,7 @@ export async function blocagePublication(
 ): Promise<Manque[]> {
   const dossier = await dossierDe(utilisateurId);
   if (!dossier || !dossier.exigee) return [];
-  return dossier.manquesPublication;
+  return sansExigenceImpossible(dossier.manquesPublication);
 }
 
 /** Le compte peut-il demander une location ? */
@@ -108,7 +133,7 @@ export async function blocageReservation(
 ): Promise<Manque[]> {
   const dossier = await dossierDe(utilisateurId);
   if (!dossier || !dossier.exigee) return [];
-  return dossier.manquesReservation;
+  return sansExigenceImpossible(dossier.manquesReservation);
 }
 
 export type PieceDeposee = {

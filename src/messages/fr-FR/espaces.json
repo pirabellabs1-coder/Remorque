@@ -605,8 +605,11 @@
             "dejaRealise": "Ce constat a déjà été signé : il ne peut pas être refait.",
             "departManquant": "Réalisez d’abord l’état des lieux de départ.",
             "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
-            "echec": "L’enregistrement a échoué. Réessayez."
-          }
+            "echec": "L’enregistrement a échoué. Réessayez.",
+            "photosInsuffisantes": "Le constat ne porte pas assez de photographies pour valoir preuve."
+          },
+          "photosManquantes": "Ajoutez au moins {minimum} photographies avant de signer.",
+          "signaturesManquantes": "Les deux parties doivent signer."
         },
         "detail": {
           "retourListe": "Tous les états des lieux",
@@ -617,6 +620,24 @@
           "signeProprietaire": "Signé par le propriétaire",
           "finalise": "Constat finalisé le {date}. Il fait foi entre les parties.",
           "telecharger": "Télécharger le constat (PDF)"
+        },
+        "medias": {
+          "titre": "Photographies et vidéos",
+          "aide": "Faites le tour du matériel. C'est la seule pièce qui tranchera si un dommage est contesté.",
+          "compte": "{photos, plural, =0 {Aucune photographie — {minimum} au minimum} one {# photographie sur {minimum} attendues} other {# photographies sur {minimum} attendues}}",
+          "ajouterPhoto": "Photographier",
+          "ajouterVideo": "Filmer",
+          "envoi": "Envoi en cours…",
+          "retirer": "Retirer cette pièce",
+          "refus": {
+            "type": "Seules les photographies (JPEG, PNG, WebP) et les vidéos (MP4, MOV) sont acceptées.",
+            "taille": "Fichier trop lourd : {photo} Mo au maximum pour une photo, {video} Mo pour une vidéo.",
+            "trop": "Le constat porte déjà {maximum} pièces."
+          }
+        },
+        "signature": {
+          "invite": "Signez ici, au doigt",
+          "effacer": "Effacer"
         }
       },
       "messages": {
