@@ -6,7 +6,10 @@ import { useState, type ReactNode } from "react";
 import { Icone } from "@/components/espace/icone";
 import { MenuCompte } from "@/components/espace/menu-compte";
 import type { GroupeEspace } from "@/components/espace/navigation-espace";
-import { useBarreRepliee } from "@/components/espace/preference-barre";
+import {
+  useBarreRepliee,
+  useGrandEcran,
+} from "@/components/espace/preference-barre";
 import { Logo } from "@/components/navigation/logo";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
@@ -43,6 +46,7 @@ export function CoquilleEspace({
 
   const [replie, basculerRepli] = useBarreRepliee();
   const [tiroir, setTiroir] = useState(false);
+  const estGrandEcran = useGrandEcran();
 
   const racine = navigation[0]?.entrees[0]?.href;
 
@@ -132,28 +136,6 @@ export function CoquilleEspace({
             ))}
           </nav>
 
-          {/* Repli — sur grand écran seulement : sur mobile la barre est un
-              tiroir, qui se ferme et n'a pas d'état intermédiaire. */}
-          <button
-            type="button"
-            onClick={basculerRepli}
-            aria-pressed={replie}
-            className={cn(
-              "hidden shrink-0 items-center gap-3 border-t border-encre-bordure px-5 py-4 text-sm text-encre-texte-attenue transition-colors hover:text-encre-texte lg:flex",
-              replie && "justify-center px-2",
-            )}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden className="size-5" fill="none">
-              <path
-                d={replie ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"}
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            {!replie ? t("replier") : <span className="sr-only">{t("deplier")}</span>}
-          </button>
         </div>
 
         {/* Voile du tiroir mobile. */}
@@ -175,13 +157,31 @@ export function CoquilleEspace({
         >
           <header className="sticky top-0 z-30 border-b border-bordure bg-fond-eleve/95 backdrop-blur">
             <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
+              {/* Une seule commande de barre, et elle est ici.
+                  Le repli vivait au pied de la barre latérale, sous treize
+                  entrées dans l'administration : pour le trouver il fallait
+                  déjà savoir qu'il existait. Remonté dans l'en-tête, il est au
+                  même endroit dans les trois espaces, visible sans défiler.
+
+                  Le même bouton fait deux gestes selon la largeur, parce que
+                  la barre n'est pas la même chose de part et d'autre : sous
+                  `lg` c'est un tiroir qui s'ouvre par-dessus, au-delà c'est
+                  une colonne qui se replie sur ses icônes. Deux boutons pour
+                  la même intention — « montre-moi la navigation, ou rends-moi
+                  la place » — auraient demandé de choisir lequel regarder. */}
               <button
                 type="button"
-                aria-expanded={tiroir}
-                onClick={() => setTiroir(true)}
-                className="-ml-2 inline-flex size-11 items-center justify-center rounded-champ lg:hidden"
+                aria-expanded={estGrandEcran ? !replie : tiroir}
+                onClick={() => (estGrandEcran ? basculerRepli() : setTiroir(true))}
+                className="-ml-2 inline-flex size-11 items-center justify-center rounded-champ transition-colors hover:bg-fond-doux"
               >
-                <span className="sr-only">{t("ouvrirMenu")}</span>
+                <span className="sr-only">
+                  {estGrandEcran
+                    ? replie
+                      ? t("deplier")
+                      : t("replier")
+                    : t("ouvrirMenu")}
+                </span>
                 <svg viewBox="0 0 24 24" aria-hidden className="size-6" fill="none">
                   <path
                     d="M4 7h16M4 12h16M4 17h16"
