@@ -4,7 +4,11 @@ import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { Barres } from "@/components/espace/graphique";
 import { PastilleStatut } from "@/components/espace/statut";
 import { Cellule, Tableau } from "@/components/espace/tableau";
-import { STATUTS } from "@/domain/reservation/machine";
+import { ActionsAdministrationReservation } from "@/components/espace/actions-administration-reservation";
+import {
+  STATUTS,
+  type StatutReservation,
+} from "@/domain/reservation/machine";
 import { PRIX_AFFICHE } from "@/lib/cn";
 import {
   listerReservationsPlateforme,
@@ -94,6 +98,13 @@ export default async function PageReservationsAdmin({ params }: Props) {
             </Cellule>
             <Cellule>
               <PastilleStatut statut={reservation.statut} />
+              {/* La commande vit sous la pastille, repliée. Le tableau reste
+                  un écran de consultation ; forcer une transition demande un
+                  geste délibéré, puis un motif. */}
+              <ActionsAdministrationReservation
+                reservationId={reservation.id}
+                statut={reservation.statut as StatutReservation}
+              />
             </Cellule>
           </tr>
         ))}

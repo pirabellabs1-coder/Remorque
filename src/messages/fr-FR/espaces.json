@@ -796,7 +796,33 @@
         "brut": "Brut",
         "commission": "Commission",
         "statut": "Statut",
-        "repartitionTitre": "Répartition par statut"
+        "repartitionTitre": "Répartition par statut",
+        "forcer": {
+          "ouvrir": "Forcer une transition",
+          "annuler": "Fermer",
+          "motif": "Motif de l'intervention",
+          "motifExemple": "Capture Stripe indisponible : encaissement forcé après vérification du virement.",
+          "evenements": {
+            "accepter": "Accepter",
+            "refuser": "Refuser",
+            "expirer": "Faire expirer",
+            "encaisser": "Marquer payée",
+            "confirmer": "Confirmer",
+            "demarrer": "Démarrer la location",
+            "restituer": "Marquer restituée",
+            "cloturer": "Clôturer",
+            "annuler": "Annuler"
+          },
+          "erreur": {
+            "droitsInsuffisants": "Votre rôle ne permet pas cette intervention.",
+            "requeteInvalide": "Demande incomplète.",
+            "motifRequis": "Une transition forcée doit porter son motif.",
+            "introuvable": "Cette réservation n'existe plus.",
+            "transitionImpossible": "La machine à états n'autorise pas ce passage depuis l'état courant.",
+            "refusee": "La transition a été refusée — un litige ou un sinistre gèle peut-être les fonds.",
+            "inattendue": "L'intervention n'a pas abouti. Réessayez."
+          }
+        }
       },
       "finance": {
         "titre": "Finance",
