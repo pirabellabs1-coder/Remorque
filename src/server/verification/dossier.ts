@@ -1,6 +1,7 @@
 import "server-only";
 
 import { and, desc, eq, inArray } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import {
   avancement,
@@ -297,4 +298,86 @@ export async function piecesDuType(
         inArray(pieceVerification.statut, ["en_attente", "acceptee"]),
       ),
     );
+}
+
+export type DossierDecide = {
+  utilisateurId: string;
+  email: string;
+  prenom: string | null;
+  nom: string | null;
+  type: Piece;
+  statut: "acceptee" | "refusee";
+  motif: string | null;
+  decideLe: Date;
+  decideurEmail: string | null;
+  pieces: { id: string; face: "recto" | "verso" }[];
+};
+
+/**
+ * Les dossiers déjà tranchés, du plus récent au plus ancien.
+ *
+ * La file ne montre que ce qui attend, et c'est juste : un contrôleur traite
+ * ce qui reste à traiter. Mais une fois décidé, un dossier disparaissait de
+ * l'écran sans laisser de trace consultable — plus moyen de revoir la pièce
+ * acceptée, ni de savoir qui l'avait acceptée, sans lire le journal d'audit
+ * ligne à ligne. Or « sur quelle pièce cette identité a-t-elle été validée »
+ * est précisément la question d'un litige, posée des mois plus tard.
+ *
+ * Groupé par compte **et par type** : accepter une identité et refuser un
+ * permis le même jour sont deux décisions distinctes, prises séparément, qui
+ * doivent se relire séparément.
+ */
+export async function dossiersDecides(
+  limite = 30,
+): Promise<DossierDecide[]> {
+  const decideur = alias(utilisateur, "decideur");
+
+  const lignes = await db
+    .select({
+      pieceId: pieceVerification.id,
+      face: pieceVerification.face,
+      type: pieceVerification.type,
+      statut: pieceVerification.statut,
+      motif: pieceVerification.motif,
+      decideLe: pieceVerification.decideLe,
+      utilisateurId: utilisateur.id,
+      email: utilisateur.email,
+      prenom: utilisateur.prenom,
+      nom: utilisateur.nom,
+      decideurEmail: decideur.email,
+    })
+    .from(pieceVerification)
+    .innerJoin(utilisateur, eq(utilisateur.id, pieceVerification.utilisateurId))
+    .leftJoin(decideur, eq(decideur.id, pieceVerification.decideurId))
+    .where(inArray(pieceVerification.statut, ["acceptee", "refusee"]))
+    .orderBy(desc(pieceVerification.decideLe))
+    .limit(limite * 2);
+
+  const parDossier = new Map<string, DossierDecide>();
+
+  for (const ligne of lignes) {
+    // Le recto et le verso portent la même décision : ils forment un dossier.
+    const cle = `${ligne.utilisateurId}:${ligne.type}:${ligne.statut}`;
+    const existant = parDossier.get(cle);
+
+    if (existant) {
+      existant.pieces.push({ id: ligne.pieceId, face: ligne.face });
+      continue;
+    }
+
+    parDossier.set(cle, {
+      utilisateurId: ligne.utilisateurId,
+      email: ligne.email,
+      prenom: ligne.prenom,
+      nom: ligne.nom,
+      type: ligne.type as Piece,
+      statut: ligne.statut as "acceptee" | "refusee",
+      motif: ligne.motif,
+      decideLe: ligne.decideLe ?? new Date(0),
+      decideurEmail: ligne.decideurEmail,
+      pieces: [{ id: ligne.pieceId, face: ligne.face }],
+    });
+  }
+
+  return [...parDossier.values()].slice(0, limite);
 }

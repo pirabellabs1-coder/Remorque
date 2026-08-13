@@ -1101,6 +1101,14 @@
             "dateInvalide": "Cette date n'est pas valide.",
             "inattendue": "La décision n'a pas abouti. Réessayez."
           }
+        },
+        "historique": {
+          "titre": "Décisions récentes",
+          "chapo": "Les dossiers déjà tranchés. Les pièces restent consultables : c'est ce qui permet de répondre, des mois plus tard, à « sur quelle pièce cette identité a-t-elle été validée ».",
+          "acceptee": "Acceptée",
+          "refusee": "Refusée",
+          "par": "par {auteur}, le {date}",
+          "inconnu": "auteur non enregistré"
         }
       }
     },
