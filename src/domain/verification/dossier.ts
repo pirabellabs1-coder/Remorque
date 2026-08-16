@@ -13,12 +13,18 @@
  * jour où un bien ne revient pas, la question posée par l'assureur puis par le
  * juge est la même des deux côtés : qui était l'autre ?
  *
- * **Ce qui diffère malgré tout.** Le propriétaire remet un bien : son identité
- * suffit. Le locataire attelle et conduit : son identité ne suffit pas, il lui
- * faut le permis correspondant. Ce n'est pas une exigence de confort, c'est la
- * condition de légalité du trajet — et c'est aussi ce qui rend exploitable le
- * calcul de compatibilité de `domain/compatibilite/permis.ts`, sans quoi il
- * repose sur une case cochée par l'intéressé.
+ * **Le permis n'est pas une condition de réservation.** Il l'a été, et c'était
+ * une erreur double. D'un côté elle écartait des cas parfaitement légitimes :
+ * une entreprise qui réserve pour son employé, quelqu'un qui organise un
+ * déménagement sans conduire, un couple dont un seul détient le BE. De l'autre
+ * elle donnait une assurance fausse — vérifier le permis du titulaire du
+ * compte ne dit rien de qui prendra le volant.
+ *
+ * Le contrôle qui compte se fait là où quelqu'un peut réellement l'exercer :
+ * à la remise du matériel, par le propriétaire, face à la personne qui va
+ * partir avec. Il est donc relevé dans l'état des lieux de départ — nom,
+ * catégorie, photographie du permis — et porté par un constat signé des deux
+ * côtés. Voir `domain/location/conducteur.ts`.
  *
  * Le fichier ne connaît ni la base, ni le réseau, ni l'interface : il prend un
  * état, il rend des manques. C'est ce qui permet à la porte du serveur et au
@@ -100,27 +106,19 @@ export function manquesPourPublier(etat: EtatVerification): Manque[] {
 /**
  * Ce qui manque au locataire pour demander une location.
  *
- * Le permis expiré est traité à part du permis refusé : le premier a été
- * vérifié et l'est resté jusqu'à sa date de fin — dire « refusé » à quelqu'un
- * dont la pièce était bonne serait faux, et il ne saurait pas qu'il lui suffit
- * d'en déposer une à jour.
+ * **L'identité, et elle seule.** Le permis n'y figure plus : celui qui réserve
+ * n'est pas nécessairement celui qui conduit, et l'exiger ici écartait des
+ * locataires légitimes tout en ne prouvant rien sur le conducteur réel. Le
+ * permis se relève à la remise, dans le constat de départ.
+ *
+ * Ce qu'on exige en revanche, c'est de savoir **qui réserve** : quelqu'un
+ * répond du matériel, paie la caution et signe le contrat, même s'il ne prend
+ * pas le volant.
  */
-export function manquesPourReserver(
-  etat: EtatVerification,
-  maintenant: Date,
-): Manque[] {
+export function manquesPourReserver(etat: EtatVerification): Manque[] {
   const manques: Manque[] = [];
   if (!etat.emailVerifie) manques.push("emailNonVerifie");
   manques.push(...manquesDeLaPiece("identite", etat.identiteStatut));
-
-  if (etat.permisStatut === "verifie") {
-    if (etat.permisExpireLe && etat.permisExpireLe < maintenant) {
-      manques.push("permisExpire");
-    }
-  } else {
-    manques.push(...manquesDeLaPiece("permis", etat.permisStatut));
-  }
-
   return manques;
 }
 
@@ -130,11 +128,8 @@ export function peutPublier(etat: EtatVerification): boolean {
 }
 
 /** Le locataire peut-il demander une location ? */
-export function peutReserver(
-  etat: EtatVerification,
-  maintenant: Date,
-): boolean {
-  return manquesPourReserver(etat, maintenant).length === 0;
+export function peutReserver(etat: EtatVerification): boolean {
+  return manquesPourReserver(etat).length === 0;
 }
 
 /**
@@ -150,6 +145,10 @@ export function piecesRequises(profils: {
   profilProprietaire: boolean;
 }): Piece[] {
   const pieces: Piece[] = ["identite"];
+  // Le permis reste proposé au locataire, sans être exigé : le déposer une
+  // fois évite de le présenter à chaque retrait, et alimente le calcul de
+  // compatibilité d'attelage affiché sur les fiches. C'est un service rendu à
+  // celui qui conduit souvent, non une condition d'entrée.
   if (profils.profilLocataire) pieces.push("permis");
   return pieces;
 }

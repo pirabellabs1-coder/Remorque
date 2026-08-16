@@ -19,8 +19,6 @@ import {
  * deux appellent donc les mêmes fonctions, et ces tests les tiennent.
  */
 
-const maintenant = new Date(2026, 7, 12);
-
 const complet: EtatVerification = {
   emailVerifie: true,
   identiteStatut: "verifie",
@@ -58,44 +56,35 @@ describe("publier", () => {
 
 describe("réserver", () => {
   it("laisse réserver un locataire au dossier complet", () => {
-    expect(peutReserver(complet, maintenant)).toBe(true);
+    expect(peutReserver(complet)).toBe(true);
   });
 
-  it("exige le permis, à la différence de la publication", () => {
-    expect(peutReserver({ ...complet, permisStatut: "non_soumis" }, maintenant)).toBe(
-      false,
-    );
-  });
-
-  it("refuse un permis dont la validité a expiré", () => {
-    // Le cas qui compte : la pièce a bien été contrôlée, et elle a cessé
-    // d'être valable depuis. Sans cette lecture de la date, un permis vérifié
-    // en 2026 ouvrirait encore les locations en 2040.
-    const perime = {
-      ...complet,
-      permisExpireLe: new Date(2026, 0, 1),
-    };
-    expect(peutReserver(perime, maintenant)).toBe(false);
-    expect(manquesPourReserver(perime, maintenant)).toContain("permisExpire");
-  });
-
-  it("distingue un permis expiré d'un permis refusé", () => {
-    // Dire « refusé » à quelqu'un dont la pièce était bonne serait faux, et
-    // il ne saurait pas qu'il lui suffit d'en déposer une à jour.
-    const expire = manquesPourReserver(
-      { ...complet, permisExpireLe: new Date(2026, 0, 1) },
-      maintenant,
-    );
-    expect(expire).not.toContain("permisRefuse");
-  });
-
-  it("ne se plaint pas d'une date de fin absente", () => {
-    // Tous les permis ne portent pas de date exploitable — les anciens modèles
-    // roses n'en ont pas. Refuser faute d'avoir su lire une date reviendrait à
-    // punir le titulaire pour la forme de son document.
+  it("n'exige pas le permis pour réserver", () => {
+    // Celui qui réserve n'est pas nécessairement celui qui conduit : une
+    // entreprise réserve pour son employé, quelqu'un organise un déménagement
+    // sans prendre le volant. Exiger le permis ici écartait ces cas tout en ne
+    // prouvant rien sur le conducteur réel — c'est au constat de départ que le
+    // propriétaire relève qui part avec la remorque.
     expect(
-      peutReserver({ ...complet, permisExpireLe: null }, maintenant),
+      peutReserver({ ...complet, permisStatut: "non_soumis" }),
     ).toBe(true);
+  });
+
+  it("ne bloque pas sur un permis expiré", () => {
+    // Même raison : la validité du permis du titulaire du compte ne dit rien
+    // de celle du conducteur. Elle est relevée sur la pièce présentée à la
+    // remise, pas sur une date en base.
+    expect(
+      peutReserver({ ...complet, permisExpireLe: new Date(2026, 0, 1) }),
+    ).toBe(true);
+  });
+
+  it("exige en revanche de savoir qui réserve", () => {
+    // Quelqu'un répond du matériel, paie la caution et signe le contrat, même
+    // s'il ne conduit pas. Cette exigence-là ne bouge pas.
+    expect(
+      peutReserver({ ...complet, identiteStatut: "non_soumis" }),
+    ).toBe(false);
   });
 });
 
@@ -108,10 +97,9 @@ describe("ce qui manque", () => {
       permisExpireLe: null,
     };
 
-    expect(manquesPourReserver(vierge, maintenant)).toEqual([
+    expect(manquesPourReserver(vierge)).toEqual([
       "emailNonVerifie",
       "identiteNonSoumise",
-      "permisNonSoumis",
     ]);
   });
 
@@ -125,7 +113,10 @@ describe("ce qui manque", () => {
 });
 
 describe("pièces requises", () => {
-  it("demande le permis au locataire, pas au propriétaire seul", () => {
+  it("propose le permis au locataire, pas au propriétaire seul", () => {
+    // « Propose » et non « exige » : le dossier le suggère pour alimenter le
+    // calcul de compatibilité d'attelage et éviter de présenter la pièce à
+    // chaque retrait, mais son absence n'empêche pas de réserver.
     expect(
       piecesRequises({ profilLocataire: false, profilProprietaire: true }),
     ).toEqual(["identite"]);

@@ -5,6 +5,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { POINTS_CONTROLE } from "@/domain/location/constat";
+import type { CategoriePermis } from "@/domain/compatibilite/permis";
+import {
+  manquesDuConducteur,
+  QUALITES_CONDUCTEUR,
+} from "@/domain/location/conducteur";
 import { constatSuffisammentIllustre } from "@/domain/location/medias";
 import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
@@ -60,6 +65,11 @@ const schema = z.object({
   // cliqué sur un appareil, pas qu'une personne avait signé.
   signatureLocataire: z.string().startsWith("data:image/png;base64,"),
   signatureProprietaire: z.string().startsWith("data:image/png;base64,"),
+  // Le conducteur n'est relevé qu'au départ : au retour, la remorque revient,
+  // et qui la ramène n'engage plus rien de neuf.
+  conducteurQualite: z.enum(QUALITES_CONDUCTEUR).optional(),
+  conducteurNom: z.string().trim().max(120).optional(),
+  conducteurCategories: z.array(z.enum(["B", "B96", "BE"])).optional(),
 });
 
 /** Statuts depuis lesquels chaque constat a un sens. */
@@ -81,6 +91,9 @@ export async function enregistrerConstat(donnees: FormData): Promise<Reponse> {
     commentaire: donnees.get("commentaire") ?? "",
     signatureLocataire: donnees.get("signatureLocataire") ?? "",
     signatureProprietaire: donnees.get("signatureProprietaire") ?? "",
+    conducteurQualite: donnees.get("conducteurQualite") ?? undefined,
+    conducteurNom: donnees.get("conducteurNom") ?? undefined,
+    conducteurCategories: donnees.getAll("conducteurCategories").map(String),
   });
 
   if (!analyse.success) return { ok: false, cle: "invalide" };
@@ -157,6 +170,33 @@ export async function enregistrerConstat(donnees: FormData): Promise<Reponse> {
     return { ok: false, cle: "photosInsuffisantes" };
   }
 
+  // Le conducteur, relevé au départ seulement.
+  //
+  // C'est ici que se fait le contrôle du permis, et non à la réservation :
+  // celui qui réserve n'est pas toujours celui qui conduit, et le propriétaire
+  // est le seul à voir à la fois le document et le visage. Une catégorie
+  // insuffisante n'interdit pas d'enregistrer le constat — le propriétaire
+  // reste maître de sa remorque — mais elle est consignée, et c'est ce qui
+  // comptera si l'assureur pose la question.
+  if (type === "depart") {
+    const conducteur = {
+      qualite: analyse.data.conducteurQualite ?? "locataire",
+      nom: analyse.data.conducteurNom ?? "",
+      categories: (analyse.data.conducteurCategories ?? []) as CategoriePermis[],
+      // La photographie du permis compte parmi les pièces du constat : on ne
+      // demande pas un second dépôt pour la même image.
+      permisPhotographie: pieces.length > 0,
+    };
+
+    const manques = manquesDuConducteur(conducteur, "B").filter(
+      (manque) => manque !== "categorieInsuffisante",
+    );
+
+    if (manques.length > 0) {
+      return { ok: false, cle: "conducteurIncomplet" };
+    }
+  }
+
   const maintenant = new Date();
 
   // Les tracés partent au stockage plutôt qu'en base : ce sont des images, et
@@ -174,6 +214,11 @@ export async function enregistrerConstat(donnees: FormData): Promise<Reponse> {
 
   const valeurs = {
     controles,
+    conducteurQualite:
+      type === "depart" ? (analyse.data.conducteurQualite ?? "locataire") : null,
+    conducteurNom: type === "depart" ? (analyse.data.conducteurNom ?? null) : null,
+    conducteurCategories:
+      type === "depart" ? (analyse.data.conducteurCategories ?? []) : [],
     kilometrage: analyse.data.kilometrage,
     commentaire: analyse.data.commentaire || null,
     signatureLocataireUrl: urlLocataire,

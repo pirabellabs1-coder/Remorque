@@ -8,6 +8,8 @@ import {
   type MediaConstat,
 } from "@/components/espace/depot-medias-constat";
 import { PaveSignature } from "@/components/espace/pave-signature";
+import { ReleveConducteur } from "@/components/espace/releve-conducteur";
+import type { CategoriePermis } from "@/domain/compatibilite/permis";
 import { POINTS_CONTROLE } from "@/domain/location/constat";
 import { PHOTOS_MINIMUM } from "@/domain/location/medias";
 import { useRouter } from "@/i18n/navigation";
@@ -30,10 +32,16 @@ export function FormulaireConstat({
   reservationId,
   type,
   medias,
+  nomLocataire,
+  categoriesConnues,
 }: {
   reservationId: string;
   type: "depart" | "retour";
   medias: MediaConstat[];
+  /** Nom du locataire, proposé par défaut quand c'est lui qui conduit. */
+  nomLocataire: string;
+  /** Catégories déjà vérifiées à son dossier, s'il en a déposé. */
+  categoriesConnues: CategoriePermis[];
 }) {
   const t = useTranslations("espaces.loueur.etatsDesLieux.formulaire");
   const router = useRouter();
@@ -75,6 +83,7 @@ export function FormulaireConstat({
         "dejaRealise",
         "departManquant",
         "photosInsuffisantes",
+        "conducteurIncomplet",
         "connexionRequise",
       ];
       setErreur(
@@ -146,6 +155,15 @@ export function FormulaireConstat({
         type={type}
         medias={medias}
       />
+
+      {/* Au départ seulement : au retour, la remorque revient, et qui la
+          ramène n'engage plus rien de neuf. */}
+      {type === "depart" ? (
+        <ReleveConducteur
+          nomLocataire={nomLocataire}
+          categoriesConnues={categoriesConnues}
+        />
+      ) : null}
 
       <fieldset className="rounded-carte border border-bordure bg-fond-eleve p-5 shadow-(--ombre-carte)">
         <legend className="px-2 text-[0.9375rem] font-semibold">

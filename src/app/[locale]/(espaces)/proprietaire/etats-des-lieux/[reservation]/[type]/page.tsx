@@ -4,6 +4,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { POINTS_CONTROLE } from "@/domain/location/constat";
 import { EnTeteEspace } from "@/components/espace/coquille-espace";
 import { FormulaireConstat } from "@/components/espace/formulaire-constat";
+import type { CategoriePermis } from "@/domain/compatibilite/permis";
 import { mediasDuConstat } from "@/server/locations/etats-des-lieux";
 import { Link } from "@/i18n/navigation";
 import {
@@ -101,6 +102,10 @@ export default async function PageConstat({ params }: Props) {
           reservationId={reservation.id}
           type={type}
           medias={medias}
+          nomLocataire={reservation.locataireNom}
+          categoriesConnues={
+            reservation.locataireCategories as CategoriePermis[]
+          }
         />
       ) : (
         <p className="mt-8 rounded-carte border border-bordure bg-fond-eleve p-5 text-[0.9375rem] text-texte-attenue">

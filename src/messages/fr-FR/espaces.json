@@ -606,7 +606,8 @@
             "departManquant": "Réalisez d’abord l’état des lieux de départ.",
             "connexionRequise": "Votre session a expiré. Reconnectez-vous.",
             "echec": "L’enregistrement a échoué. Réessayez.",
-            "photosInsuffisantes": "Le constat ne porte pas assez de photographies pour valoir preuve."
+            "photosInsuffisantes": "Le constat ne porte pas assez de photographies pour valoir preuve.",
+            "conducteurIncomplet": "Renseignez qui conduit : son nom et au moins une catégorie de permis."
           },
           "photosManquantes": "Ajoutez au moins {minimum} photographies avant de signer.",
           "signaturesManquantes": "Les deux parties doivent signer."
@@ -638,6 +639,20 @@
         "signature": {
           "invite": "Signez ici, au doigt",
           "effacer": "Effacer"
+        },
+        "conducteur": {
+          "titre": "Qui prend le volant",
+          "aide": "Le locataire n'est pas toujours celui qui conduit. C'est ici, face à la personne, que le permis se vérifie — pas à la réservation.",
+          "qualite": {
+            "locataire": "Le locataire lui-même",
+            "tiers": "Quelqu'un d'autre"
+          },
+          "nom": "Nom sur le permis",
+          "nomTiers": "Nom et prénom du conducteur",
+          "nomAide": "Recopiez-le tel qu'il figure sur la pièce : il peut différer du nom du compte.",
+          "categories": "Catégories détenues",
+          "categoriesAide": "Lues au dos du permis. Le BE couvre le B96, qui couvre le B.",
+          "photographierPermis": "Photographiez le permis du conducteur et ajoutez-le aux pièces ci-dessus : sans image, il ne reste qu'un nom écrit à la main."
         }
       },
       "messages": {

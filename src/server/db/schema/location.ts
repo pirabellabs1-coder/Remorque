@@ -41,6 +41,29 @@ export const etatDesLieux = pgTable(
       .notNull()
       .default({}),
     kilometrage: integer("kilometrage"),
+
+    /**
+     * Qui a réellement pris le volant, relevé à la remise.
+     *
+     * Le locataire n'est pas toujours le conducteur — une entreprise réserve
+     * pour son employé, un particulier organise un déménagement sans conduire.
+     * Le permis a donc cessé de conditionner la réservation : il se relève
+     * ici, par le propriétaire, face à la personne qui part avec la remorque.
+     * C'est le seul moment où quelqu'un voit à la fois le document et le
+     * visage.
+     *
+     * `locataire` ou `tiers`. Nul sur les constats antérieurs à cette règle :
+     * on ne réécrit pas une pièce signée pour y ajouter ce qu'elle ne disait
+     * pas.
+     */
+    conducteurQualite: text("conducteur_qualite"),
+    /** Nom tel qu'il figure sur le permis présenté. */
+    conducteurNom: text("conducteur_nom"),
+    /** Catégories lues sur la pièce : B, B96, BE. */
+    conducteurCategories: jsonb("conducteur_categories")
+      .$type<string[]>()
+      .notNull()
+      .default([]),
     commentaire: text("commentaire"),
 
     signatureLocataireUrl: text("signature_locataire_url"),

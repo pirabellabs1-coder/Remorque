@@ -107,6 +107,10 @@ export type ContexteConstat = {
     statut: string;
     debut: Date;
     fin: Date;
+    /** Nom complet du locataire, proposé au relevé du conducteur. */
+    locataireNom: string;
+    /** Catégories déjà vérifiées à son dossier — vide s'il n'a rien déposé. */
+    locataireCategories: string[];
   };
   depart: ConstatDetail | null;
   retour: ConstatDetail | null;
@@ -134,6 +138,15 @@ export async function contexteConstat(
       statut: reservation.statut,
       debut: reservation.debut,
       fin: reservation.fin,
+      locatairePrenom: utilisateur.prenom,
+      locataireNomFamille: utilisateur.nom,
+      // Les catégories ne sont proposées que si le permis a été *vérifié* :
+      // suggérer celles d'une pièce refusée ou en attente ferait valider par
+      // défaut ce qu'aucun contrôleur n'a accepté.
+      locataireCategories: sql<string[]>`case
+        when ${utilisateur.permisStatut} = 'verifie'
+        then ${utilisateur.permisCategories}
+        else '[]'::jsonb end`,
     })
     .from(reservation)
     .innerJoin(annonce, eq(annonce.id, reservation.annonceId))
@@ -179,7 +192,14 @@ export async function contexteConstat(
   };
 
   return {
-    reservation: dossier,
+    reservation: {
+      ...dossier,
+      locataireNom:
+        [dossier.locatairePrenom, dossier.locataireNomFamille]
+          .filter(Boolean)
+          .join(" ") || dossier.interlocuteur,
+      locataireCategories: dossier.locataireCategories ?? [],
+    },
     depart: detail("depart"),
     retour: detail("retour"),
   };

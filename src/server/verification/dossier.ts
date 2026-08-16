@@ -83,7 +83,7 @@ export async function dossierDe(
     etat,
     requises,
     manquesPublication: manquesPourPublier(etat),
-    manquesReservation: manquesPourReserver(etat, new Date()),
+    manquesReservation: manquesPourReserver(etat),
     avancement: avancement(etat, requises),
     exigee: await verificationExigee(),
   };
