@@ -125,24 +125,32 @@ export async function deposerObjet(
   typeMime: string,
   options: { prive?: boolean } = {},
 ): Promise<string> {
-  // Le stockage privé n'existe que chez Vercel Blob dans cette base de code :
-  // le compartiment S3 configuré est public par nature, et y déposer une pièce
-  // privée reviendrait à la publier. On refuse plutôt que de le supposer.
+  // **Le privé va en base, et nulle part ailleurs.**
+  //
+  // J'ai d'abord tenté `access: "private"` chez Vercel Blob. Le SDK l'accepte,
+  // mais le magasin refuse : « Cannot use private access on a public store »,
+  // et le caractère public se fixe à la création — l'API de création ignore le
+  // paramètre et rend un magasin public quoi qu'on demande. Le correctif a donc
+  // cassé le dépôt en production avant d'être remplacé par celui-ci.
+  //
+  // La table `fichier` sert déjà exactement cet usage pour les pièces
+  // d'identité, avec sa route gardée. On s'y range plutôt que d'inventer une
+  // troisième voie. Le coût est réel et assumé : une vidéo de constat pèse sur
+  // les sauvegardes de la base. Le jour où un magasin privé existera, seul ce
+  // bloc changera — les adresses déjà écrites continueront d'être servies.
   if (options.prive) {
-    if (!blobConfigure()) {
-      throw new Error(
-        "Stockage privé demandé sans Vercel Blob configuré : refus de déposer en clair.",
-      );
-    }
+    const [ligne] = await db
+      .insert(fichier)
+      .values({
+        chemin,
+        typeMime,
+        taille: corps.byteLength,
+        contenu: corps,
+        prive: true,
+      })
+      .returning({ id: fichier.id });
 
-    const { put } = await import("@vercel/blob");
-    const depose = await put(
-      chemin,
-      Buffer.from(corps.buffer, corps.byteOffset, corps.byteLength),
-      { access: "private", contentType: typeMime, addRandomSuffix: false },
-    );
-
-    return `blob:${depose.pathname}`;
+    return `fichier:${ligne.id}`;
   }
 
   if (stockageObjetConfigure()) {

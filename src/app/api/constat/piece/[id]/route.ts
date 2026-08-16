@@ -2,7 +2,12 @@ import { eq } from "drizzle-orm";
 
 import { compteConnecte } from "@/server/authentification/session";
 import { db } from "@/server/db";
-import { etatDesLieux, etatDesLieuxPhoto, reservation } from "@/server/db/schema";
+import {
+  etatDesLieux,
+  etatDesLieuxPhoto,
+  fichier as fichierTable,
+  reservation,
+} from "@/server/db/schema";
 
 /**
  * Sert une pièce d'un état des lieux — photographie ou vidéo.
@@ -78,22 +83,21 @@ export async function GET(
 /**
  * Lit les octets d'une pièce, quelle que soit la forme de sa référence.
  *
- * Deux formes coexistent, et c'est voulu plutôt que subi : `blob:<chemin>`
+ * Deux formes coexistent, et c'est voulu plutôt que subi : `fichier:<id>`
  * pour les dépôts privés d'aujourd'hui, une adresse complète pour ceux
  * d'avant le correctif. Les seconds restent lisibles — les effacer aurait vidé
  * des constats déjà signés, dont la valeur probante tient précisément à ce
  * qu'ils ne changent pas.
  */
 async function lireOctets(reference: string): Promise<Uint8Array | null> {
-  if (reference.startsWith("blob:")) {
-    const { get } = await import("@vercel/blob");
-    // `get` rend `null` sur un chemin inconnu : le déstructurer aveuglément
-    // ferait tomber la route sur une pièce effacée du magasin.
-    const objet = await get(reference.slice("blob:".length), {
-      access: "private",
-    });
-    if (!objet) return null;
-    return new Uint8Array(await new Response(objet.stream).arrayBuffer());
+  if (reference.startsWith("fichier:")) {
+    const [ligne] = await db
+      .select({ contenu: fichierTable.contenu })
+      .from(fichierTable)
+      .where(eq(fichierTable.id, reference.slice("fichier:".length)))
+      .limit(1);
+
+    return ligne ? new Uint8Array(ligne.contenu) : null;
   }
 
   const reponse = await fetch(reference);
