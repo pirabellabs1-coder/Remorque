@@ -105,12 +105,46 @@ export function cheminObjet(prefixe: string, extension: string): string {
   return `${prefixe}/${randomUUID()}.${extension}`;
 }
 
-/** Dépose des octets et rend l'adresse à laquelle ils seront lus. */
+/**
+ * Dépose des octets et rend l'adresse à laquelle ils seront lus.
+ *
+ * **`prive` n'est pas une option de confort.** Sans lui, tout ce qui passe ici
+ * atterrit sur un magasin public : lisible par quiconque connaît l'adresse,
+ * sans session, indéfiniment. C'est ce qu'il faut pour la photo d'une remorque
+ * et jamais pour un état des lieux — lequel montre l'allée de quelqu'un, son
+ * matériel, et parfois le permis du conducteur qu'on demande de photographier.
+ * Les signatures manuscrites sont dans le même cas.
+ *
+ * Un objet privé rend une référence `blob:<chemin>` et non une adresse : il
+ * n'y a rien à mettre dans une balise `img`, ce qui est le but. Sa lecture
+ * passe par une route qui vérifie la session.
+ */
 export async function deposerObjet(
   chemin: string,
   corps: Uint8Array,
   typeMime: string,
+  options: { prive?: boolean } = {},
 ): Promise<string> {
+  // Le stockage privé n'existe que chez Vercel Blob dans cette base de code :
+  // le compartiment S3 configuré est public par nature, et y déposer une pièce
+  // privée reviendrait à la publier. On refuse plutôt que de le supposer.
+  if (options.prive) {
+    if (!blobConfigure()) {
+      throw new Error(
+        "Stockage privé demandé sans Vercel Blob configuré : refus de déposer en clair.",
+      );
+    }
+
+    const { put } = await import("@vercel/blob");
+    const depose = await put(
+      chemin,
+      Buffer.from(corps.buffer, corps.byteOffset, corps.byteLength),
+      { access: "private", contentType: typeMime, addRandomSuffix: false },
+    );
+
+    return `blob:${depose.pathname}`;
+  }
+
   if (stockageObjetConfigure()) {
     // S3 d'abord : voir l'ordre de préséance en tête de fichier.
     await client().send(

@@ -49,10 +49,13 @@ async function deposerSignature(
   const base64 = donneesImage.slice("data:image/png;base64,".length);
   const octets = Uint8Array.from(Buffer.from(base64, "base64"));
 
+  // Privée, comme les pièces du constat : une signature manuscrite se recopie,
+  // et une adresse publique la met à portée de qui la trouve.
   return deposerObjet(
     cheminObjet(`signatures/${reservationId}/${partie}`, "png"),
     octets,
     "image/png",
+    { prive: true },
   );
 }
 

@@ -111,7 +111,7 @@ export function DepotMediasConstat({
             <li key={media.id} className="relative">
               {media.media === "video" ? (
                 <video
-                  src={media.url}
+                  src={`/api/constat/piece/${media.id}`}
                   controls
                   playsInline
                   className="aspect-square w-full rounded-[0.5rem] border border-bordure object-cover"
@@ -122,7 +122,7 @@ export function DepotMediasConstat({
                 // redimensionnement à la volée coûterait plus qu'il ne rend.
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={media.url}
+                  src={`/api/constat/piece/${media.id}`}
                   alt=""
                   className="aspect-square w-full rounded-[0.5rem] border border-bordure object-cover"
                 />

@@ -142,10 +142,14 @@ export async function deposerMedias(donnees: FormData): Promise<BilanMedia> {
       extension = fichier.type === "video/quicktime" ? "mov" : "mp4";
     }
 
+    // Déposé en privé : un état des lieux montre l'allée de quelqu'un, son
+    // matériel, et parfois le permis du conducteur qu'on lui demande de
+    // photographier. Rien de tout cela n'a sa place sur un magasin public.
     const url = await deposerObjet(
       cheminObjet(`constats/${constat.id}`, extension),
       octets,
       fichier.type,
+      { prive: true },
     );
 
     await db.insert(etatDesLieuxPhoto).values({
