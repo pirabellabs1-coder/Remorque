@@ -48,8 +48,17 @@ export default async function PageConstat({ params }: Props) {
   // Le retour ne se saisit qu'après le départ, et seulement sur une location
   // partie : mêmes règles que l'action serveur, dites avant la saisie plutôt
   // qu'au rejet de la soumission.
+  // **C'est la signature qui ferme la saisie, non l'existence de la ligne.**
+  //
+  // Depuis que les photos se déposent avant de signer, un constat existe en
+  // brouillon dès la première prise de vue. Prendre cette ligne pour une
+  // pièce signée faisait disparaître le formulaire au moment précis où l'on
+  // venait de photographier — c'est-à-dire au milieu du geste, sur un
+  // parking, sans rien pour revenir en arrière.
+  const signe = constat?.finaliseLe != null;
+
   const saisissable =
-    constat === null &&
+    !signe &&
     (type === "depart"
       ? ["confirmee", "en_cours", "restituee"].includes(reservation.statut)
       : contexte.depart !== null &&
@@ -90,7 +99,7 @@ export default async function PageConstat({ params }: Props) {
         </p>
       ) : null}
 
-      {constat ? (
+      {signe && constat ? (
         <DetailConstat
           constat={constat}
           reservationId={reservation.id}

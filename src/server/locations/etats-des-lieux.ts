@@ -224,13 +224,20 @@ export const constatsAfaire = cache(async () => {
       statut: reservation.statut,
       debut: reservation.debut,
       fin: reservation.fin,
+      // `finalise_le is not null` et non la simple existence : depuis que les
+      // photos se déposent avant la signature, un constat existe en brouillon
+      // dès la première prise de vue. Compter cette ligne comme faite ferait
+      // disparaître la location de la liste des constats à réaliser — au
+      // moment précis où l'on vient de commencer à le remplir.
       aDepart: sql<boolean>`exists (
         select 1 from etat_des_lieux e
         where e.reservation_id = ${reservation.id} and e.type = 'depart'
+          and e.finalise_le is not null
       )`,
       aRetour: sql<boolean>`exists (
         select 1 from etat_des_lieux e
         where e.reservation_id = ${reservation.id} and e.type = 'retour'
+          and e.finalise_le is not null
       )`,
     })
     .from(reservation)
