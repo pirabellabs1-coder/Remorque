@@ -113,6 +113,13 @@
       "when": 1786899832324,
       "tag": "0015_special_karnak",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1786921310185,
+      "tag": "0016_open_mandrill",
+      "breakpoints": true
     }
   ]
 }

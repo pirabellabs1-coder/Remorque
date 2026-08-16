@@ -18,10 +18,15 @@ import { fichier } from "@/server/db/schema";
  * recherche produirait une lecture de `bytea` — c'est exactement ce qui donne
  * à cette solution sa mauvaise réputation, et c'est évitable en une ligne.
  *
- * Aucune garde d'accès : ces fichiers sont les photos publiques des annonces,
- * visibles de tout visiteur. Le jour où des pièces privées passeront par ici —
- * carte grise, constat, pièce d'identité —, il leur faudra leur propre route,
- * avec vérification de session et sans cache partagé.
+ * **Le drapeau `prive` décide, pas la route.** Ce commentaire annonçait jadis
+ * qu'aucune garde n'était nécessaire, les fichiers étant tous des photos
+ * d'annonce. Puis les pièces d'identité ont été rangées dans la même table —
+ * délibérément, pour ne pas partir chez un hébergeur objet public — et cette
+ * route a continué de les servir à quiconque connaissait un identifiant. La
+ * route gardée existait pourtant ; elle était contournable par ici.
+ *
+ * La leçon vaut au-delà du correctif : quand deux routes lisent la même table,
+ * c'est la donnée qui doit porter sa nature, jamais la route qui la devine.
  */
 export async function GET(
   _requete: Request,
@@ -41,12 +46,25 @@ export async function GET(
       contenu: fichier.contenu,
       typeMime: fichier.typeMime,
       taille: fichier.taille,
+      prive: fichier.prive,
     })
     .from(fichier)
     .where(eq(fichier.id, id))
     .limit(1);
 
   if (!ligne) return new Response(null, { status: 404 });
+
+  // Un fichier privé n'existe pas pour cette route.
+  //
+  // Les pièces d'identité sont rangées dans cette table à dessein — pour ne
+  // pas partir chez un hébergeur objet public — et elles ont leur route
+  // gardée. Mais celle-ci lisait la même table par identifiant, sans rien
+  // demander : connaître l'identifiant suffisait à obtenir une carte
+  // d'identité, et la garde d'à côté n'y changeait rien.
+  //
+  // 404 plutôt que 403 : répondre « interdit » confirmerait l'existence du
+  // fichier à qui n'a rien à en savoir.
+  if (ligne.prive) return new Response(null, { status: 404 });
 
   return new Response(new Uint8Array(ligne.contenu), {
     headers: {

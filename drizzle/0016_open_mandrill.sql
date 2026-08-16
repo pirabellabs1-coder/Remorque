@@ -1,0 +1,1 @@
+ALTER TABLE "fichier" ADD COLUMN "prive" boolean DEFAULT false NOT NULL;

@@ -1,4 +1,11 @@
-import { customType, index, integer, pgTable, text } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  customType,
+  index,
+  integer,
+  pgTable,
+  text,
+} from "drizzle-orm/pg-core";
 
 import { id, timestamps } from "./_helpers";
 
@@ -52,6 +59,24 @@ export const fichier = pgTable(
     typeMime: text("type_mime").notNull(),
     taille: integer("taille").notNull(),
     contenu: octets("contenu").notNull(),
+    /**
+     * Ce fichier est-il servi publiquement ?
+     *
+     * Faux par défaut, donc public : c'est le cas de la quasi-totalité des
+     * lignes — les photos d'annonce, qui doivent être vues de tout visiteur.
+     *
+     * Le drapeau existe parce que la table s'est mise à contenir autre chose.
+     * Les pièces d'identité y sont rangées délibérément, pour ne pas partir
+     * chez un hébergeur objet public, et elles ont leur route gardée. Mais
+     * `/api/fichiers/[id]` lit la même table par identifiant, sans rien
+     * demander : connaître l'identifiant suffisait à obtenir une carte
+     * d'identité. La garde était complète et contournable par la porte d'à
+     * côté.
+     *
+     * C'est donc le fichier lui-même qui porte sa nature, et non la route qui
+     * devine : une route peut être oubliée, une colonne suit la donnée.
+     */
+    prive: boolean("prive").notNull().default(false),
     ...timestamps,
   },
   (table) => [index("fichier_chemin_idx").on(table.chemin)],

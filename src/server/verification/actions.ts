@@ -102,6 +102,9 @@ export async function deposerPieces(donnees: FormData): Promise<Reponse> {
           typeMime: mime,
           taille: octets.byteLength,
           contenu: octets,
+          // Jamais servi par la route publique : seule la route gardée, qui
+          // vérifie la session, peut rendre ces octets.
+          prive: true,
         })
         .returning({ id: fichier.id });
 
