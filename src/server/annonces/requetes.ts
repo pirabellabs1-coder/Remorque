@@ -6,6 +6,7 @@ import { and, eq, sql } from "drizzle-orm";
 
 import type { SlugCategorie } from "@/config/categories";
 import { trouverVille } from "@/config/villes";
+import { approximerPosition } from "@/domain/annonce/position-approximative";
 import { STATUTS_OCCUPANTS } from "@/domain/reservation/occupation";
 import { db } from "@/server/db";
 import {
@@ -188,9 +189,27 @@ function versResume(ligne: LigneResume, alt: string): AnnonceResume {
     ptacKg: ligne.ptacKg ?? 0,
     chargeUtileKg: ligne.chargeUtileKg ?? 0,
     freinee: ligne.freinee ?? false,
+    // **Le point publié n'est pas le point réel.**
+    //
+    // La fiche dessinait un cercle d'imprécision autour du point exact, lequel
+    // voyageait dans le HTML de chaque annonce : le cercle était décoratif, le
+    // centre était la vérité. Moissonner le catalogue rendait l'adresse
+    // précise de toutes les remorques du pays — une liste de courses pour qui
+    // vole des remorques.
+    //
+    // `versResume` est le passage obligé de toutes les lectures publiques :
+    // recherche, carte, fiche, pages de ville. Déplacer ici plutôt qu'à chaque
+    // appelant est ce qui garantit qu'aucune vue n'oubliera de le faire.
+    //
+    // L'écart est stable pour une annonce donnée. Un tirage par requête
+    // paraîtrait plus sûr et serait pire : vingt chargements donneraient vingt
+    // points autour du vrai, dont la moyenne le désigne.
     situation: {
-      longitude: ligne.longitude,
-      latitude: ligne.latitude,
+      ...approximerPosition(
+        { longitude: ligne.longitude, latitude: ligne.latitude },
+        ligne.rayonApproximatifM,
+        ligne.id,
+      ),
       rayonM: ligne.rayonApproximatifM,
     },
   };
