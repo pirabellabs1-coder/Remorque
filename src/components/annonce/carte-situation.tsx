@@ -14,10 +14,58 @@ import { useEffect, useRef, useState } from "react";
  * rendu serveur de l'espace public doit rester intact : c'est lui qui porte le
  * référencement local, soit l'essentiel du trafic visé.
  */
-const CarteSituationToile = dynamic(() => import("./carte-situation-toile"), {
-  ssr: false,
-  loading: () => <div className="h-64 w-full bg-fond-doux sm:h-80" />,
-});
+/**
+ * Repli si le fragment MapLibre ne se charge pas.
+ *
+ * Le cas est réel et fréquent là où cette application est consultée : réseau
+ * de parking, tunnel, déploiement survenu pendant la session — le fragment
+ * demandé n'existe plus sous ce nom. Sans ce repli, `next/dynamic` laisse
+ * l'aplat de chargement en place **indéfiniment**, sans message ni recours :
+ * l'usager voit un rectangle gris et n'apprendra jamais pourquoi.
+ *
+ * Le repli reprend l'étiquette déjà calculée par le parent — quartier et
+ * commune — de sorte que l'information utile reste donnée même sans carte.
+ * Une carte absente n'empêche pas de savoir où se trouve le matériel.
+ */
+function CarteIndisponible({ etiquette }: { etiquette: string }) {
+  const t = useTranslations("annonce.situation");
+
+  return (
+    <div
+      data-carte="echec"
+      className="flex h-64 w-full flex-col items-center justify-center gap-3 bg-fond-doux px-6 text-center sm:h-80"
+    >
+      <p className="text-[0.9375rem] text-texte-attenue">{etiquette}</p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="rounded-champ border border-bordure px-4 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent"
+      >
+        {t("reessayer")}
+      </button>
+    </div>
+  );
+}
+
+const CarteSituationToile = dynamic(
+  // `catch` plutôt qu'une frontière d'erreur : l'échec qu'on veut rattraper
+  // est celui du *chargement* du module, non d'un rendu. Une frontière ne le
+  // verrait pas — elle n'intercepte que les exceptions levées pendant le
+  // rendu, et un fragment qui n'arrive jamais n'en lève aucune.
+  () =>
+    import("./carte-situation-toile").catch(() => ({
+      default: CarteIndisponible,
+    })),
+  {
+    ssr: false,
+    // Marqué, pour être distinguable de l'attente : les deux états rendaient
+    // exactement le même balisage, ce qui rend une panne indiscernable d'un
+    // chargement normal — y compris pour qui la diagnostique.
+    loading: () => (
+      <div data-carte="chargement" className="h-64 w-full bg-fond-doux sm:h-80" />
+    ),
+  },
+);
 
 /**
  * Où se trouve le bien — approximativement.
@@ -78,7 +126,10 @@ export function CarteSituation({
     <div>
       <div ref={cadre} className="overflow-hidden rounded-carte border border-bordure">
         {!styleUrl ? (
-          <div className="flex h-40 w-full items-center justify-center bg-fond-doux px-6 text-center">
+          <div
+            data-carte="fond-absent"
+            className="flex h-40 w-full items-center justify-center bg-fond-doux px-6 text-center"
+          >
             <p className="text-[0.9375rem] text-texte-attenue">
               {t("fondAbsent", { quartier, ville })}
             </p>
@@ -92,7 +143,7 @@ export function CarteSituation({
             etiquette={t("alternative", { quartier, ville })}
           />
         ) : (
-          <div className="h-64 w-full bg-fond-doux sm:h-80" />
+          <div data-carte="attente" className="h-64 w-full bg-fond-doux sm:h-80" />
         )}
       </div>
 
