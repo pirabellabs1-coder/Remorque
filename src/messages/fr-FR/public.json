@@ -1628,7 +1628,7 @@
     }
   },
   "pageAvis": {
-    "metaTitre": "Avis des locataires — FlexiTrailer",
+    "metaTitre": "Avis des locataires",
     "metaDescription": "Tous les avis déposés après une location, sans sélection. Note moyenne, répartition détaillée et réponses des propriétaires.",
     "surtitre": "Ce qu'en disent les locataires",
     "titre": "Les avis, tous les avis",
@@ -1645,7 +1645,7 @@
     }
   },
   "pageRecrutement": {
-    "metaTitre": "Recrutement — FlexiTrailer",
+    "metaTitre": "Recrutement",
     "metaDescription": "Postes ouverts chez FlexiTrailer, et candidatures spontanées. Aucune offre fictive : la liste est vide quand rien n'est ouvert.",
     "surtitre": "Travailler ici",
     "titre": "Recrutement",
@@ -1705,7 +1705,7 @@
     }
   },
   "pageBlog": {
-    "metaTitre": "Le journal — FlexiTrailer",
+    "metaTitre": "Le journal",
     "metaDescription": "Ce qu'il faut savoir avant de louer ou de mettre en location une remorque : charges, permis, états des lieux.",
     "surtitre": "Le journal",
     "titre": "Ce qu'il faut savoir avant d'atteler",
