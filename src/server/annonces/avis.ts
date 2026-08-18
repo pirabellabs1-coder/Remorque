@@ -205,3 +205,108 @@ export const avisDeLannonce = cache(async function avisDeLannonce(
     ],
   };
 });
+
+export type AvisDuMarche = AvisPublic & {
+  /** L'annonce notée, pour qu'un avis convaincant mène quelque part. */
+  annonce: { titre: string; villeSlug: string; slug: string; ville: string };
+};
+
+/**
+ * Tous les avis du marché courant, pour la page publique dédiée.
+ *
+ * **Distincte de la vitrine, et pas par commodité.** `avisEnVitrine` retient
+ * les avis les plus flatteurs et les plus longs : c'est un choix légitime pour
+ * une accroche d'accueil, où l'on dispose de trois emplacements. Une page
+ * intitulée « Avis » qui appliquerait le même tri mentirait — elle
+ * présenterait une sélection en la faisant passer pour un ensemble. Ici,
+ * l'ordre est chronologique et rien n'est écarté sur la longueur.
+ *
+ * L'annonce voyage avec l'avis : un témoignage qui convainc doit mener au
+ * matériel dont il parle, sans quoi le lecteur convaincu n'a nulle part où
+ * aller.
+ */
+export const avisDuMarche = cache(async function avisDuMarche(
+  limite = 60,
+): Promise<{
+  avis: AvisDuMarche[];
+  nombre: number;
+  moyenne: number | null;
+  repartition: { note: number; nombre: number }[];
+}> {
+  const publies = and(
+    isNotNull(tableAvis.publieLe),
+    eq(tableAvis.masque, false),
+    await annonceDuMarche(),
+  );
+
+  const [agregats, parNote, lignes] = await Promise.all([
+    db
+      .select({
+        nombre: sql<number>`count(*)::int`,
+        moyenne: sql<string | null>`avg(${tableAvis.note})`,
+      })
+      .from(tableAvis)
+      .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
+      .where(publies),
+
+    db
+      .select({ note: tableAvis.note, nombre: sql<number>`count(*)::int` })
+      .from(tableAvis)
+      .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
+      .where(publies)
+      .groupBy(tableAvis.note),
+
+    db
+      .select({
+        id: tableAvis.id,
+        auteur: nomAffiche,
+        note: tableAvis.note,
+        texte: tableAvis.commentaire,
+        date: tableAvis.publieLe,
+        reponse: tableAvis.reponse,
+        titre: annonce.titre,
+        villeSlug: annonce.villeSlug,
+        slug: annonce.slug,
+        ville: annonce.ville,
+      })
+      .from(tableAvis)
+      .innerJoin(utilisateur, eq(utilisateur.id, tableAvis.auteurId))
+      .innerJoin(annonce, eq(annonce.id, tableAvis.annonceId))
+      .where(publies)
+      // Du plus récent au plus ancien : c'est l'ordre qu'on attend d'une page
+      // d'avis, et le seul qui ne trie pas en faveur de la plateforme.
+      .orderBy(desc(tableAvis.publieLe))
+      .limit(limite),
+  ]);
+
+  const compte = agregats[0];
+  const compteurs = new Map(parNote.map((ligne) => [ligne.note, ligne.nombre]));
+
+  return {
+    avis: lignes.map((ligne) => ({
+      id: ligne.id,
+      auteur: ligne.auteur,
+      note: ligne.note,
+      texte: ligne.texte ?? "",
+      date: ligne.date as Date,
+      reponse: ligne.reponse,
+      annonce: {
+        titre: ligne.titre,
+        villeSlug: ligne.villeSlug,
+        slug: ligne.slug,
+        ville: ligne.ville,
+      },
+    })),
+    nombre: compte?.nombre ?? 0,
+    moyenne:
+      compte?.moyenne === null || compte?.moyenne === undefined
+        ? null
+        : Number(compte.moyenne),
+    // Les cinq notes, y compris celles jamais attribuées : un histogramme
+    // n'ayant qu'une barre, pleine, se lit comme un sans-faute.
+    repartition: [5, 4, 3, 2, 1].map((note) => ({
+      note,
+      nombre: compteurs.get(note) ?? 0,
+    })),
+  };
+});

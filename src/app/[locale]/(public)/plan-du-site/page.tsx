@@ -72,12 +72,15 @@ export default async function PagePlanDuSite({ params }: Props) {
         },
         { href: "/calculateur-de-charge" as const, libelle: t("liens.charge") },
         { href: "/aide" as const, libelle: t("liens.aide") },
+        { href: "/blog" as const, libelle: t("liens.blog") },
       ],
     },
     {
       titre: t("plateforme"),
       liens: [
         { href: "/a-propos" as const, libelle: t("liens.aPropos") },
+        { href: "/avis" as const, libelle: t("liens.avis") },
+        { href: "/recrutement" as const, libelle: t("liens.recrutement") },
         { href: "/contact" as const, libelle: t("liens.contact") },
         { href: "/connexion" as const, libelle: t("liens.connexion") },
         { href: "/inscription" as const, libelle: t("liens.inscription") },

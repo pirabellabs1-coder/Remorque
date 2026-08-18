@@ -1621,7 +1621,108 @@
       "confidentialite": "Politique de confidentialité",
       "cookies": "Cookies et traceurs",
       "mentionsLegales": "Mentions légales",
-      "mediation": "Médiation de la consommation"
+      "mediation": "Médiation de la consommation",
+      "blog": "Le journal",
+      "avis": "Avis des locataires",
+      "recrutement": "Recrutement"
+    }
+  },
+  "pageAvis": {
+    "metaTitre": "Avis des locataires — FlexiTrailer",
+    "metaDescription": "Tous les avis déposés après une location, sans sélection. Note moyenne, répartition détaillée et réponses des propriétaires.",
+    "surtitre": "Ce qu'en disent les locataires",
+    "titre": "Les avis, tous les avis",
+    "chapo": "Un avis ne peut être déposé qu'après une restitution, par la personne qui a loué. Rien n'est trié ni écarté : les notes basses figurent ici au même titre que les autres.",
+    "surCinq": "{nombre, plural, one {# avis déposé} other {# avis déposés}}",
+    "etoiles": "{note} {note, plural, one {étoile} other {étoiles}}",
+    "regle": "La note moyenne porte sur l'ensemble des avis publiés, jamais sur une sélection. Un propriétaire peut répondre publiquement ; il ne peut ni modifier ni supprimer un avis.",
+    "tous": "Tous les avis, du plus récent au plus ancien",
+    "reponse": "Réponse du propriétaire :",
+    "vide": {
+      "titre": "Aucun avis pour l'instant",
+      "texte": "Les avis apparaissent après les premières locations closes. Ils ne peuvent pas être écrits autrement — ni par nous, ni par un propriétaire.",
+      "action": "Voir les remorques disponibles"
+    }
+  },
+  "pageRecrutement": {
+    "metaTitre": "Recrutement — FlexiTrailer",
+    "metaDescription": "Postes ouverts chez FlexiTrailer, et candidatures spontanées. Aucune offre fictive : la liste est vide quand rien n'est ouvert.",
+    "surtitre": "Travailler ici",
+    "titre": "Recrutement",
+    "chapo": "Nous construisons une place de marché où l'on confie une remorque de deux tonnes à un inconnu. Cela demande moins de génie que de rigueur.",
+    "aucun": {
+      "titre": "Aucun poste ouvert aujourd'hui",
+      "texte": "Nous préférons le dire que d'afficher des offres qui n'existent pas. Une annonce fictive ferait préparer une candidature à quelqu'un qui cherche du travail : le coût retombe sur lui.",
+      "spontanee": "Si ce que nous faisons vous parle, écrivez-nous quand même : <lien>envoyez une candidature spontanée</lien>. Nous répondons, même pour dire non."
+    },
+    "ouverts": "Postes ouverts",
+    "publieLe": "Publié le {date}",
+    "postuler": "Postuler",
+    "metier": {
+      "titre": "Ce sur quoi on travaille",
+      "chapo": "Le produit tient en une phrase et se complique dans les détails, qui sont l'essentiel du travail.",
+      "p1": {
+        "titre": "Une machine à états, pas un formulaire",
+        "texte": "Une location traverse dix états, de la demande à la clôture. Chaque transition trace, notifie et déplace de l'argent. C'est la partie qui génère le plus de tickets si elle est bâclée."
+      },
+      "p2": {
+        "titre": "Plusieurs pays dès la première ligne",
+        "texte": "Commission, TVA, plafond de caution et délai de libération viennent d'une table pilotable, jamais du code. Refaire l'internationalisation après coup coûte trois fois le prix."
+      },
+      "p3": {
+        "titre": "Le terrain, pas le bureau",
+        "texte": "L'état des lieux se signe sur un parking, au téléphone, parfois sans réseau. Plus de sept visiteurs sur dix sont sur mobile. Cela commande la plupart des arbitrages d'interface."
+      },
+      "p4": {
+        "titre": "De l'argent et des pièces d'identité",
+        "texte": "La plateforme encaisse, immobilise des cautions et conserve des documents officiels. Le niveau d'exigence est celui d'un service financier, pas d'un site vitrine."
+      }
+    },
+    "exigences": {
+      "titre": "Ce qu'on attend",
+      "chapo": "Moins des technologies connues que des habitudes. Celles-ci se vérifient dans le dépôt, ligne à ligne.",
+      "p1": {
+        "titre": "Écrire pourquoi, pas quoi",
+        "texte": "Un commentaire qui répète le code ne sert à rien. Celui qui explique la décision, l'alternative écartée et son motif épargne une semaine à qui reprendra le fichier."
+      },
+      "p2": {
+        "titre": "Tenir la règle hors de l'écran",
+        "texte": "Tarification, compatibilité d'attelage, machine à états : la logique métier vit dans un domaine sans base ni réseau, donc testable et vérifiable en recette."
+      },
+      "p3": {
+        "titre": "Se méfier de ses propres essais",
+        "texte": "Un test qui passe ne prouve pas qu'une fonctionnalité marche. Nous éprouvons dans un navigateur, sur la production, et nous nous défions des signaux trop faciles."
+      },
+      "p4": {
+        "titre": "Un français impeccable",
+        "texte": "Interface, commentaires, noms de tables et de colonnes sont en français, accentués correctement, majuscules comprises. Ce n'est pas une coquetterie : c'est ce qui rend le code lisible à qui le reprendra."
+      }
+    },
+    "appel": {
+      "titre": "Une candidature spontanée ?",
+      "texte": "Dites-nous ce que vous savez faire et ce qui vous intéresse ici. Un lien vers du travail réel vaut mieux qu'une lettre de motivation.",
+      "action": "Nous écrire"
+    }
+  },
+  "pageBlog": {
+    "metaTitre": "Le journal — FlexiTrailer",
+    "metaDescription": "Ce qu'il faut savoir avant de louer ou de mettre en location une remorque : charges, permis, états des lieux.",
+    "surtitre": "Le journal",
+    "titre": "Ce qu'il faut savoir avant d'atteler",
+    "chapo": "Peu d'articles, et chacun part d'une règle que la plateforme applique déjà. Un texte qui avance des chiffres invérifiés finit par être opposé à celui qui l'a écrit.",
+    "minutes": "{minutes} min de lecture",
+    "retour": "Revenir au journal",
+    "vide": {
+      "titre": "Rien de publié pour l'instant",
+      "texte": "Les guides pratiques ci-dessous répondent déjà à l'essentiel des questions."
+    },
+    "outils": {
+      "titre": "Les outils, plutôt que les articles",
+      "chapo": "Ceux-ci se consultent au moment d'en avoir besoin : ils calculent au lieu d'expliquer.",
+      "permis": "Quel permis pour quelle remorque",
+      "charge": "Calculateur de charge",
+      "fonctionnement": "Comment ça marche",
+      "aide": "Centre d'aide"
     }
   }
 }

@@ -93,6 +93,9 @@ export function PiedPagePublic() {
             <li>
               <Link href="/calculateur-de-charge">Calculateur de charge</Link>
             </li>
+            <li>
+              <Link href="/avis">{t("piedPage.avis")}</Link>
+            </li>
           </ul>
         </nav>
 
@@ -125,6 +128,12 @@ export function PiedPagePublic() {
           <ul className="mt-3 space-y-2 text-sm text-encre-texte-attenue">
             <li>
               <Link href="/a-propos">{t("piedPage.aPropos")}</Link>
+            </li>
+            <li>
+              <Link href="/blog">{t("piedPage.blog")}</Link>
+            </li>
+            <li>
+              <Link href="/recrutement">{t("piedPage.recrutement")}</Link>
             </li>
             <li>
               <Link href="/assurance">{t("navigation.assurance")}</Link>

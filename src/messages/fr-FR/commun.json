@@ -53,7 +53,10 @@
       "texte": "Le centre d’aide répond aux plus fréquentes. Sinon, écrivez-nous.",
       "centre": "Centre d’aide",
       "contact": "Nous écrire"
-    }
+    },
+    "avis": "Avis des locataires",
+    "blog": "Le journal",
+    "recrutement": "Recrutement"
   },
   "erreurs": {
     "titre": "Une erreur est survenue",
